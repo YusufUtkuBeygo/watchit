@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # 1. POSTGRES VERİTABANI
+  watchit_db:
+    image: postgres:15
+    container_name: postgres_veritabani
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Utku.5414  # Buraya kendi şifreni yazabilirsin
+      POSTGRES_DB: watchit
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_kasa:/var/lib/postgresql/data
+
+  # 2. MINIO BULUT DEPOLAMA (Resimler için)
+  watchit_storage:
+    image: minio/minio
+    container_name: minio_depo
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    ports:
+      - "9000:9000" # API Portu
+      - "9001:9001" # Arayüz (Tarayıcı) Portu
+    volumes:
+      - minio_kasa:/data
+    command: server /data --console-address ":9001"
+
+# Verilerin silinmemesi için oluşturduğumuz kalıcı kasalar (Hortumlar)
+volumes:
+  postgres_kasa:
+  minio_kasa:

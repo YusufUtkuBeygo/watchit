@@ -1,0 +1,4 @@
+# Bu dosyayı "application-local.properties" olarak kopyala ve gerçek değerleri gir.
+# application-local.properties .gitignore'da olduğu için repoya gitmez.
+DB_PASSWORD=your_postgres_password
+MINIO_SECRET_KEY=your_minio_secret_key
