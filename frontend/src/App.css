@@ -1,0 +1,19 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  margin-top: var(--navbar-height);
+}
+
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--bg-color);
+  padding: 0 24px;
+}

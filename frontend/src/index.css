@@ -1,0 +1,61 @@
+:root {
+  --bg-color: #0f0f0f;
+  --surface-color: #0f0f0f;
+  --hover-color: #272727;
+  --border-color: #3f3f3f;
+  --text-primary: #f1f1f1;
+  --text-secondary: #aaaaaa;
+  --pill-bg: #272727;
+  --pill-active-bg: #f1f1f1;
+  --pill-active-text: #0f0f0f;
+  --red-accent: #ff0000;
+  --navbar-height: 56px;
+  --sidebar-width: 240px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Roboto", "Arial", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden; /* Main scroll will be in content area */
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+/* Common utility classes */
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.icon-btn:hover {
+  background-color: var(--hover-color);
+}
