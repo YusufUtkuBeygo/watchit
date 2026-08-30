@@ -1,0 +1,88 @@
+.sidebar {
+  width: var(--sidebar-width);
+  height: calc(100vh - var(--navbar-height));
+  background-color: var(--surface-color);
+  overflow-y: auto;
+  position: fixed;
+  left: 0;
+  top: var(--navbar-height);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom scrollbar for sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+.sidebar:hover::-webkit-scrollbar-thumb {
+  background: #717171;
+}
+
+.sidebar-section {
+  padding: 12px 12px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.sidebar-item:hover {
+  background-color: var(--hover-color);
+}
+
+.sidebar-item.active {
+  background-color: var(--hover-color);
+  font-weight: 500;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0 12px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.sub-item {
+  gap: 16px;
+}
+
+.sub-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sub-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.new-dot {
+  width: 4px;
+  height: 4px;
+  background-color: #3ea6ff;
+  border-radius: 50%;
+}
