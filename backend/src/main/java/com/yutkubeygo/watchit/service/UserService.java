@@ -5,6 +5,7 @@ import com.yutkubeygo.watchit.mapper.UserMapper;
 import  com.yutkubeygo.watchit.repository.UserRepository;
 import  com.yutkubeygo.watchit.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import  org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,8 @@ public class UserService {
 
     private final UserMapper userMapper;
 
+    private final PasswordEncoder passwordEncoder;
+
 //    public UserService(UserRepository userRepository, UserMapper userMapper) {
 //        this.userRepository = userRepository;
 //        this.userMapper = userMapper;
@@ -27,6 +30,8 @@ public class UserService {
     {
         //Dışardan gelen json user entitiysinin bir nesnesine dönüştürülür
         User user = userMapper.toEntity(request);
+        //şifre hashleniyor
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         //Nesne oluşturulduktan sonra dto'ya çevirip return etmek için savedUser' atıyoruz elimizdeklieri
         User savedUser=userRepository.save(user);
         //dto nesnesini return ediyoruz içeriğini biz ayarladıkS
