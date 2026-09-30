@@ -6,8 +6,8 @@ services:
     image: postgres:15
     container_name: postgres_veritabani
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Utku.5414  # Buraya kendi şifreni yazabilirsin
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Buraya kendi şifreni yazabilirsin
       POSTGRES_DB: watchit
     ports:
       - "5433:5432"
@@ -19,8 +19,8 @@ services:
     image: minio/minio
     container_name: minio_depo
     environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: password123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - "9000:9000" # API Portu
       - "9001:9001" # Arayüz (Tarayıcı) Portu
