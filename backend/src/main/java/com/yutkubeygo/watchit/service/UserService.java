@@ -1,4 +1,5 @@
 package com.yutkubeygo.watchit.service;
+import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
 import com.yutkubeygo.watchit.mapper.UserMapper;
@@ -75,7 +76,8 @@ public class UserService {
 
         user.setUsername(newUser.getUsername());
         user.setEmail(newUser.getEmail());
-        user.setPassword(newUser.getPassword());
+        //şifre hashleniyor
+        user.setPassword(passwordEncoder.encode(newUser.getPassword()));
 
         User savedUser=userRepository.save(user);
 
@@ -90,6 +92,22 @@ public class UserService {
          return;   //404
 
         userRepository.deleteById(id);
+    }
+
+    public UserResponseDto login(LoginRequestDto request)
+    {
+        //requestin içindeki e-postayla kullanıcıyı bul
+        User loginUser = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if(loginUser==null)
+            return null;
+
+        //requestteki şifre ile db'deki şifreyi passwordEncoder ile karşılaştır
+        if(!passwordEncoder.matches(request.getPassword(),loginUser.getPassword()))
+            return null;
+
+        //Doğrulamadan geçerse kullanıcıyı  dto'ya  çevirip geri dön
+        return userMapper.toDto(loginUser);
+
     }
 
 }
