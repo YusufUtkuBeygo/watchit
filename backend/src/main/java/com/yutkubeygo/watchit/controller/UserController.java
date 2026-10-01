@@ -1,9 +1,12 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.service.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,5 +50,16 @@ public class UserController {
     public void deleteUserById(@PathVariable Long id)
     {
         userService.deleteUserById(id);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserResponseDto> login(@RequestBody LoginRequestDto request)
+    {
+        UserResponseDto user = userService.login(request);
+
+        if(user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        return ResponseEntity.ok(user);
     }
 }
