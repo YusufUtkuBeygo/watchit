@@ -51,9 +51,14 @@ public class CategoryService {
 
     }
 
-    public void deleteCategory(Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deleteCategory(Long id)
     {
+        if(!categoryRepository.existsById(id))
+            return false;
+
         categoryRepository.deleteById(id);
+        return true;
     }
 
 

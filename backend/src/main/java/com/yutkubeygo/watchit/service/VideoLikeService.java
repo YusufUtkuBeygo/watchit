@@ -59,9 +59,14 @@ public class VideoLikeService {
         return videoLikeMapper.toDtoList(videoLikeRepository.findAll());
     }
 
-    public void deleteVideoLikeById(Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deleteVideoLikeById(Long id)
     {
+        if(!videoLikeRepository.existsById(id))
+            return false;
+
         videoLikeRepository.deleteById(id);
+        return true;
     }
 
     //Update methodu eklemdik burda update edecek herhanigi bir ozellik yok sadece vide ile begenisi arasinda iliski kuran basit bir entity

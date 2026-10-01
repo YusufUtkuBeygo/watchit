@@ -81,8 +81,13 @@ public class NotificationService {
         return notificationMapper.toDtoList(notificationRepository.findAll());
     }
 
-    public void deleteNotificationById(Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deleteNotificationById(Long id)
     {
+        if(!notificationRepository.existsById(id))
+            return false;
+
         notificationRepository.deleteById(id);
+        return true;
     }
 }

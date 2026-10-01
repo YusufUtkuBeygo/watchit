@@ -4,6 +4,8 @@ import com.yutkubeygo.watchit.dto.CommentRequestDto;
 import com.yutkubeygo.watchit.dto.CommentResponseDto;
 import com.yutkubeygo.watchit.entity.Comment;
 import com.yutkubeygo.watchit.service.CommentService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,16 +21,27 @@ public class CommentController {
 
 
     @PutMapping("/{id}")
-    public CommentResponseDto updateComment(@PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto)
+    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long id, @RequestBody CommentRequestDto commentRequestDto)
     {
-        return commentService.updateComment(id,commentRequestDto);
+        CommentResponseDto comment = commentService.updateComment(id,commentRequestDto);
+
+        //Servis null döndüyse yorum, kullanıcı, video ya da üst yorumdan biri bulunamamıştır
+        if(comment == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(comment);
     }
 
 
     @GetMapping("/{id}")
-    public CommentResponseDto getComments(@PathVariable Long id)
+    public ResponseEntity<CommentResponseDto> getComments(@PathVariable Long id)
     {
-        return commentService.getCommentById(id);
+        CommentResponseDto comment = commentService.getCommentById(id);
+
+        if(comment == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(comment);
     }
 
     @GetMapping
@@ -38,14 +51,23 @@ public class CommentController {
     }
 
     @PostMapping
-    public CommentResponseDto createComment(@RequestBody CommentRequestDto commentRequestDto)
+    public ResponseEntity<CommentResponseDto> createComment(@RequestBody CommentRequestDto commentRequestDto)
     {
-        return commentService.createComment(commentRequestDto);
+        CommentResponseDto comment = commentService.createComment(commentRequestDto);
+
+        //Servis null döndüyse istekteki kullanıcı ya da video bulunamamıştır
+        if(comment == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(comment);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteComment(@PathVariable Long id)
+    public ResponseEntity<Void> deleteComment(@PathVariable Long id)
     {
-        commentService.deleteComment(id);
+        if(!commentService.deleteComment(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

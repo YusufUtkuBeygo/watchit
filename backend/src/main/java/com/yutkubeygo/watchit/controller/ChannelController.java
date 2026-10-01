@@ -3,6 +3,8 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.ChannelRequestDto;
 import com.yutkubeygo.watchit.dto.ChannelResponseDto;
 import com.yutkubeygo.watchit.service.ChannelService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,9 +21,15 @@ public class ChannelController {
 
     //Veri tabanına yeni eleman(kanal) eklemek için createChannel servisini kullanıyoruz
     @PostMapping
-    public ChannelResponseDto createChannel(@RequestBody ChannelRequestDto request)
+    public ResponseEntity<ChannelResponseDto> createChannel(@RequestBody ChannelRequestDto request)
     {
-        return channelService.createChannel(request);
+        ChannelResponseDto channel = channelService.createChannel(request);
+
+        //Servis null döndüyse istekteki owner (kullanıcı) bulunamamıştır
+        if(channel == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(channel);
     }
 
     @GetMapping
@@ -31,20 +39,33 @@ public class ChannelController {
     }
 
     @GetMapping("/{id}")
-    public ChannelResponseDto getChannel(@PathVariable Long id)
+    public ResponseEntity<ChannelResponseDto> getChannel(@PathVariable Long id)
     {
-        return channelService.getChannelById(id);
+        ChannelResponseDto channel = channelService.getChannelById(id);
+
+        if(channel == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(channel);
     }
 
     @PutMapping("/{id}")
-    public ChannelResponseDto updateChannel(@PathVariable Long id,@RequestBody ChannelRequestDto request)
+    public ResponseEntity<ChannelResponseDto> updateChannel(@PathVariable Long id,@RequestBody ChannelRequestDto request)
     {
-        return channelService.updateChannel(id,request);
+        ChannelResponseDto channel = channelService.updateChannel(id,request);
+
+        if(channel == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(channel);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteChannel(@PathVariable Long id)
+    public ResponseEntity<Void> deleteChannel(@PathVariable Long id)
     {
-        channelService.deleteChannelById(id);
+        if(!channelService.deleteChannelById(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

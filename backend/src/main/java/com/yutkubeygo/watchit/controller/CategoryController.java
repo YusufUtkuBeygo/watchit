@@ -4,6 +4,8 @@ import com.yutkubeygo.watchit.dto.CategoryRequestDto;
 import com.yutkubeygo.watchit.dto.CategoryResponseDto;
 import com.yutkubeygo.watchit.entity.Category;
 import com.yutkubeygo.watchit.service.CategoryService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,15 +25,22 @@ public class CategoryController {
     }
 
     @PostMapping
-    public CategoryResponseDto createCategory(@RequestBody CategoryRequestDto categoryRequestDto)
+    public ResponseEntity<CategoryResponseDto> createCategory(@RequestBody CategoryRequestDto categoryRequestDto)
     {
-        return categoryService.createCategory(categoryRequestDto);
+        CategoryResponseDto category = categoryService.createCategory(categoryRequestDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(category);
     }
 
     @GetMapping("/{id}")
-    public CategoryResponseDto getCategory(@PathVariable Long id)
+    public ResponseEntity<CategoryResponseDto> getCategory(@PathVariable Long id)
     {
-        return categoryService.getCategoryById(id);
+        CategoryResponseDto category = categoryService.getCategoryById(id);
+
+        if(category == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(category);
     }
 
     @GetMapping
@@ -41,17 +50,25 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public CategoryResponseDto updateCategory(
+    public ResponseEntity<CategoryResponseDto> updateCategory(
             @PathVariable Long id,
             @RequestBody CategoryRequestDto categoryRequestDto
     )
     {
-        return categoryService.updateCategory(id,categoryRequestDto);
+        CategoryResponseDto category = categoryService.updateCategory(id,categoryRequestDto);
+
+        if(category == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(category);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCategory(@PathVariable Long id)
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id)
     {
-        categoryService.deleteCategory(id);
+        if(!categoryService.deleteCategory(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

@@ -39,8 +39,14 @@ public class WatchHistoryService {
         if(watchHistory == null)
         {
 
-            User user = userRepository.findById(watchHistoryRequestDto.getUserId()).orElseThrow(()-> new RuntimeException("User not found"));
-            Video video = videoRepository.findById(watchHistoryRequestDto.getVideoId()).orElseThrow(()-> new RuntimeException("Video not found"));
+            //Kullanıcı ya da video yoksa diğer servislerdeki gibi null dönüyoruz (controller 404 verir)
+            User user = userRepository.findById(watchHistoryRequestDto.getUserId()).orElse(null);
+            if(user == null)
+                return null;
+
+            Video video = videoRepository.findById(watchHistoryRequestDto.getVideoId()).orElse(null);
+            if(video == null)
+                return null;
 
             WatchHistory watchHistoryEntity = watchHistoryMapper.toEntity(watchHistoryRequestDto);
 
@@ -74,9 +80,14 @@ public class WatchHistoryService {
         return watchHistoryMapper.toDtoList(watchHistoryRepository.findAll());
     }
 
-    public void deleteWatchHistoryById(Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deleteWatchHistoryById(Long id)
     {
+        if(!watchHistoryRepository.existsById(id))
+            return false;
+
         watchHistoryRepository.deleteById(id);
+        return true;
     }
 
     public List<WatchHistoryResponseDto> getWatchHistoryByUserId(Long userId) {

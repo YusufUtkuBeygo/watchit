@@ -3,6 +3,8 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.NotificationRequestDto;
 import com.yutkubeygo.watchit.dto.NotificationResponseDto;
 import com.yutkubeygo.watchit.service.NotificationService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,21 +20,37 @@ public class NotificationController {
     }
 
     @PostMapping
-    public NotificationResponseDto createNotification(@RequestBody NotificationRequestDto notificationRequestDto)
+    public ResponseEntity<NotificationResponseDto> createNotification(@RequestBody NotificationRequestDto notificationRequestDto)
     {
-        return notificationService.createNotification(notificationRequestDto);
+        NotificationResponseDto notification = notificationService.createNotification(notificationRequestDto);
+
+        //Servis null döndüyse istekteki gönderen ya da alıcı kullanıcı bulunamamıştır
+        if(notification == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(notification);
     }
 
     @PutMapping("/{id}")
-    public NotificationResponseDto updateNotification(@PathVariable Long id, @RequestBody NotificationRequestDto notificationRequestDto)
+    public ResponseEntity<NotificationResponseDto> updateNotification(@PathVariable Long id, @RequestBody NotificationRequestDto notificationRequestDto)
     {
-        return notificationService.updateNotification(id, notificationRequestDto);
+        NotificationResponseDto notification = notificationService.updateNotification(id, notificationRequestDto);
+
+        if(notification == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(notification);
     }
 
     @GetMapping("/{id}")
-    public NotificationResponseDto getNotificationById(@PathVariable Long id )
+    public ResponseEntity<NotificationResponseDto> getNotificationById(@PathVariable Long id )
     {
-        return notificationService.getNotificationById(id);
+        NotificationResponseDto notification = notificationService.getNotificationById(id);
+
+        if(notification == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(notification);
     }
 
     @GetMapping
@@ -42,9 +60,12 @@ public class NotificationController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteNotificationById(@PathVariable Long id)
+    public ResponseEntity<Void> deleteNotificationById(@PathVariable Long id)
     {
-        notificationService.deleteNotificationById(id);
+        if(!notificationService.deleteNotificationById(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

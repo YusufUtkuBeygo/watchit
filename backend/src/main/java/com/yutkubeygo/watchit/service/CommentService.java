@@ -105,13 +105,15 @@ public class CommentService {
 
     }
 
-    public void deleteComment(Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deleteComment(Long id)
     {
         Comment comment = commentRepository.findById(id).orElse(null);
         if(comment==null)
-            return;
+            return false;
 
         commentRepository.delete(comment);
+        return true;
     }
 
 }

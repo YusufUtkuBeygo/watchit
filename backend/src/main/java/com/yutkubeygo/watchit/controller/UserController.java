@@ -17,15 +17,22 @@ public class UserController {
 
     private final UserService userService;
 
+
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
 
     @PostMapping
-    public UserResponseDto createUser(@RequestBody UserRequestDto request)
+    public ResponseEntity<UserResponseDto> createUser(@RequestBody UserRequestDto request)
     {
-        return userService.createUser(request);
+            UserResponseDto user = userService.createUser(request);
+
+            //Eger varolan bir maille kayit olmak dednirse conflict uyarisi gonderir
+            if(user == null)
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @GetMapping
@@ -35,21 +42,35 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public UserResponseDto getUserById(@PathVariable Long id)
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id)
     {
-        return userService.getUserById(id);
+        UserResponseDto user = userService.getUserById(id);
+        if(user == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+
+        return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{id}")
-    public UserResponseDto updateUser(@PathVariable Long id,@RequestBody User newUser)
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,@RequestBody User newUser)
     {
-        return userService.updateUser(id,newUser);
+        UserResponseDto updatedUser = userService.updateUser(id,newUser);
+
+        if(updatedUser==null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();//404
+
+        return ResponseEntity.ok(updatedUser);//200 OK+Güncel veri
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUserById(@PathVariable Long id)
+    public ResponseEntity<Void> deleteUserById(@PathVariable Long id)
     {
-        userService.deleteUserById(id);
+        //Eğer kullanıcı silinemediyse böyle bir kullanıcı yoktur/bulunamamıştır
+        if(!userService.deleteUserById(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/login")

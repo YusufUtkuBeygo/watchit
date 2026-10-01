@@ -29,6 +29,8 @@ public class UserService {
 
     public  UserResponseDto createUser(UserRequestDto request)
     {
+        if(userRepository.existsByEmail(request.getEmail()))
+            return null;
         //Dışardan gelen json user entitiysinin bir nesnesine dönüştürülür
         User user = userMapper.toEntity(request);
         //şifre hashleniyor
@@ -84,20 +86,20 @@ public class UserService {
         return userMapper.toDto(savedUser);
     }
 
-    public void deleteUserById(Long id)
+    public boolean deleteUserById(Long id)
     {
-        User user=userRepository.findById(id).orElse(null);
+      if(!userRepository.existsById(id))
+          return false;
 
-        if(user==null)
-         return;   //404
-
-        userRepository.deleteById(id);
+      userRepository.deleteById(id);
+      return true;
     }
 
     public UserResponseDto login(LoginRequestDto request)
     {
         //requestin içindeki e-postayla kullanıcıyı bul
         User loginUser = userRepository.findByEmail(request.getEmail()).orElse(null);
+
         if(loginUser==null)
             return null;
 

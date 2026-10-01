@@ -4,6 +4,8 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.CommentLikeRequestDto;
 import com.yutkubeygo.watchit.dto.CommentLikeResponseDto;
 import com.yutkubeygo.watchit.service.CommentLikeService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,9 +22,15 @@ public class CommentLikeController {
     }
 
     @PostMapping
-    public CommentLikeResponseDto createCommentLike(@RequestBody  CommentLikeRequestDto commentLikeRequestDto)
+    public ResponseEntity<CommentLikeResponseDto> createCommentLike(@RequestBody  CommentLikeRequestDto commentLikeRequestDto)
     {
-        return commentLikeService.createCommentLike(commentLikeRequestDto);
+        CommentLikeResponseDto commentLike = commentLikeService.createCommentLike(commentLikeRequestDto);
+
+        //Servis null döndüyse istekteki kullanıcı ya da yorum bulunamamıştır
+        if(commentLike == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentLike);
     }
 
     @GetMapping
@@ -32,15 +40,23 @@ public class CommentLikeController {
     }
 
     @GetMapping("/{id}")
-    public CommentLikeResponseDto getCommentLike(@PathVariable Long id)
+    public ResponseEntity<CommentLikeResponseDto> getCommentLike(@PathVariable Long id)
     {
-        return commentLikeService.getCommentLikeById(id);
+        CommentLikeResponseDto commentLike = commentLikeService.getCommentLikeById(id);
+
+        if(commentLike == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(commentLike);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCommentLikes(@PathVariable Long id)
+    public ResponseEntity<Void> deleteCommentLikes(@PathVariable Long id)
     {
-        commentLikeService.deleteCommentLike(id);
+        if(!commentLikeService.deleteCommentLike(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

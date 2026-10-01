@@ -61,9 +61,14 @@ public class CommentLikeService {
         return commentLikeMapper.toDtoList(commentLikeRepository.findAll());
     }
 
-    public void deleteCommentLike (Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deleteCommentLike (Long id)
     {
+        if(!commentLikeRepository.existsById(id))
+            return false;
+
         commentLikeRepository.deleteById(id);
+        return true;
     }
 
 }

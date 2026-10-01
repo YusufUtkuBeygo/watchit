@@ -84,8 +84,13 @@ public class ChannelService {
 
     }
 
-    public void deleteChannelById(Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deleteChannelById(Long id)
     {
+        if(!channelRepository.existsById(id))
+            return false;
+
         channelRepository.deleteById(id);
+        return true;
     }
 }
