@@ -85,12 +85,14 @@ public class PlaylistVideoService
         return playlistVideoMapper.toDto(playlistVideoRepository.save(playlistVideo));
     }
 
-    public void deletePlaylistVideo(Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deletePlaylistVideo(Long id)
     {
         PlaylistVideo playlistVideo = playlistVideoRepository.findById(id).orElse(null);
         if(playlistVideo == null)
-            return;
+            return false;
 
         playlistVideoRepository.delete(playlistVideo);
+        return true;
     }
 }

@@ -3,6 +3,8 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.WatchHistoryRequestDto;
 import com.yutkubeygo.watchit.dto.WatchHistoryResponseDto;
 import com.yutkubeygo.watchit.service.WatchHistoryService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,16 +19,28 @@ public class WatchHistoryController {
         this.watchHistoryService = watchHistoryService;
     }
 
+    //Bu metot hem oluşturuyor hem güncelliyor, hangisini yaptığını bilmediğimiz için 201 yerine 200 dönüyoruz
     @PostMapping
-    public WatchHistoryResponseDto createOrUploadWatchHistory(@RequestBody WatchHistoryRequestDto watchHistoryRequestDto)
+    public ResponseEntity<WatchHistoryResponseDto> createOrUploadWatchHistory(@RequestBody WatchHistoryRequestDto watchHistoryRequestDto)
     {
-        return watchHistoryService.createOrUpdateWatchHistory(watchHistoryRequestDto);
+        WatchHistoryResponseDto watchHistory = watchHistoryService.createOrUpdateWatchHistory(watchHistoryRequestDto);
+
+        //Servis null döndüyse istekteki kullanıcı ya da video bulunamamıştır
+        if(watchHistory == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(watchHistory);
     }
 
     @GetMapping("/{id}")
-    public WatchHistoryResponseDto getWatchHistoryById(@PathVariable Long id)
+    public ResponseEntity<WatchHistoryResponseDto> getWatchHistoryById(@PathVariable Long id)
     {
-        return watchHistoryService.getWatchHistoryById(id);
+        WatchHistoryResponseDto watchHistory = watchHistoryService.getWatchHistoryById(id);
+
+        if(watchHistory == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(watchHistory);
     }
 
     @GetMapping
@@ -36,10 +50,12 @@ public class WatchHistoryController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteWatchHistory(@RequestParam Long id)
+    public ResponseEntity<Void> deleteWatchHistory(@PathVariable Long id)
     {
-        watchHistoryService.deleteWatchHistoryById(id);
-    }
+        if(!watchHistoryService.deleteWatchHistoryById(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 
 }

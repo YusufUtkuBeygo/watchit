@@ -3,6 +3,8 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.PlaylistRequestDto;
 import com.yutkubeygo.watchit.dto.PlaylistResponseDto;
 import com.yutkubeygo.watchit.service.PlaylistService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,15 +19,26 @@ public class PlaylistController {
     }
 
     @PostMapping
-    public PlaylistResponseDto  createPlaylist(@RequestBody PlaylistRequestDto playlistRequestDto)
+    public ResponseEntity<PlaylistResponseDto>  createPlaylist(@RequestBody PlaylistRequestDto playlistRequestDto)
     {
-        return playlistService.createPlaylist(playlistRequestDto);
+        PlaylistResponseDto playlist = playlistService.createPlaylist(playlistRequestDto);
+
+        //Servis null döndüyse istekteki owner (kullanıcı) bulunamamıştır
+        if(playlist == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(playlist);
     }
 
     @GetMapping("/{id}")
-    public PlaylistResponseDto getPlaylist(@PathVariable Long id )
+    public ResponseEntity<PlaylistResponseDto> getPlaylist(@PathVariable Long id )
     {
-        return playlistService.getPlaylistById(id);
+        PlaylistResponseDto playlist = playlistService.getPlaylistById(id);
+
+        if(playlist == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(playlist);
     }
 
     @GetMapping
@@ -35,15 +48,23 @@ public class PlaylistController {
     }
 
     @PutMapping("/{id}")
-    public PlaylistResponseDto updatePlaylist(@PathVariable Long id,@RequestBody PlaylistRequestDto playlistRequestDto)
+    public ResponseEntity<PlaylistResponseDto> updatePlaylist(@PathVariable Long id,@RequestBody PlaylistRequestDto playlistRequestDto)
     {
-        return playlistService.updatePlaylist(id,playlistRequestDto);
+        PlaylistResponseDto playlist = playlistService.updatePlaylist(id,playlistRequestDto);
+
+        if(playlist == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(playlist);
     }
 
     @DeleteMapping("/{id}")
-    public void deletePlaylist(@PathVariable Long id)
+    public ResponseEntity<Void> deletePlaylist(@PathVariable Long id)
     {
-        playlistService.deletePlaylist(id);
+        if(!playlistService.deletePlaylist(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

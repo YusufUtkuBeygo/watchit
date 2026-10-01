@@ -68,9 +68,14 @@ public class PlaylistService {
         return playlistMapper.toDtoList(playlist);
     }
 
-    public void deletePlaylist(Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deletePlaylist(Long id)
     {
+        if(!playlistRepository.existsById(id))
+            return false;
+
         playlistRepository.deleteById(id);
+        return true;
     }
 
 }

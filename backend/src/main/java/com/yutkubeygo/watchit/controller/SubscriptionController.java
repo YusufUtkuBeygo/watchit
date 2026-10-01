@@ -3,6 +3,8 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.SubscriptionRequestDto;
 import com.yutkubeygo.watchit.dto.SubscriptionResponseDto;
 import com.yutkubeygo.watchit.service.SubscriptionService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,21 +20,37 @@ public class SubscriptionController {
     }
 
     @PostMapping
-    public SubscriptionResponseDto createSubscription(@RequestBody SubscriptionRequestDto subscriptionRequestDto)
+    public ResponseEntity<SubscriptionResponseDto> createSubscription(@RequestBody SubscriptionRequestDto subscriptionRequestDto)
     {
-        return subscriptionService.createSubscription(subscriptionRequestDto);
+        SubscriptionResponseDto subscription = subscriptionService.createSubscription(subscriptionRequestDto);
+
+        //Servis null döndüyse istekteki kanal ya da abone olacak kullanıcı bulunamamıştır
+        if(subscription == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(subscription);
     }
 
     @PutMapping("/{id}")
-    public SubscriptionResponseDto updateSubscription(@PathVariable Long id , @RequestBody SubscriptionRequestDto subscriptionRequestDto)
+    public ResponseEntity<SubscriptionResponseDto> updateSubscription(@PathVariable Long id , @RequestBody SubscriptionRequestDto subscriptionRequestDto)
     {
-        return subscriptionService.updateSubscription(id,subscriptionRequestDto);
+        SubscriptionResponseDto subscription = subscriptionService.updateSubscription(id,subscriptionRequestDto);
+
+        if(subscription == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(subscription);
     }
 
     @GetMapping("/{id}")
-    public SubscriptionResponseDto getSubscriptionById(@PathVariable Long id)
+    public ResponseEntity<SubscriptionResponseDto> getSubscriptionById(@PathVariable Long id)
     {
-        return subscriptionService.getSubscriptionById(id);
+        SubscriptionResponseDto subscription = subscriptionService.getSubscriptionById(id);
+
+        if(subscription == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(subscription);
     }
 
     @GetMapping
@@ -42,9 +60,12 @@ public class SubscriptionController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteSubscriptionById(@PathVariable Long id)
+    public ResponseEntity<Void> deleteSubscriptionById(@PathVariable Long id)
     {
-        subscriptionService.deleteSubscriptionById(id);
+        if(!subscriptionService.deleteSubscriptionById(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 

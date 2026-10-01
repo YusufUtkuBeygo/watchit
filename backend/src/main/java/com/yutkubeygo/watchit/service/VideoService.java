@@ -102,9 +102,14 @@ public class VideoService {
 
     }
 
-    public void deleteVideo(Long id)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deleteVideo(Long id)
     {
+        if(!videoRepository.existsById(id))
+            return false;
+
         videoRepository.deleteById(id);
+        return true;
     }
 
 

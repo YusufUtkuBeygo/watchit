@@ -3,6 +3,8 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.VideoLikeRequestDto;
 import com.yutkubeygo.watchit.dto.VideoLikeResponseDto;
 import com.yutkubeygo.watchit.service.VideoLikeService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,9 +20,14 @@ public class VideoLikeController {
     }
 
     @GetMapping("/{id}")
-    public VideoLikeResponseDto getVideoLikeById(@PathVariable Long id)
+    public ResponseEntity<VideoLikeResponseDto> getVideoLikeById(@PathVariable Long id)
     {
-        return videoLikeService.getVideoLikeById(id);
+        VideoLikeResponseDto videoLike = videoLikeService.getVideoLikeById(id);
+
+        if(videoLike == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(videoLike);
     }
 
     @GetMapping
@@ -30,14 +37,23 @@ public class VideoLikeController {
     }
 
     @PostMapping
-    public VideoLikeResponseDto createVideLike(@RequestBody VideoLikeRequestDto videoLikeRequestDto)
+    public ResponseEntity<VideoLikeResponseDto> createVideLike(@RequestBody VideoLikeRequestDto videoLikeRequestDto)
     {
-        return videoLikeService.createVideoLike(videoLikeRequestDto);
+        VideoLikeResponseDto videoLike = videoLikeService.createVideoLike(videoLikeRequestDto);
+
+        //Servis null döndüyse istekteki kullanıcı ya da video bulunamamıştır
+        if(videoLike == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(videoLike);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteVideoLikeById(@PathVariable Long id)
+    public ResponseEntity<Void> deleteVideoLikeById(@PathVariable Long id)
     {
-        videoLikeService.deleteVideoLikeById(id);
+        if(!videoLikeService.deleteVideoLikeById(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

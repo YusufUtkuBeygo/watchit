@@ -78,9 +78,14 @@ public class SubscriptionService {
         return subscriptionMapper.toDto(subscriptionRepository.save(subscription));
     }
 
-    public void deleteSubscriptionById(Long subscriptionId)
+    //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
+    public boolean deleteSubscriptionById(Long subscriptionId)
     {
+        if(!subscriptionRepository.existsById(subscriptionId))
+            return false;
+
         subscriptionRepository.deleteById(subscriptionId);
+        return true;
     }
 
 }
