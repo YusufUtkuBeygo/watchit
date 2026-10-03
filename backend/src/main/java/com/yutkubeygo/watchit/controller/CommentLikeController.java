@@ -4,6 +4,7 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.CommentLikeRequestDto;
 import com.yutkubeygo.watchit.dto.CommentLikeResponseDto;
 import com.yutkubeygo.watchit.service.CommentLikeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class CommentLikeController {
     }
 
     @PostMapping
-    public ResponseEntity<CommentLikeResponseDto> createCommentLike(@RequestBody  CommentLikeRequestDto commentLikeRequestDto)
+    public ResponseEntity<CommentLikeResponseDto> createCommentLike(@Valid @RequestBody  CommentLikeRequestDto commentLikeRequestDto)
     {
         CommentLikeResponseDto commentLike = commentLikeService.createCommentLike(commentLikeRequestDto);
 

@@ -4,6 +4,7 @@ import com.yutkubeygo.watchit.dto.PlaylistVideoRequestDto;
 import com.yutkubeygo.watchit.dto.PlaylistVideoResponseDto;
 import com.yutkubeygo.watchit.entity.PlaylistVideo;
 import com.yutkubeygo.watchit.service.PlaylistVideoService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class PlaylistVideoController {
     }
 
     @PostMapping
-    public ResponseEntity<PlaylistVideoResponseDto> createPlaylistVideo(@RequestBody PlaylistVideoRequestDto playlistVideoRequestDto)
+    public ResponseEntity<PlaylistVideoResponseDto> createPlaylistVideo(@Valid @RequestBody PlaylistVideoRequestDto playlistVideoRequestDto)
     {
         PlaylistVideoResponseDto playlistVideo = playlistVideoService.createPlaylistVideo(playlistVideoRequestDto);
 
@@ -50,7 +51,7 @@ public class PlaylistVideoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PlaylistVideoResponseDto> updatePlaylistVideo(@PathVariable Long id, @RequestBody PlaylistVideoRequestDto playlistVideoRequestDto)
+    public ResponseEntity<PlaylistVideoResponseDto> updatePlaylistVideo(@PathVariable Long id, @Valid @RequestBody PlaylistVideoRequestDto playlistVideoRequestDto)
     {
         PlaylistVideoResponseDto playlistVideo = playlistVideoService.updatePlaylistVideo(id,playlistVideoRequestDto);
 

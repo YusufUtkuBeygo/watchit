@@ -3,6 +3,7 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.NotificationRequestDto;
 import com.yutkubeygo.watchit.dto.NotificationResponseDto;
 import com.yutkubeygo.watchit.service.NotificationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class NotificationController {
     }
 
     @PostMapping
-    public ResponseEntity<NotificationResponseDto> createNotification(@RequestBody NotificationRequestDto notificationRequestDto)
+    public ResponseEntity<NotificationResponseDto> createNotification(@Valid @RequestBody NotificationRequestDto notificationRequestDto)
     {
         NotificationResponseDto notification = notificationService.createNotification(notificationRequestDto);
 
@@ -32,7 +33,7 @@ public class NotificationController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<NotificationResponseDto> updateNotification(@PathVariable Long id, @RequestBody NotificationRequestDto notificationRequestDto)
+    public ResponseEntity<NotificationResponseDto> updateNotification(@PathVariable Long id, @Valid @RequestBody NotificationRequestDto notificationRequestDto)
     {
         NotificationResponseDto notification = notificationService.updateNotification(id, notificationRequestDto);
 

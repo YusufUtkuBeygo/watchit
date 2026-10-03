@@ -3,6 +3,7 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.WatchHistoryRequestDto;
 import com.yutkubeygo.watchit.dto.WatchHistoryResponseDto;
 import com.yutkubeygo.watchit.service.WatchHistoryService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class WatchHistoryController {
 
     //Bu metot hem oluşturuyor hem güncelliyor, hangisini yaptığını bilmediğimiz için 201 yerine 200 dönüyoruz
     @PostMapping
-    public ResponseEntity<WatchHistoryResponseDto> createOrUploadWatchHistory(@RequestBody WatchHistoryRequestDto watchHistoryRequestDto)
+    public ResponseEntity<WatchHistoryResponseDto> createOrUploadWatchHistory(@Valid @RequestBody WatchHistoryRequestDto watchHistoryRequestDto)
     {
         WatchHistoryResponseDto watchHistory = watchHistoryService.createOrUpdateWatchHistory(watchHistoryRequestDto);
 

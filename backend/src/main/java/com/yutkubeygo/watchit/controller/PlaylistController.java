@@ -3,6 +3,7 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.PlaylistRequestDto;
 import com.yutkubeygo.watchit.dto.PlaylistResponseDto;
 import com.yutkubeygo.watchit.service.PlaylistService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class PlaylistController {
     }
 
     @PostMapping
-    public ResponseEntity<PlaylistResponseDto>  createPlaylist(@RequestBody PlaylistRequestDto playlistRequestDto)
+    public ResponseEntity<PlaylistResponseDto>  createPlaylist(@Valid @RequestBody PlaylistRequestDto playlistRequestDto)
     {
         PlaylistResponseDto playlist = playlistService.createPlaylist(playlistRequestDto);
 

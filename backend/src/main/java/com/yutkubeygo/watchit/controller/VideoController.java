@@ -4,6 +4,7 @@ import com.yutkubeygo.watchit.dto.VideoRequestDto;
 import com.yutkubeygo.watchit.dto.VideoResponseDto;
 import com.yutkubeygo.watchit.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class VideoController {
 
     //db'ye yeni eleman eklenecek/post edilecek
     @PostMapping
-    public ResponseEntity<VideoResponseDto> createVideo(@RequestBody VideoRequestDto videoRequestDto)
+    public ResponseEntity<VideoResponseDto> createVideo(@Valid @RequestBody VideoRequestDto videoRequestDto)
     {
         VideoResponseDto video = videoService.createVideo(videoRequestDto);
 
@@ -53,7 +54,7 @@ public class VideoController {
 
     //db'de hali hazirda var olan eleman uzerinde degisiklik yapilacak gero koyulacak/put
     @PutMapping("/{id}")
-    public ResponseEntity<VideoResponseDto> updateVideo(@PathVariable("id") Long id,@RequestBody VideoRequestDto videoRequestDto)
+    public ResponseEntity<VideoResponseDto> updateVideo(@PathVariable("id") Long id,@Valid @RequestBody VideoRequestDto videoRequestDto)
     {
         VideoResponseDto video = videoService.updateVideo(id, videoRequestDto);
 

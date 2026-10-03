@@ -3,6 +3,7 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.SubscriptionRequestDto;
 import com.yutkubeygo.watchit.dto.SubscriptionResponseDto;
 import com.yutkubeygo.watchit.service.SubscriptionService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class SubscriptionController {
     }
 
     @PostMapping
-    public ResponseEntity<SubscriptionResponseDto> createSubscription(@RequestBody SubscriptionRequestDto subscriptionRequestDto)
+    public ResponseEntity<SubscriptionResponseDto> createSubscription(@Valid @RequestBody SubscriptionRequestDto subscriptionRequestDto)
     {
         SubscriptionResponseDto subscription = subscriptionService.createSubscription(subscriptionRequestDto);
 

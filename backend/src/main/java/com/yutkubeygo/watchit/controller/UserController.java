@@ -4,6 +4,7 @@ import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
 import com.yutkubeygo.watchit.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class UserController {
 
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(@RequestBody UserRequestDto request)
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserRequestDto request)
     {
             UserResponseDto user = userService.createUser(request);
 
@@ -52,7 +53,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,@RequestBody UserRequestDto newUser)
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,@Valid @RequestBody UserRequestDto newUser)
     {
         UserResponseDto updatedUser = userService.updateUser(id,newUser);
 
@@ -73,7 +74,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDto> login(@RequestBody LoginRequestDto request)
+    public ResponseEntity<UserResponseDto> login(@Valid @RequestBody LoginRequestDto request)
     {
         UserResponseDto user = userService.login(request);
 
