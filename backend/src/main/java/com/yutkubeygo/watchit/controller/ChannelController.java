@@ -3,6 +3,7 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.ChannelRequestDto;
 import com.yutkubeygo.watchit.dto.ChannelResponseDto;
 import com.yutkubeygo.watchit.service.ChannelService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class ChannelController {
 
     //Veri tabanına yeni eleman(kanal) eklemek için createChannel servisini kullanıyoruz
     @PostMapping
-    public ResponseEntity<ChannelResponseDto> createChannel(@RequestBody ChannelRequestDto request)
+    public ResponseEntity<ChannelResponseDto> createChannel(@Valid @RequestBody ChannelRequestDto request)
     {
         ChannelResponseDto channel = channelService.createChannel(request);
 

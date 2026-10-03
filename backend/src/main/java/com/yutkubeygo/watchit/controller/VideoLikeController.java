@@ -3,6 +3,7 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.VideoLikeRequestDto;
 import com.yutkubeygo.watchit.dto.VideoLikeResponseDto;
 import com.yutkubeygo.watchit.service.VideoLikeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class VideoLikeController {
     }
 
     @PostMapping
-    public ResponseEntity<VideoLikeResponseDto> createVideLike(@RequestBody VideoLikeRequestDto videoLikeRequestDto)
+    public ResponseEntity<VideoLikeResponseDto> createVideLike(@Valid @RequestBody VideoLikeRequestDto videoLikeRequestDto)
     {
         VideoLikeResponseDto videoLike = videoLikeService.createVideoLike(videoLikeRequestDto);
 

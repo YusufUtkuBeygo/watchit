@@ -4,6 +4,7 @@ import com.yutkubeygo.watchit.dto.CategoryRequestDto;
 import com.yutkubeygo.watchit.dto.CategoryResponseDto;
 import com.yutkubeygo.watchit.entity.Category;
 import com.yutkubeygo.watchit.service.CategoryService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<CategoryResponseDto> createCategory(@RequestBody CategoryRequestDto categoryRequestDto)
+    public ResponseEntity<CategoryResponseDto> createCategory(@Valid @RequestBody CategoryRequestDto categoryRequestDto)
     {
         CategoryResponseDto category = categoryService.createCategory(categoryRequestDto);
 
@@ -52,7 +53,7 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponseDto> updateCategory(
             @PathVariable Long id,
-            @RequestBody CategoryRequestDto categoryRequestDto
+            @Valid @RequestBody CategoryRequestDto categoryRequestDto
     )
     {
         CategoryResponseDto category = categoryService.updateCategory(id,categoryRequestDto);
