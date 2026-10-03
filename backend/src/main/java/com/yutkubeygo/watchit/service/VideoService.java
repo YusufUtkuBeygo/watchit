@@ -52,7 +52,6 @@ public class VideoService {
 
         if(channel == null)
         {
-            System.out.println("CHANNEL YOK: " + videoRequestDto.getChannelId());
             return null;
         }
 
@@ -60,7 +59,6 @@ public class VideoService {
 
         if(category==null)
         {
-            System.out.println("CATEGORY YOK: " + videoRequestDto.getCategoryId());
             return null;
         }
 

@@ -3,7 +3,6 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
-import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +52,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,@RequestBody User newUser)
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,@RequestBody UserRequestDto newUser)
     {
         UserResponseDto updatedUser = userService.updateUser(id,newUser);
 

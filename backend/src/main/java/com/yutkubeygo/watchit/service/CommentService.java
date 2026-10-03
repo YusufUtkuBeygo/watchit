@@ -43,6 +43,22 @@ public class CommentService {
         if(video==null)
             return null;
 
+        if(commentRequestDto.getParentCommentId()!=null)
+        {
+            Comment parentComment = commentRepository.findById(commentRequestDto.getParentCommentId()).orElse(null);
+            if(parentComment==null)
+                return null;
+
+            //Cevap, ust yorumla ayni videoya yazilmis olmali
+            if(!parentComment.getVideo().getId().equals(video.getId()))
+                return null;
+
+            comment.setParentComment(parentComment);
+
+        }
+
+
+
         comment.setUser(user);
         comment.setVideo(video);
 
