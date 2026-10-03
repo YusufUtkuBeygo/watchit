@@ -49,6 +49,10 @@ public class CommentService {
             if(parentComment==null)
                 return null;
 
+            //Cevap, ust yorumla ayni videoya yazilmis olmali
+            if(!parentComment.getVideo().getId().equals(video.getId()))
+                return null;
+
             comment.setParentComment(parentComment);
 
         }

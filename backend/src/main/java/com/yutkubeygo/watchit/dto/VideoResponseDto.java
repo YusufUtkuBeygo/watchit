@@ -15,4 +15,7 @@ public class VideoResponseDto {
     private String videoUrl;
     private Integer durationInSeconds;
     private LocalDateTime createdAt;
+
+    private Long channelId;
+    private Long categoryId;
 }

@@ -4,6 +4,7 @@ import com.yutkubeygo.watchit.dto.VideoRequestDto;
 import com.yutkubeygo.watchit.dto.VideoResponseDto;
 import com.yutkubeygo.watchit.entity.Video;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ public interface VideoMapper {
     //Requestten gelen bilgileri dto nesnesine dönüştürür
     Video toEntity(VideoRequestDto videoRequestDto);
     //İşlem sonucu return edilecek nesneyi RepsonseDto nesnesine dönüştürür
+    @Mapping(source = "channel.id", target="channelId")
+    @Mapping(source = "category.id", target="categoryId")
     VideoResponseDto toDto(Video video);
     //Liste halinde isteklerin returnleri için ResponseDto nesnelerinden oluşan bir liste return eder
     List<VideoResponseDto> toDtoList(List<Video>  videoResponseDtoList);
