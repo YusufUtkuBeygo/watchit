@@ -3,7 +3,7 @@ package com.yutkubeygo.watchit.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -13,6 +13,6 @@ public class PlaylistVideoResponseDto {
     private Long playlistId;
     private Long videoId;
     private Integer orderIndex;
-    private Date createdAt;
-    private Date updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
