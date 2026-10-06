@@ -1,5 +1,6 @@
 package com.yutkubeygo.watchit.service;
 import com.yutkubeygo.watchit.dto.LoginRequestDto;
+import com.yutkubeygo.watchit.dto.LoginResponseDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
 import com.yutkubeygo.watchit.mapper.UserMapper;
@@ -21,6 +22,8 @@ public class UserService {
     private final UserMapper userMapper;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final JwtService jwtService;
 
 //    public UserService(UserRepository userRepository, UserMapper userMapper) {
 //        this.userRepository = userRepository;
@@ -95,7 +98,7 @@ public class UserService {
       return true;
     }
 
-    public UserResponseDto login(LoginRequestDto request)
+    public LoginResponseDto login(LoginRequestDto request)
     {
         //requestin içindeki e-postayla kullanıcıyı bul
         User loginUser = userRepository.findByEmail(request.getEmail()).orElse(null);
@@ -108,7 +111,14 @@ public class UserService {
             return null;
 
         //Doğrulamadan geçerse kullanıcıyı  dto'ya  çevirip geri dön
-        return userMapper.toDto(loginUser);
+        UserResponseDto userResponseDto = userMapper.toDto(loginUser);
+
+        String token = jwtService.generateToken(loginUser);
+
+        LoginResponseDto loginResponseDto = new LoginResponseDto();
+        loginResponseDto.setToken(token);
+        loginResponseDto.setUser(userResponseDto);
+        return loginResponseDto;
 
     }
 
