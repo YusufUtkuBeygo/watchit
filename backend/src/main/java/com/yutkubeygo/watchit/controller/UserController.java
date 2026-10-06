@@ -1,6 +1,7 @@
 package com.yutkubeygo.watchit.controller;
 
 import com.yutkubeygo.watchit.dto.LoginRequestDto;
+import com.yutkubeygo.watchit.dto.LoginResponseDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
 import com.yutkubeygo.watchit.service.UserService;
@@ -74,13 +75,13 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDto> login(@Valid @RequestBody LoginRequestDto request)
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request)
     {
-        UserResponseDto user = userService.login(request);
+        LoginResponseDto logined = userService.login(request);
 
-        if(user == null)
+        if(logined == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(logined);
     }
 }
