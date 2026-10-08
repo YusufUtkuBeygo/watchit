@@ -25,9 +25,9 @@ public class PlaylistService {
     }
 
 
-    public PlaylistResponseDto createPlaylist(PlaylistRequestDto playlistRequestDto)
+    public PlaylistResponseDto createPlaylist(PlaylistRequestDto playlistRequestDto,Long userId)
     {
-        User user = userRepository.findById(playlistRequestDto.getOwnerId()).orElse(null);
+        User user = userRepository.findById(userId).orElse(null);
         if(user==null)
             return null;
 
@@ -42,14 +42,10 @@ public class PlaylistService {
         if(playlist==null)
             return null;
 
-        User user = userRepository.findById(playlistRequestDto.getOwnerId()).orElse(null);
-        if(user==null)
-            return null;
-
+        //Sahip (owner) güncellemede değişmez
         playlist.setTitle(playlistRequestDto.getTitle());
         playlist.setDescription(playlistRequestDto.getDescription());
         playlist.setIsPublic(playlistRequestDto.getIsPublic());
-        playlist.setOwner(user);
 
         return playlistMapper.toDto(playlistRepository.save(playlist));
     }

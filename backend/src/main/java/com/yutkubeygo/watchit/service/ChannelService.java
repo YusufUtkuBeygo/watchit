@@ -24,12 +24,12 @@ public class ChannelService {
         this.userRepository = userRepository;
     }
 
-    public ChannelResponseDto createChannel(ChannelRequestDto request)
+    public ChannelResponseDto createChannel(ChannelRequestDto request,Long userId)
     {
         //Dışardan gelen json istek dosyasındaki bilgieri kullanarak bir nesne oluşturur
         Channel channel=channelMapper.toEntity(request);
-        //Gelen dosyadan eleman oluşturluyor fakat dto sınıfıda ownerId var burdan owner'ın idsini bulup revize ediyoruz
-        User owner= userRepository.findById(request.getOwnerId()).orElse(null);
+        //Kanalın sahibi isteği atan kullanıcıdır, id'si token'dan gelir
+        User owner= userRepository.findById(userId).orElse(null);
         if(owner==null)
             return null;
         channel.setHandle(

@@ -1,7 +1,6 @@
 package com.yutkubeygo.watchit.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +12,5 @@ public class PlaylistRequestDto {
     private String title;
     private String description;
     private Boolean isPublic;
-    @NotNull
-    private Long ownerId;
 
 }

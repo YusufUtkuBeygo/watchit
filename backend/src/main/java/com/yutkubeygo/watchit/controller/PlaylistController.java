@@ -6,6 +6,7 @@ import com.yutkubeygo.watchit.service.PlaylistService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,9 +21,9 @@ public class PlaylistController {
     }
 
     @PostMapping
-    public ResponseEntity<PlaylistResponseDto>  createPlaylist(@Valid @RequestBody PlaylistRequestDto playlistRequestDto)
+    public ResponseEntity<PlaylistResponseDto>  createPlaylist(@Valid @RequestBody PlaylistRequestDto playlistRequestDto,@AuthenticationPrincipal Long userId)
     {
-        PlaylistResponseDto playlist = playlistService.createPlaylist(playlistRequestDto);
+        PlaylistResponseDto playlist = playlistService.createPlaylist(playlistRequestDto,userId);
 
         //Servis null döndüyse istekteki owner (kullanıcı) bulunamamıştır
         if(playlist == null)
@@ -49,7 +50,7 @@ public class PlaylistController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PlaylistResponseDto> updatePlaylist(@PathVariable Long id,@RequestBody PlaylistRequestDto playlistRequestDto)
+    public ResponseEntity<PlaylistResponseDto> updatePlaylist(@PathVariable Long id,@Valid @RequestBody PlaylistRequestDto playlistRequestDto)
     {
         PlaylistResponseDto playlist = playlistService.updatePlaylist(id,playlistRequestDto);
 

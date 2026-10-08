@@ -9,8 +9,6 @@ import lombok.Setter;
 public class WatchHistoryRequestDto {
 
     @NotNull
-    private Long userId;
-    @NotNull
     private Long videoId;
     private Integer watchedSeconds;
     private Boolean isCompleted;

@@ -28,14 +28,14 @@ public class SubscriptionService {
         this.subscriptionMapper = subscriptionMapper;
     }
 
-    public SubscriptionResponseDto createSubscription (SubscriptionRequestDto subscriptionRequestDto)
+    public SubscriptionResponseDto createSubscription (SubscriptionRequestDto subscriptionRequestDto,Long userId)
     {
         Subscription subscription = subscriptionMapper.toEntity(subscriptionRequestDto);
         Channel channel = channelRepository.findById(subscriptionRequestDto.getChannelId()).orElse(null);
         if(channel==null)
             return null;
 
-        User subscriber = userRepository.findById(subscriptionRequestDto.getSubscriberId()).orElse(null);
+        User subscriber = userRepository.findById(userId).orElse(null);
         if(subscriber==null)
             return null;
 
@@ -58,25 +58,7 @@ public class SubscriptionService {
         return subscriptionMapper.toDtoList(subscriptionRepository.findAll());
     }
 
-    public SubscriptionResponseDto updateSubscription (Long id, SubscriptionRequestDto subscriptionRequestDto)
-    {
-        Subscription subscription = subscriptionRepository.findById(id).orElse(null);
-        if(subscription==null)
-            return null;
-
-        User subscriber = userRepository.findById(subscriptionRequestDto.getSubscriberId()).orElse(null);
-        if(subscriber==null)
-            return null;
-
-        Channel channel = channelRepository.findById(subscriptionRequestDto.getChannelId()).orElse(null);
-        if(channel==null)
-            return null;
-
-        subscription.setChannel(channel);
-        subscription.setSubscriber(subscriber);
-
-        return subscriptionMapper.toDto(subscriptionRepository.save(subscription));
-    }
+    //Update metodu yok: abonelik sadece abone ile kanal arasındaki ilişki, değişecek bir özelliği yok (çık + yeniden abone ol)
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
     public boolean deleteSubscriptionById(Long subscriptionId)
