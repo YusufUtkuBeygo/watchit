@@ -4,7 +4,6 @@ import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.LoginResponseDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
-import com.yutkubeygo.watchit.service.JwtService;
 import com.yutkubeygo.watchit.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
 
-    public UserController(UserService userService, JwtService jwtService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -67,10 +66,10 @@ public class UserController {
 
 
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,@Valid @RequestBody UserRequestDto newUser)
+    @PutMapping("/me")
+    public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody UserRequestDto newUser, @AuthenticationPrincipal Long userId)
     {
-        UserResponseDto updatedUser = userService.updateUser(id,newUser);
+        UserResponseDto updatedUser = userService.updateUser(userId,newUser);
 
         if(updatedUser==null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();//404
@@ -78,11 +77,11 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);//200 OK+Güncel veri
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable Long id)
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteUserById( @AuthenticationPrincipal Long userId)
     {
         //Eğer kullanıcı silinemediyse böyle bir kullanıcı yoktur/bulunamamıştır
-        if(!userService.deleteUserById(id))
+        if(!userService.deleteUserById(userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
