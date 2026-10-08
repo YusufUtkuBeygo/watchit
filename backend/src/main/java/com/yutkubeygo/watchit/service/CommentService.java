@@ -28,13 +28,13 @@ public class CommentService {
         this.videoRepository = videoRepository;
     }
 
-    public CommentResponseDto createComment(CommentRequestDto commentRequestDto)
+    public CommentResponseDto createComment(Long userId,CommentRequestDto commentRequestDto)
     {
         //Gelen json dosyasina gore yeni bir nesne olusturduk
         Comment comment = commentMapper.toEntity(commentRequestDto);
 
         //Kullanici ve kanal id bilgielri uzerinden o gerekli filedlara erisip revize ettik
-        User user = userRepository.findById(commentRequestDto.getUserId()).orElse(null);
+        User user = userRepository.findById(userId).orElse(null);
         if(user==null)
             return null;
 
@@ -88,11 +88,6 @@ public class CommentService {
         if(comment==null)
             return null;
 
-        //db'de boyle bir user var mi ?
-        User user = userRepository.findById(commentRequestDto.getUserId()).orElse(null);
-        if(user==null)
-            return null;
-
         //db'de boyle bir video var mi ?
         Video video = videoRepository.findById(commentRequestDto.getVideoId()).orElse(null);
         if(video==null)
@@ -113,7 +108,6 @@ public class CommentService {
 
         comment.setContent(commentRequestDto.getContent());
         comment.setVideo(video);
-        comment.setUser(user);
         comment.setParentComment(parentComment);
         comment.setEdited(true);
 

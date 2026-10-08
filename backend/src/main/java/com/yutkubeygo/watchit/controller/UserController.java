@@ -4,10 +4,12 @@ import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.LoginResponseDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
+import com.yutkubeygo.watchit.service.JwtService;
 import com.yutkubeygo.watchit.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +21,7 @@ public class UserController {
     private final UserService userService;
 
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtService jwtService) {
         this.userService = userService;
     }
 
@@ -42,6 +44,16 @@ public class UserController {
         return userService.getAllUsers();
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getMe(@AuthenticationPrincipal Long userId)
+    {
+        UserResponseDto user = userService.getUserById(userId);
+        if(user == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(user);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id)
     {
@@ -52,6 +64,8 @@ public class UserController {
 
         return ResponseEntity.ok(user);
     }
+
+
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id,@Valid @RequestBody UserRequestDto newUser)
