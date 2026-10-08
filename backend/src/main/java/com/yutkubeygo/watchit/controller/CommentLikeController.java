@@ -7,6 +7,7 @@ import com.yutkubeygo.watchit.service.CommentLikeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,9 +24,9 @@ public class CommentLikeController {
     }
 
     @PostMapping
-    public ResponseEntity<CommentLikeResponseDto> createCommentLike(@Valid @RequestBody  CommentLikeRequestDto commentLikeRequestDto)
+    public ResponseEntity<CommentLikeResponseDto> createCommentLike(@Valid @RequestBody  CommentLikeRequestDto commentLikeRequestDto,@AuthenticationPrincipal Long userId)
     {
-        CommentLikeResponseDto commentLike = commentLikeService.createCommentLike(commentLikeRequestDto);
+        CommentLikeResponseDto commentLike = commentLikeService.createCommentLike(commentLikeRequestDto,userId);
 
         //Servis null döndüyse istekteki kullanıcı ya da yorum bulunamamıştır
         if(commentLike == null)
