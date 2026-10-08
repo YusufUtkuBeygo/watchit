@@ -13,7 +13,5 @@ public class CommentRequestDto {
     private String content;
     @NotNull
     private Long videoId;
-    @NotNull
-    private Long userId;
     private Long parentCommentId;
 }
