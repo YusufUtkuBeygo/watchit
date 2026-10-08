@@ -1,6 +1,7 @@
 package com.yutkubeygo.watchit.service;
 
 import com.yutkubeygo.watchit.entity.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,16 @@ public class JwtService {
                 .signWith(getSigningKey())
                 .compact();
 
+    }
+
+    public Long extractUserId (String token)
+    {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return Long.parseLong(claims.getSubject());
     }
 
 
