@@ -8,8 +8,7 @@ import lombok.Setter;
 @Setter
 public class CommentLikeRequestDto {
 
-    @NotNull
-    private Long userId;
+
     @NotNull
     private Long commentId;
 }

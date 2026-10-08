@@ -6,6 +6,7 @@ import com.yutkubeygo.watchit.service.VideoLikeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,9 +39,9 @@ public class VideoLikeController {
     }
 
     @PostMapping
-    public ResponseEntity<VideoLikeResponseDto> createVideLike(@Valid @RequestBody VideoLikeRequestDto videoLikeRequestDto)
+    public ResponseEntity<VideoLikeResponseDto> createVideLike(@Valid @RequestBody VideoLikeRequestDto videoLikeRequestDto,@AuthenticationPrincipal Long userId)
     {
-        VideoLikeResponseDto videoLike = videoLikeService.createVideoLike(videoLikeRequestDto);
+        VideoLikeResponseDto videoLike = videoLikeService.createVideoLike(videoLikeRequestDto,userId);
 
         //Servis null döndüyse istekteki kullanıcı ya da video bulunamamıştır
         if(videoLike == null)

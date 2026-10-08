@@ -6,6 +6,7 @@ import com.yutkubeygo.watchit.service.SubscriptionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,26 +22,15 @@ public class SubscriptionController {
     }
 
     @PostMapping
-    public ResponseEntity<SubscriptionResponseDto> createSubscription(@Valid @RequestBody SubscriptionRequestDto subscriptionRequestDto)
+    public ResponseEntity<SubscriptionResponseDto> createSubscription(@Valid @RequestBody SubscriptionRequestDto subscriptionRequestDto,@AuthenticationPrincipal Long userId)
     {
-        SubscriptionResponseDto subscription = subscriptionService.createSubscription(subscriptionRequestDto);
+        SubscriptionResponseDto subscription = subscriptionService.createSubscription(subscriptionRequestDto,userId);
 
         //Servis null döndüyse istekteki kanal ya da abone olacak kullanıcı bulunamamıştır
         if(subscription == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(subscription);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<SubscriptionResponseDto> updateSubscription(@PathVariable Long id , @RequestBody SubscriptionRequestDto subscriptionRequestDto)
-    {
-        SubscriptionResponseDto subscription = subscriptionService.updateSubscription(id,subscriptionRequestDto);
-
-        if(subscription == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
-        return ResponseEntity.ok(subscription);
     }
 
     @GetMapping("/{id}")

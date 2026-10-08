@@ -28,9 +28,9 @@ public class VideoLikeService {
         this.videoLikeRepository = videoLikeRepository;
     }
 
-    public VideoLikeResponseDto createVideoLike(VideoLikeRequestDto videoLikeRequestDto)
+    public VideoLikeResponseDto createVideoLike(VideoLikeRequestDto videoLikeRequestDto,Long userId)
     {
-        User user = userRepository.findById(videoLikeRequestDto.getUserId()).orElse(null);
+        User user = userRepository.findById(userId).orElse(null);
         if(user==null)
             return null;
 

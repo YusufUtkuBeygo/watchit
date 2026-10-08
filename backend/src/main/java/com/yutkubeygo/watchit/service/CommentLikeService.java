@@ -29,9 +29,9 @@ public class CommentLikeService {
         this.commentLikeMapper = commentLikeMapper;
     }
 
-    public CommentLikeResponseDto createCommentLike(CommentLikeRequestDto commentLikeRequestDto)
+    public CommentLikeResponseDto createCommentLike(CommentLikeRequestDto commentLikeRequestDto,Long userId)
     {
-        User user = userRepository.findById(commentLikeRequestDto.getUserId()).orElse(null);
+        User user = userRepository.findById(userId).orElse(null);
         if(user==null)
             return null;
 

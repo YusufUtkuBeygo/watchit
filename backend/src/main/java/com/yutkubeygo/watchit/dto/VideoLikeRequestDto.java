@@ -8,7 +8,5 @@ import lombok.Setter;
 @Setter
 public class VideoLikeRequestDto {
     @NotNull
-    private Long userId;
-    @NotNull
     private Long videoId;
 }

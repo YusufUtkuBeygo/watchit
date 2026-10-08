@@ -6,6 +6,7 @@ import com.yutkubeygo.watchit.service.ChannelService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,9 +23,9 @@ public class ChannelController {
 
     //Veri tabanına yeni eleman(kanal) eklemek için createChannel servisini kullanıyoruz
     @PostMapping
-    public ResponseEntity<ChannelResponseDto> createChannel(@Valid @RequestBody ChannelRequestDto request)
+    public ResponseEntity<ChannelResponseDto> createChannel(@Valid @RequestBody ChannelRequestDto request,@AuthenticationPrincipal Long userId)
     {
-        ChannelResponseDto channel = channelService.createChannel(request);
+        ChannelResponseDto channel = channelService.createChannel(request,userId);
 
         //Servis null döndüyse istekteki owner (kullanıcı) bulunamamıştır
         if(channel == null)
@@ -51,7 +52,7 @@ public class ChannelController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ChannelResponseDto> updateChannel(@PathVariable Long id,@RequestBody ChannelRequestDto request)
+    public ResponseEntity<ChannelResponseDto> updateChannel(@PathVariable Long id,@Valid @RequestBody ChannelRequestDto request)
     {
         ChannelResponseDto channel = channelService.updateChannel(id,request);
 

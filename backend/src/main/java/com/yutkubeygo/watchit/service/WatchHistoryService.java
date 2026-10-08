@@ -32,15 +32,15 @@ public class WatchHistoryService {
 
 
 
-    public WatchHistoryResponseDto createOrUpdateWatchHistory(WatchHistoryRequestDto watchHistoryRequestDto)
+    public WatchHistoryResponseDto createOrUpdateWatchHistory(WatchHistoryRequestDto watchHistoryRequestDto,Long userId)
     {
 
-        WatchHistory watchHistory = watchHistoryRepository.findByUserIdAndVideoId(watchHistoryRequestDto.getUserId(),watchHistoryRequestDto.getVideoId()).orElse(null);
+        WatchHistory watchHistory = watchHistoryRepository.findByUserIdAndVideoId(userId,watchHistoryRequestDto.getVideoId()).orElse(null);
         if(watchHistory == null)
         {
 
             //Kullanıcı ya da video yoksa diğer servislerdeki gibi null dönüyoruz (controller 404 verir)
-            User user = userRepository.findById(watchHistoryRequestDto.getUserId()).orElse(null);
+            User user = userRepository.findById(userId).orElse(null);
             if(user == null)
                 return null;
 

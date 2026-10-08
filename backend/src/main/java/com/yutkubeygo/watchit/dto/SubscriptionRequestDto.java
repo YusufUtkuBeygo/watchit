@@ -9,7 +9,5 @@ import lombok.Setter;
 public class SubscriptionRequestDto {
 
     @NotNull
-    private Long subscriberId;
-    @NotNull
     private Long channelId;
 }

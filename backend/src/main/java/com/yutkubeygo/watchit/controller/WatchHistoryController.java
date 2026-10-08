@@ -6,6 +6,7 @@ import com.yutkubeygo.watchit.service.WatchHistoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,9 +23,9 @@ public class WatchHistoryController {
 
     //Bu metot hem oluşturuyor hem güncelliyor, hangisini yaptığını bilmediğimiz için 201 yerine 200 dönüyoruz
     @PostMapping
-    public ResponseEntity<WatchHistoryResponseDto> createOrUploadWatchHistory(@Valid @RequestBody WatchHistoryRequestDto watchHistoryRequestDto)
+    public ResponseEntity<WatchHistoryResponseDto> createOrUploadWatchHistory(@Valid @RequestBody WatchHistoryRequestDto watchHistoryRequestDto,@AuthenticationPrincipal Long userId)
     {
-        WatchHistoryResponseDto watchHistory = watchHistoryService.createOrUpdateWatchHistory(watchHistoryRequestDto);
+        WatchHistoryResponseDto watchHistory = watchHistoryService.createOrUpdateWatchHistory(watchHistoryRequestDto,userId);
 
         //Servis null döndüyse istekteki kullanıcı ya da video bulunamamıştır
         if(watchHistory == null)
