@@ -13,7 +13,7 @@ import com.yutkubeygo.watchit.repository.WatchHistoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 public class WatchHistoryService {
@@ -67,19 +67,20 @@ public class WatchHistoryService {
     }
 
 
-    public WatchHistoryResponseDto getWatchHistoryById(Long id)
+    public WatchHistoryResponseDto getWatchHistoryById(Long id, Long userId)
     {
         WatchHistory watchHistory = watchHistoryRepository.findById(id).orElse(null);
         if(watchHistory==null)
             return null;
-        else
-            return watchHistoryMapper.toDto(watchHistory);
+
+        if(!watchHistory.getUser().getId().equals(userId))
+            throw new ForbiddenException();
+
+
+        return watchHistoryMapper.toDto(watchHistory);
     }
 
-    public List<WatchHistoryResponseDto> getAllWatchHistory()
-    {
-        return watchHistoryMapper.toDtoList(watchHistoryRepository.findAll());
-    }
+
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
     //Kayıt başkasınınsa ForbiddenException fırlatır (403)
@@ -99,6 +100,8 @@ public class WatchHistoryService {
 
     public List<WatchHistoryResponseDto> getWatchHistoryByUserId(Long userId) {
         List<WatchHistory> userHistory = watchHistoryRepository.findByUserIdOrderByLastWatchedAtDesc(userId);
+
+
         return watchHistoryMapper.toDtoList(userHistory);
     }
 

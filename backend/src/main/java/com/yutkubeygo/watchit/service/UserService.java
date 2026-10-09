@@ -1,6 +1,7 @@
 package com.yutkubeygo.watchit.service;
 import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.LoginResponseDto;
+import com.yutkubeygo.watchit.dto.PublicUserResponseDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
 import com.yutkubeygo.watchit.mapper.UserMapper;
@@ -9,8 +10,6 @@ import  com.yutkubeygo.watchit.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import  org.springframework.stereotype.Service;
-
-import java.util.List;
 
 
 @Service
@@ -44,12 +43,18 @@ public class UserService {
         return userMapper.toDto(savedUser);
     }
 
-    public  List<UserResponseDto> getAllUsers()
+    //Başka bir kullanıcının herkese açık bilgileri (e-posta yok)
+    public PublicUserResponseDto getPublicUserById(Long id)
     {
-        List<User> userList= userRepository.findAll();
-        return userMapper.toDtoList(userList);
+        User user = userRepository.findById(id).orElse(null);
+
+        if(user==null)
+            return null;
+
+        return userMapper.toPublicDto(user);
     }
 
+    //Kullanıcının kendi bilgileri (e-posta dahil), /users/me için
     public UserResponseDto getUserById(Long id)
     {
 

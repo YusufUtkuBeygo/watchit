@@ -2,6 +2,7 @@ package com.yutkubeygo.watchit.controller;
 
 import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.LoginResponseDto;
+import com.yutkubeygo.watchit.dto.PublicUserResponseDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
 import com.yutkubeygo.watchit.service.UserService;
@@ -10,8 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -37,11 +36,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-    @GetMapping
-    public List<UserResponseDto> getUsers()
-    {
-        return userService.getAllUsers();
-    }
+    //Bütün kullanıcıları listeleyen GET /users yok: e-postaları toplu vermemek için kaldırıldı
 
     @GetMapping("/me")
     public ResponseEntity<UserResponseDto> getMe(@AuthenticationPrincipal Long userId)
@@ -54,9 +49,10 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id)
+    public ResponseEntity<PublicUserResponseDto> getUserById(@PathVariable Long id)
     {
-        UserResponseDto user = userService.getUserById(id);
+        //Başkasının bilgileri e-postasız döner
+        PublicUserResponseDto user = userService.getPublicUserById(id);
         if(user == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
