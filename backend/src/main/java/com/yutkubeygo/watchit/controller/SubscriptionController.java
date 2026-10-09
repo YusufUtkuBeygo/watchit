@@ -51,9 +51,9 @@ public class SubscriptionController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSubscriptionById(@PathVariable Long id)
+    public ResponseEntity<Void> deleteSubscriptionById(@PathVariable Long id,@AuthenticationPrincipal Long userId)
     {
-        if(!subscriptionService.deleteSubscriptionById(id))
+        if(!subscriptionService.deleteSubscriptionById(id,userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

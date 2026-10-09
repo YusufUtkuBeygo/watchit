@@ -4,6 +4,7 @@ import com.yutkubeygo.watchit.dto.PlaylistRequestDto;
 import com.yutkubeygo.watchit.dto.PlaylistResponseDto;
 import com.yutkubeygo.watchit.entity.Playlist;
 import com.yutkubeygo.watchit.entity.User;
+import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.PlaylistMapper;
 import com.yutkubeygo.watchit.repository.PlaylistRepository;
 import com.yutkubeygo.watchit.repository.UserRepository;
@@ -36,11 +37,16 @@ public class PlaylistService {
         return playlistMapper.toDto(playlistRepository.save(playlist));
     }
 
-    public PlaylistResponseDto updatePlaylist (Long id, PlaylistRequestDto playlistRequestDto)
+    //Playlist başkasınınsa ForbiddenException fırlatır (403)
+    public PlaylistResponseDto updatePlaylist (Long id, PlaylistRequestDto playlistRequestDto, Long userId)
     {
         Playlist playlist = playlistRepository.findById(id).orElse(null);
         if(playlist==null)
             return null;
+
+        Long ownerId = playlist.getOwner().getId();
+        if(!ownerId.equals(userId))
+            throw new ForbiddenException();
 
         //Sahip (owner) güncellemede değişmez
         playlist.setTitle(playlistRequestDto.getTitle());
@@ -65,10 +71,16 @@ public class PlaylistService {
     }
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
-    public boolean deletePlaylist(Long id)
+    //Playlist başkasınınsa ForbiddenException fırlatır (403)
+    public boolean deletePlaylist(Long id, Long userId)
     {
-        if(!playlistRepository.existsById(id))
+        Playlist playlist = playlistRepository.findById(id).orElse(null);
+        if(playlist==null)
             return false;
+
+        Long ownerId = playlist.getOwner().getId();
+        if(!ownerId.equals(userId))
+            throw new ForbiddenException();
 
         playlistRepository.deleteById(id);
         return true;

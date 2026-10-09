@@ -5,6 +5,7 @@ import com.yutkubeygo.watchit.dto.WatchHistoryResponseDto;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
 import com.yutkubeygo.watchit.entity.WatchHistory;
+import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.WatchHistoryMapper;
 import com.yutkubeygo.watchit.repository.UserRepository;
 import com.yutkubeygo.watchit.repository.VideoRepository;
@@ -81,10 +82,16 @@ public class WatchHistoryService {
     }
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
-    public boolean deleteWatchHistoryById(Long id)
+    //Kayıt başkasınınsa ForbiddenException fırlatır (403)
+    public boolean deleteWatchHistoryById(Long id, Long userId)
     {
-        if(!watchHistoryRepository.existsById(id))
+        WatchHistory watchHistory = watchHistoryRepository.findById(id).orElse(null);
+        if(watchHistory==null)
             return false;
+
+        Long ownerId = watchHistory.getUser().getId();
+        if(!ownerId.equals(userId))
+            throw new ForbiddenException();
 
         watchHistoryRepository.deleteById(id);
         return true;

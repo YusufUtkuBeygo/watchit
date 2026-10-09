@@ -19,6 +19,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
+    //Servis "bu kayıt senin değil" dediğinde gövdesiz 403 döner
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Void> handleForbidden()
+    {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String,String>> handleValidation(MethodArgumentNotValidException ex)

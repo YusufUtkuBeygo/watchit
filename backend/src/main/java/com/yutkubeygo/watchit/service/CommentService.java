@@ -5,6 +5,7 @@ import com.yutkubeygo.watchit.dto.CommentResponseDto;
 import com.yutkubeygo.watchit.entity.Comment;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
+import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.CommentMapper;
 import com.yutkubeygo.watchit.repository.CommentRepository;
 import com.yutkubeygo.watchit.repository.UserRepository;
@@ -81,12 +82,18 @@ public class CommentService {
     }
 
 
-    public CommentResponseDto updateComment(Long id, CommentRequestDto commentRequestDto)
+    //Yorum başkasınınsa ForbiddenException fırlatır (403)
+    public CommentResponseDto updateComment(Long id, Long userId, CommentRequestDto commentRequestDto)
     {
         //db'de boyle bir comment var mi ?
         Comment comment = commentRepository.findById(id).orElse(null);
         if(comment==null)
             return null;
+
+        //Yorumu yalnizca yazari degistirebilir
+        Long ownerId = comment.getUser().getId();
+        if(!ownerId.equals(userId))
+            throw new ForbiddenException();
 
         //db'de boyle bir video var mi ?
         Video video = videoRepository.findById(commentRequestDto.getVideoId()).orElse(null);
@@ -116,11 +123,17 @@ public class CommentService {
     }
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
-    public boolean deleteComment(Long id)
+    //Yorum başkasınınsa ForbiddenException fırlatır (403)
+    public boolean deleteComment(Long id, Long userId)
     {
         Comment comment = commentRepository.findById(id).orElse(null);
         if(comment==null)
             return false;
+
+        //Yorumu yalnizca yazari silebilir
+        Long ownerId = comment.getUser().getId();
+        if(!ownerId.equals(userId))
+            throw new ForbiddenException();
 
         commentRepository.delete(comment);
         return true;

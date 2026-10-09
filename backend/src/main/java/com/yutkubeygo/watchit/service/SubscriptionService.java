@@ -5,6 +5,7 @@ import com.yutkubeygo.watchit.dto.SubscriptionResponseDto;
 import com.yutkubeygo.watchit.entity.Channel;
 import com.yutkubeygo.watchit.entity.Subscription;
 import com.yutkubeygo.watchit.entity.User;
+import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.SubscriptionMapper;
 import com.yutkubeygo.watchit.repository.ChannelRepository;
 import com.yutkubeygo.watchit.repository.SubscriptionRepository;
@@ -61,10 +62,16 @@ public class SubscriptionService {
     //Update metodu yok: abonelik sadece abone ile kanal arasındaki ilişki, değişecek bir özelliği yok (çık + yeniden abone ol)
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
-    public boolean deleteSubscriptionById(Long subscriptionId)
+    //Abonelik başkasınınsa ForbiddenException fırlatır (403)
+    public boolean deleteSubscriptionById(Long subscriptionId, Long userId)
     {
-        if(!subscriptionRepository.existsById(subscriptionId))
+        Subscription subscription = subscriptionRepository.findById(subscriptionId).orElse(null);
+        if(subscription==null)
             return false;
+
+        Long ownerId = subscription.getSubscriber().getId();
+        if(!ownerId.equals(userId))
+            throw new ForbiddenException();
 
         subscriptionRepository.deleteById(subscriptionId);
         return true;

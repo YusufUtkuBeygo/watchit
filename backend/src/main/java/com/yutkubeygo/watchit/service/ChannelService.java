@@ -4,6 +4,7 @@ import com.yutkubeygo.watchit.dto.ChannelRequestDto;
 import com.yutkubeygo.watchit.dto.ChannelResponseDto;
 import com.yutkubeygo.watchit.entity.Channel;
 import com.yutkubeygo.watchit.entity.User;
+import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.ChannelMapper;
 import com.yutkubeygo.watchit.repository.ChannelRepository;
 import com.yutkubeygo.watchit.repository.UserRepository;
@@ -63,13 +64,18 @@ public class ChannelService {
         return channelMapper.toDto(channel);
     }
 
-    public ChannelResponseDto updateChannel(Long id, ChannelRequestDto request)
+    //Kanal başkasınınsa ForbiddenException fırlatır (403)
+    public ChannelResponseDto updateChannel(Long id, ChannelRequestDto request, Long userId)
     {
         //Değiştirilme/update edilmek istenilen nesneyi bukuyoru varsa atanır yoksa null
         Channel channel=channelRepository.findById(id).orElse(null);
 
         if(channel==null)
             return null;
+
+        Long ownerId=channel.getOwner().getId();
+        if(!ownerId.equals(userId))
+            throw new ForbiddenException();
 
         //Uptade istenilen elemanın bilgierini requestten gelen bilgieri kullanarak revize ediyoruz
         channel.setChannelName(request.getChannelName());
@@ -85,10 +91,16 @@ public class ChannelService {
     }
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
-    public boolean deleteChannelById(Long id)
+    //Kanal başkasınınsa ForbiddenException fırlatır (403)
+    public boolean deleteChannelById(Long id, Long userId)
     {
-        if(!channelRepository.existsById(id))
+        Channel channel=channelRepository.findById(id).orElse(null);
+        if(channel==null)
             return false;
+
+        Long ownerId=channel.getOwner().getId();
+        if(!ownerId.equals(userId))
+            throw new ForbiddenException();
 
         channelRepository.deleteById(id);
         return true;
