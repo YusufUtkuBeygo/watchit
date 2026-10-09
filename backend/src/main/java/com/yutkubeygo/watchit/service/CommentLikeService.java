@@ -5,6 +5,7 @@ import com.yutkubeygo.watchit.dto.CommentLikeResponseDto;
 import com.yutkubeygo.watchit.entity.Comment;
 import com.yutkubeygo.watchit.entity.CommentLike;
 import com.yutkubeygo.watchit.entity.User;
+import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.CommentLikeMapper;
 import com.yutkubeygo.watchit.repository.CommentLikeRepository;
 import com.yutkubeygo.watchit.repository.CommentRepository;
@@ -62,10 +63,16 @@ public class CommentLikeService {
     }
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
-    public boolean deleteCommentLike (Long id)
+    //Beğeni başkasınınsa ForbiddenException fırlatır (403)
+    public boolean deleteCommentLike (Long id, Long userId)
     {
-        if(!commentLikeRepository.existsById(id))
+        CommentLike commentLike = commentLikeRepository.findById(id).orElse(null);
+        if(commentLike==null)
             return false;
+
+        Long ownerId = commentLike.getUser().getId();
+        if(!ownerId.equals(userId))
+            throw new ForbiddenException();
 
         commentLikeRepository.deleteById(id);
         return true;

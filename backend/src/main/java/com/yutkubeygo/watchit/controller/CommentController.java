@@ -23,9 +23,9 @@ public class CommentController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long id, @Valid @RequestBody CommentRequestDto commentRequestDto)
+    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long id, @AuthenticationPrincipal Long userId, @Valid @RequestBody CommentRequestDto commentRequestDto)
     {
-        CommentResponseDto comment = commentService.updateComment(id,commentRequestDto);
+        CommentResponseDto comment = commentService.updateComment(id,userId,commentRequestDto);
 
         //Servis null döndüyse yorum, kullanıcı, video ya da üst yorumdan biri bulunamamıştır
         if(comment == null)
@@ -65,9 +65,9 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long id)
+    public ResponseEntity<Void> deleteComment(@PathVariable Long id, @AuthenticationPrincipal Long userId)
     {
-        if(!commentService.deleteComment(id))
+        if(!commentService.deleteComment(id,userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

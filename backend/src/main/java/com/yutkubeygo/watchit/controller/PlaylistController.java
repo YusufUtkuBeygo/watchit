@@ -50,9 +50,9 @@ public class PlaylistController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PlaylistResponseDto> updatePlaylist(@PathVariable Long id,@Valid @RequestBody PlaylistRequestDto playlistRequestDto)
+    public ResponseEntity<PlaylistResponseDto> updatePlaylist(@PathVariable Long id,@Valid @RequestBody PlaylistRequestDto playlistRequestDto,@AuthenticationPrincipal Long userId)
     {
-        PlaylistResponseDto playlist = playlistService.updatePlaylist(id,playlistRequestDto);
+        PlaylistResponseDto playlist = playlistService.updatePlaylist(id,playlistRequestDto,userId);
 
         if(playlist == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -61,9 +61,9 @@ public class PlaylistController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePlaylist(@PathVariable Long id)
+    public ResponseEntity<Void> deletePlaylist(@PathVariable Long id,@AuthenticationPrincipal Long userId)
     {
-        if(!playlistService.deletePlaylist(id))
+        if(!playlistService.deletePlaylist(id,userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

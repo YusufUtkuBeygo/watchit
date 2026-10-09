@@ -52,9 +52,9 @@ public class ChannelController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ChannelResponseDto> updateChannel(@PathVariable Long id,@Valid @RequestBody ChannelRequestDto request)
+    public ResponseEntity<ChannelResponseDto> updateChannel(@PathVariable Long id,@Valid @RequestBody ChannelRequestDto request,@AuthenticationPrincipal Long userId)
     {
-        ChannelResponseDto channel = channelService.updateChannel(id,request);
+        ChannelResponseDto channel = channelService.updateChannel(id,request,userId);
 
         if(channel == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -63,9 +63,9 @@ public class ChannelController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteChannel(@PathVariable Long id)
+    public ResponseEntity<Void> deleteChannel(@PathVariable Long id,@AuthenticationPrincipal Long userId)
     {
-        if(!channelService.deleteChannelById(id))
+        if(!channelService.deleteChannelById(id,userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

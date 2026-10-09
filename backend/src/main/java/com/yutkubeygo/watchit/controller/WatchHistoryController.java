@@ -52,9 +52,9 @@ public class WatchHistoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWatchHistory(@PathVariable Long id)
+    public ResponseEntity<Void> deleteWatchHistory(@PathVariable Long id,@AuthenticationPrincipal Long userId)
     {
-        if(!watchHistoryService.deleteWatchHistoryById(id))
+        if(!watchHistoryService.deleteWatchHistoryById(id,userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

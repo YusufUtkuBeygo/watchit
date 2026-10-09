@@ -7,6 +7,7 @@ import com.yutkubeygo.watchit.service.PlaylistVideoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,9 +40,9 @@ public class PlaylistVideoController {
     }
 
     @PostMapping
-    public ResponseEntity<PlaylistVideoResponseDto> createPlaylistVideo(@Valid @RequestBody PlaylistVideoRequestDto playlistVideoRequestDto)
+    public ResponseEntity<PlaylistVideoResponseDto> createPlaylistVideo(@Valid @RequestBody PlaylistVideoRequestDto playlistVideoRequestDto,@AuthenticationPrincipal Long userId)
     {
-        PlaylistVideoResponseDto playlistVideo = playlistVideoService.createPlaylistVideo(playlistVideoRequestDto);
+        PlaylistVideoResponseDto playlistVideo = playlistVideoService.createPlaylistVideo(playlistVideoRequestDto,userId);
 
         //Servis null döndüyse istekteki playlist ya da video bulunamamıştır
         if(playlistVideo == null)
@@ -51,9 +52,9 @@ public class PlaylistVideoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PlaylistVideoResponseDto> updatePlaylistVideo(@PathVariable Long id, @Valid @RequestBody PlaylistVideoRequestDto playlistVideoRequestDto)
+    public ResponseEntity<PlaylistVideoResponseDto> updatePlaylistVideo(@PathVariable Long id, @Valid @RequestBody PlaylistVideoRequestDto playlistVideoRequestDto,@AuthenticationPrincipal Long userId)
     {
-        PlaylistVideoResponseDto playlistVideo = playlistVideoService.updatePlaylistVideo(id,playlistVideoRequestDto);
+        PlaylistVideoResponseDto playlistVideo = playlistVideoService.updatePlaylistVideo(id,playlistVideoRequestDto,userId);
 
         if(playlistVideo == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -62,9 +63,9 @@ public class PlaylistVideoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePlaylistVideoById(@PathVariable Long id)
+    public ResponseEntity<Void> deletePlaylistVideoById(@PathVariable Long id,@AuthenticationPrincipal Long userId)
     {
-        if(!playlistVideoService.deletePlaylistVideo(id))
+        if(!playlistVideoService.deletePlaylistVideo(id,userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

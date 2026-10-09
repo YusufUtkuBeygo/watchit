@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,9 +24,9 @@ public class VideoController {
 
     //db'ye yeni eleman eklenecek/post edilecek
     @PostMapping
-    public ResponseEntity<VideoResponseDto> createVideo(@Valid @RequestBody VideoRequestDto videoRequestDto)
+    public ResponseEntity<VideoResponseDto> createVideo(@Valid @RequestBody VideoRequestDto videoRequestDto,@AuthenticationPrincipal Long userId)
     {
-        VideoResponseDto video = videoService.createVideo(videoRequestDto);
+        VideoResponseDto video = videoService.createVideo(videoRequestDto,userId);
 
         //Servis null döndüyse istekteki kanal ya da kategori bulunamamıştır
         if(video == null)
@@ -54,9 +55,9 @@ public class VideoController {
 
     //db'de hali hazirda var olan eleman uzerinde degisiklik yapilacak gero koyulacak/put
     @PutMapping("/{id}")
-    public ResponseEntity<VideoResponseDto> updateVideo(@PathVariable("id") Long id,@Valid @RequestBody VideoRequestDto videoRequestDto)
+    public ResponseEntity<VideoResponseDto> updateVideo(@PathVariable("id") Long id,@Valid @RequestBody VideoRequestDto videoRequestDto,@AuthenticationPrincipal Long userId)
     {
-        VideoResponseDto video = videoService.updateVideo(id, videoRequestDto);
+        VideoResponseDto video = videoService.updateVideo(id, videoRequestDto, userId);
 
         if(video == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -65,9 +66,9 @@ public class VideoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVideoById(@PathVariable long id)
+    public ResponseEntity<Void> deleteVideoById(@PathVariable long id, @AuthenticationPrincipal Long userId)
     {
-        if(!videoService.deleteVideo(id))
+        if(!videoService.deleteVideo(id, userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

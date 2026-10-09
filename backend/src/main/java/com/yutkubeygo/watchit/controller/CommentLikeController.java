@@ -53,9 +53,9 @@ public class CommentLikeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCommentLikes(@PathVariable Long id)
+    public ResponseEntity<Void> deleteCommentLikes(@PathVariable Long id,@AuthenticationPrincipal Long userId)
     {
-        if(!commentLikeService.deleteCommentLike(id))
+        if(!commentLikeService.deleteCommentLike(id,userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
