@@ -35,9 +35,9 @@ public class WatchHistoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<WatchHistoryResponseDto> getWatchHistoryById(@PathVariable Long id)
+    public ResponseEntity<WatchHistoryResponseDto> getWatchHistoryById(@PathVariable Long id,@AuthenticationPrincipal Long userId)
     {
-        WatchHistoryResponseDto watchHistory = watchHistoryService.getWatchHistoryById(id);
+        WatchHistoryResponseDto watchHistory = watchHistoryService.getWatchHistoryById(id,userId);
 
         if(watchHistory == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -46,9 +46,9 @@ public class WatchHistoryController {
     }
 
     @GetMapping
-    public List<WatchHistoryResponseDto> getAllWatchHistory()
+    public List<WatchHistoryResponseDto> getAllWatchHistory(@AuthenticationPrincipal Long userId)
     {
-        return watchHistoryService.getAllWatchHistory();
+        return watchHistoryService.getWatchHistoryByUserId(userId);
     }
 
     @DeleteMapping("/{id}")

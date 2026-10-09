@@ -47,16 +47,23 @@ public class SubscriptionService {
 
     }
 
-    public SubscriptionResponseDto getSubscriptionById(Long subscriptionId)
+    public SubscriptionResponseDto getSubscriptionById(Long subscriptionId,Long userId)
     {
 
-        return subscriptionMapper.toDto(subscriptionRepository.findById(subscriptionId).orElse(null));
+        Subscription subscription = subscriptionRepository.findById(subscriptionId).orElse(null);
+        if(subscription==null)
+            return null;
+
+        if(!subscription.getSubscriber().getId().equals(userId))
+            throw new ForbiddenException();
+
+        return subscriptionMapper.toDto(subscription);
 
     }
 
-    public List<SubscriptionResponseDto> getAllSubscriptions()
+    public List<SubscriptionResponseDto> getSubscriptionByUserId(Long userId)
     {
-        return subscriptionMapper.toDtoList(subscriptionRepository.findAll());
+        return subscriptionMapper.toDtoList(subscriptionRepository.findBySubscriberId(userId));
     }
 
     //Update metodu yok: abonelik sadece abone ile kanal arasındaki ilişki, değişecek bir özelliği yok (çık + yeniden abone ol)

@@ -56,17 +56,21 @@ public class PlaylistService {
         return playlistMapper.toDto(playlistRepository.save(playlist));
     }
 
-    public PlaylistResponseDto getPlaylistById(Long id)
+    public PlaylistResponseDto getPlaylistById(Long id,Long userId)
     {
         Playlist playlist = playlistRepository.findById(id).orElse(null);
         if(playlist==null)
             return null;
+
+        if(!Boolean.TRUE.equals(playlist.getIsPublic()) && !userId.equals(playlist.getOwner().getId()))
+            throw new ForbiddenException();
+
         return playlistMapper.toDto(playlist);
     }
 
-    public List<PlaylistResponseDto> getAllPlaylists()
+    public List<PlaylistResponseDto> getAllPlaylists(Long  userId)
     {
-        List<Playlist> playlist = playlistRepository.findAll();
+        List<Playlist> playlist = playlistRepository.findByIsPublicTrueOrOwnerId(userId);
         return playlistMapper.toDtoList(playlist);
     }
 

@@ -33,9 +33,9 @@ public class PlaylistController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlaylistResponseDto> getPlaylist(@PathVariable Long id )
+    public ResponseEntity<PlaylistResponseDto> getPlaylist(@PathVariable Long id , @AuthenticationPrincipal Long userId)
     {
-        PlaylistResponseDto playlist = playlistService.getPlaylistById(id);
+        PlaylistResponseDto playlist = playlistService.getPlaylistById(id,userId);
 
         if(playlist == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -44,9 +44,9 @@ public class PlaylistController {
     }
 
     @GetMapping
-    public List<PlaylistResponseDto> getAllPlaylists()
+    public List<PlaylistResponseDto> getAllPlaylists(@AuthenticationPrincipal Long userId)
     {
-        return playlistService.getAllPlaylists();
+        return playlistService.getAllPlaylists(userId);
     }
 
     @PutMapping("/{id}")
