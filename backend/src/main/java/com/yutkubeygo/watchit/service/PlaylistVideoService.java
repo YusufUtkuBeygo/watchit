@@ -56,18 +56,23 @@ public class PlaylistVideoService
     }
 
 
-    public PlaylistVideoResponseDto getPlaylistVideoById(Long id)
+    public PlaylistVideoResponseDto getPlaylistVideoById(Long id,Long userId)
     {
         PlaylistVideo playlistVideo = playlistVideoRepository.findById(id).orElse(null);
         if(playlistVideo == null)
             return null;
 
+        if(!playlistVideo.getPlaylist().getOwner().getId().equals(userId)&& !Boolean.TRUE.equals(playlistVideo.getPlaylist().getIsPublic()))
+            throw new ForbiddenException();
+
+
         return playlistVideoMapper.toDto(playlistVideo);
     }
 
-    public List<PlaylistVideoResponseDto> getAllPlaylistVideos()
+    public List<PlaylistVideoResponseDto> getAllPlaylistVideos(Long userId)
     {
-        return playlistVideoMapper.toDtoList(playlistVideoRepository.findAll());
+        List<PlaylistVideo> playlistVideos = playlistVideoRepository.findByPlaylistIsPublicTrueOrPlaylistOwnerId(userId);
+        return playlistVideoMapper.toDtoList(playlistVideos);
     }
 
     //Kaydın şimdiki playlisti ya da taşınacağı playlist başkasınınsa ForbiddenException fırlatır (403)
