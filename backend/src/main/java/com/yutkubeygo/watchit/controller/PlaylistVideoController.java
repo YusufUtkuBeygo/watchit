@@ -23,15 +23,15 @@ public class PlaylistVideoController {
     }
 
     @GetMapping
-    public List<PlaylistVideoResponseDto> getAllPlaylistVideo()
+    public List<PlaylistVideoResponseDto> getAllPlaylistVideo(@AuthenticationPrincipal Long userId)
     {
-        return playlistVideoService.getAllPlaylistVideos();
+        return playlistVideoService.getAllPlaylistVideos(userId);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlaylistVideoResponseDto> getPlaylistVideoById(@PathVariable Long id)
+    public ResponseEntity<PlaylistVideoResponseDto> getPlaylistVideoById(@PathVariable Long id,@AuthenticationPrincipal Long userId)
     {
-        PlaylistVideoResponseDto playlistVideo = playlistVideoService.getPlaylistVideoById(id);
+        PlaylistVideoResponseDto playlistVideo = playlistVideoService.getPlaylistVideoById(id,userId);
 
         if(playlistVideo == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
