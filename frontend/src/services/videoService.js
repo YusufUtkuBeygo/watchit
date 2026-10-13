@@ -1,47 +1,25 @@
-const BASE_URL = '/api/videos';
+import api from './api';
+
+//İstek başarısız olursa (404, 500...) axios kendisi hata fırlatır, çağıran yakalar
 
 export async function getAllVideos()
 {
-
-  const response = await fetch(BASE_URL);
-  if(!response.ok)
-  {
-    throw new Error(`Videolar getirilemedi. Durum:${response.status}`);
-  }
-
-  return await response.json();
-
+  const response = await api.get('/videos');
+  return response.data;
 }
 
 export async function getVideosByCategoryId(categoryId) {
-  const response = await fetch(`${BASE_URL}?categoryId=${categoryId}`);
-
-  if(!response.ok){
-    throw new Error(`Kategoriye ait videolar getirilemedi: ${categoryId}`);
-
-  }
-  return await response.json();
+  const response = await api.get('/videos', { params: { categoryId } });
+  return response.data;
 }
 
 export async function getVideoById(id)
 {
-  const response = await fetch(`${BASE_URL}/${id}`);
-
-  if(!response.ok){
-    throw new Error('Video bulunamadi. ID:${id}');
-  }
-
-  return await response.json();
+  const response = await api.get(`/videos/${id}`);
+  return response.data;
 }
 
 export async function deleteVideoById(id)
 {
-  const response = await fetch(`${BASE_URL}/${id}`,{
-    method:'DELETE',
-  });
-
-  if(!response.ok)
-  {
-    throw new Error(`Video silinemedi. ID: ${id}`);
-  }
+  await api.delete(`/videos/${id}`);
 }
