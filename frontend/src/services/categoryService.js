@@ -1,40 +1,21 @@
-//base address defination
-const BASE_URL='/api/categories'
+import api from './api';
 
-//get all categories func.
+//Bütün istekler ortak api nesnesinden gider; giriş yapılmışsa token kendiliğinden eklenir
 
-//export -> public this function can reachelable from other files
-//await means wait until the condititon happens (in this case wait until fetch the files BASE_URL)
-//there no more attribute for fetch mothod for this reason it behaves like get method
 export async function getAllCategories()
 {
-    const response = await fetch(BASE_URL);
-    return await response.json();
-    
+    const response = await api.get('/categories');
+    return response.data;
 }
 
-//categoryData:its an object that comes from the outside
-//method:it informs the springboot this request is a post request
-//headers:it informs the incomong package is json package
-//body: JSON.stringify(categoryData):it converts to JavaScript objet into json and populate the infos CategoryRequestDto object
+//categoryData: dışarıdan gelen nesne, axios onu JSON'a çevirip CategoryRequestDto olarak yollar
 export async function createCategory(categoryData)
 {
-
-    const response = await fetch(BASE_URL,{
-        method:'POST',
-        headers:{
-            'Content-type':'application/json'
-        },
-        body:JSON.stringify(categoryData)
-    });
-    return await response.json();
+    const response = await api.post('/categories', categoryData);
+    return response.data;
 }
 
-//${BASE_URL}/${id}:its an strong concatenation
-//method:it inform this request is an delete request
 export async function deleteCategory(id)
 {
-    await fetch('${BASE_URL}/${id}',{
-        method:'DELETE'
-    });
+    await api.delete(`/categories/${id}`);
 }
