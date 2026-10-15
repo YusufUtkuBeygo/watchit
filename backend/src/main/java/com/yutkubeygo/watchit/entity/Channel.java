@@ -57,7 +57,7 @@ public class Channel {
     //ManyToOne dediğimiz için user tablosundan(eğer varsa) @Id tagi altından bulunan değişkeni tabloya primary key olarak ekledi
 
     @ManyToOne
-    @JoinColumn(name="owner_id")
+    @JoinColumn(name="owner_id",unique = true)
     private User owner;
 
     //Burada Vide-Channel ilişkisinin diğer tarafın oluşturuyoruz

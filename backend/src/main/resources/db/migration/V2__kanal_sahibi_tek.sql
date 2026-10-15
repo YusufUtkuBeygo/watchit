@@ -1,0 +1,1 @@
+ALTER TABLE channels ADD CONSTRAINT uk_channels_owner UNIQUE (owner_id);

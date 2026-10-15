@@ -15,8 +15,7 @@ public class VideoRequestDto {
     private String videoUrl;
     private Integer durationInSeconds;
 
-    @NotNull
-    private Long channelId;
+    //Kanal gövdeden gelmez: servis kullanıcının tek kanalını token'daki id ile bulur
     @NotNull
     private Long categoryId;
 }
