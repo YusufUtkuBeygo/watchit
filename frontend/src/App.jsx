@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import HomePage from './routes/HomePage';
 import NotFoundPage from './routes/NotFoundPage';
+import WatchPage from './routes/WatchPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           {/* Adrese göre hangi sayfanın çizileceği burada seçilir */}
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/watch/:id" element={<WatchPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>

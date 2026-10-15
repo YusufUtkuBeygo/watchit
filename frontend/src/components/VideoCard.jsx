@@ -1,9 +1,12 @@
+import { Link } from 'react-router-dom';
+
 function VideoCard({ video }) {
   // Eğer video verisi gelmezse boş dön (patlamayı önler)
   if (!video) return null;
 
   return (
-    <div style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    //Karta tıklayınca o videonun izleme sayfasına gider
+    <Link to={`/watch/${video.id}`} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       
       {/* 1. Küçük Resim (Thumbnail) */}
       <div style={{ 
@@ -67,7 +70,7 @@ function VideoCard({ video }) {
           
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
