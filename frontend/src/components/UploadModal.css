@@ -136,7 +136,8 @@
   overflow: hidden;
 }
 
-.upload-preview img {
+.upload-preview img,
+.upload-preview video {
   max-width: 100%;
   max-height: 256px;
   object-fit: contain;
