@@ -1,5 +1,6 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.dto.UploadUrlResponseDto;
 import com.yutkubeygo.watchit.service.FileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,14 @@ public class FileController {
         String fileUrl=fileService.uploadFile(file);
         // Oluşan URL'yi (örn: http://localhost:9000/watchit-images/...) ekrana basıyoruz
         return ResponseEntity.ok(fileUrl);
+    }
+
+    //Dosyanın kendisini değil yalnız adını alır, tarayıcının dosyayı doğrudan MinIO'ya yükleyeceği imzalı adresi döner
+    @PostMapping("/upload-url")
+    public ResponseEntity<UploadUrlResponseDto> createUploadUrl(@RequestParam("fileName") String fileName)
+    {
+        UploadUrlResponseDto uploadUrlResponseDto = fileService.createUploadUrl(fileName);
+        return ResponseEntity.ok(uploadUrlResponseDto);
     }
 
 }

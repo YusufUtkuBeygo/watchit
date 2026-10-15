@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { X, UploadCloud } from 'lucide-react';
-import api from '../services/api';
+import { uploadFile } from '../services/fileService';
 import './UploadModal.css';
 
 export default function UploadModal({ isOpen, onClose }) {
@@ -8,6 +8,8 @@ export default function UploadModal({ isOpen, onClose }) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  //Yükleme yüzdesi (0-100)
+  const [progress, setProgress] = useState(0);
 
   const fileInputRef = useRef(null);
 
@@ -43,14 +45,12 @@ export default function UploadModal({ isOpen, onClose }) {
     if (!selectedFile) return alert("Lütfen bir dosya seçin.");
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append("file", selectedFile);
+    setProgress(0);
 
     try {
-      //Backend'deki adres /api/files/upload. Proxy baştaki /api'yi sildiği için
-      //burada /api iki kez geçer: biri proxy için (baseURL), biri backend adresinin kendisi
-      const response = await api.post("/api/files/upload", formData);
-      setPreviewUrl(response.data);
+      //Dosya imzalı adresle doğrudan MinIO'ya gider (bkz. fileService.js)
+      const fileUrl = await uploadFile(selectedFile, setProgress);
+      setPreviewUrl(fileUrl);
     } catch (error) {
       console.error("Yükleme hatası:", error);
       if (error.response && error.response.status === 401) {
@@ -67,6 +67,7 @@ export default function UploadModal({ isOpen, onClose }) {
     setSelectedFile(null);
     setPreviewUrl(null);
     setIsDragging(false);
+    setProgress(0);
     onClose();
   };
 
@@ -121,7 +122,7 @@ export default function UploadModal({ isOpen, onClose }) {
               className="upload-submit"
             >
               {isUploading ? (
-                <>Yükleniyor...</>
+                <>Yükleniyor... %{progress}</>
               ) : (
                 <>Sunucuya Gönder</>
               )}
@@ -133,7 +134,11 @@ export default function UploadModal({ isOpen, onClose }) {
             <div className="upload-result">
               <span className="upload-success">Yükleme Başarılı!</span>
               <div className="upload-preview">
-                <img src={previewUrl} alt="Preview" />
+                {selectedFile?.type.startsWith('video/') ? (
+                  <video src={previewUrl} controls />
+                ) : (
+                  <img src={previewUrl} alt="Preview" />
+                )}
               </div>
               <p className="upload-url">
                 {previewUrl}

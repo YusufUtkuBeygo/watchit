@@ -1,14 +1,13 @@
 package com.yutkubeygo.watchit.service;
 
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.SetBucketPolicyArgs;
+import com.yutkubeygo.watchit.dto.UploadUrlResponseDto;
+import io.minio.*;
+import io.minio.http.Method;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class FileService {
@@ -79,6 +78,32 @@ public class FileService {
 
         } catch (Exception e) {
             throw new RuntimeException("Dosya yuklenirken minio da bir hata olustu: " + e.getMessage());
+        }
+    }
+
+    public UploadUrlResponseDto createUploadUrl(String originalFileName) {
+        try {
+
+            UploadUrlResponseDto uploadUrlResponseDto = new UploadUrlResponseDto();
+
+            prepareBucket();
+            String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
+
+            String uploadUrl = minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.PUT)                 // yükleme izni
+                            .bucket(bucketName)
+                            .object(fileName)               // dosya adı
+                            .expiry(15, TimeUnit.MINUTES)       // 15 dakika geçerli
+                            .build()
+            );
+
+            String fileUrl = minioUrl + "/" + bucketName + "/" + fileName;
+            uploadUrlResponseDto.setFileUrl(fileUrl);
+            uploadUrlResponseDto.setUploadUrl(uploadUrl);
+            return uploadUrlResponseDto;
+        } catch (Exception e) {
+            throw new RuntimeException("Minio da bir hata olustu: " + e.getMessage());
         }
     }
 }
