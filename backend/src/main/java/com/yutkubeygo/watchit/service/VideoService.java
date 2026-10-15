@@ -48,16 +48,14 @@ public class VideoService {
     {
         Video video=videoMapper.toEntity(videoRequestDto);
 
-        Channel channel= channelRepository.findById(videoRequestDto.getChannelId()).orElse(null);
+        Channel channel= channelRepository.findByOwnerId(userId).orElse(null);
+
 
         if(channel == null)
         {
             return null;
         }
-
-        Long ownerId = channel.getOwner().getId();
-        if(!ownerId.equals(userId))
-            throw new ForbiddenException();
+        
 
         Category category=categoryRepository.findById(videoRequestDto.getCategoryId()).orElse(null);
 
@@ -74,7 +72,7 @@ public class VideoService {
 
     }
 
-    //Video başkasının kanalındaysa ya da başkasının kanalına taşınmak isteniyorsa ForbiddenException fırlatır (403)
+    //Video başkasının kanalındaysa ForbiddenException fırlatır (403)
     public VideoResponseDto updateVideo(Long id,VideoRequestDto videoRequestDto,Long userId)
     {
         Video video=videoRepository.findById(id).orElse(null);
@@ -89,17 +87,8 @@ public class VideoService {
         if(category==null)
             return null;
 
-        Channel channel = channelRepository.findById(videoRequestDto.getChannelId()).orElse(null);
-        if(channel==null)
-            return null;
-
-        //Videonun taşınacağı kanal da kullanıcının olmalı
-        Long newOwnerId=channel.getOwner().getId();
-        if(!newOwnerId.equals(userId))
-            throw new ForbiddenException();
-
+        //Kanal değişmez: her kullanıcının tek kanalı var, video zaten onda
         //json`dan gelen degistirilecek veriler burda set edilir
-        video.setChannel(channel);
         video.setCategory(category);
         video.setTitle(videoRequestDto.getTitle());
         video.setDescription((videoRequestDto.getDescription()));
