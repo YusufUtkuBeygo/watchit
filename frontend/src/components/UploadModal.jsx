@@ -1,13 +1,14 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { X, UploadCloud } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
+import './UploadModal.css';
 
 export default function UploadModal({ isOpen, onClose }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  
+
   const fileInputRef = useRef(null);
 
   if (!isOpen) return null;
@@ -46,11 +47,17 @@ export default function UploadModal({ isOpen, onClose }) {
     formData.append("file", selectedFile);
 
     try {
-      const response = await axios.post("http://localhost:8080/api/files/upload", formData);
+      //Backend'deki adres /api/files/upload. Proxy baştaki /api'yi sildiği için
+      //burada /api iki kez geçer: biri proxy için (baseURL), biri backend adresinin kendisi
+      const response = await api.post("/api/files/upload", formData);
       setPreviewUrl(response.data);
     } catch (error) {
       console.error("Yükleme hatası:", error);
-      alert("Yükleme başarısız!");
+      if (error.response && error.response.status === 401) {
+        alert("Oturumun süresi dolmuş, tekrar giriş yap.");
+      } else {
+        alert("Yükleme başarısız!");
+      }
     } finally {
       setIsUploading(false);
     }
@@ -64,47 +71,43 @@ export default function UploadModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-zinc-700 mx-4">
-        
+    <div className="upload-overlay">
+      <div className="upload-modal">
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-700">
-          <h2 className="text-xl font-semibold text-white">Video Yükle</h2>
-          <button 
-            onClick={handleClose}
-            className="text-zinc-400 hover:text-white transition-colors p-1 rounded-full hover:bg-zinc-800"
-          >
-            <X size={24} />
+        <div className="upload-header">
+          <h2>Video Yükle</h2>
+          <button className="icon-btn" onClick={handleClose} aria-label="Kapat">
+            <X size={22} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 flex flex-col gap-6">
-          
+        <div className="upload-content">
+
           {/* Dropzone */}
-          <div 
-            className={`relative flex flex-col items-center justify-center p-10 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200
-              ${isDragging ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/50'}`}
+          <div
+            className={`upload-dropzone ${isDragging ? 'dragging' : ''}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
           >
-            <input 
-              type="file" 
-              className="hidden" 
+            <input
+              type="file"
+              className="upload-file-input"
               ref={fileInputRef}
               onChange={handleFileSelect}
               accept="image/*,video/*"
             />
-            <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
-              <UploadCloud size={32} className={isDragging ? 'text-blue-500' : 'text-zinc-400'} />
+            <div className="upload-icon">
+              <UploadCloud size={32} />
             </div>
-            <p className="text-white font-medium text-lg mb-1 text-center">
+            <p className="upload-title">
               {selectedFile ? selectedFile.name : "Dosya Seç veya Sürükle"}
             </p>
             {!selectedFile && (
-              <p className="text-zinc-400 text-sm text-center">
+              <p className="upload-hint">
                 Yüklemek istediğiniz dosyayı buraya sürükleyin veya dosyalarınızdan seçin.
               </p>
             )}
@@ -112,10 +115,10 @@ export default function UploadModal({ isOpen, onClose }) {
 
           {/* Upload Button */}
           {selectedFile && !previewUrl && (
-            <button 
+            <button
               onClick={handleUpload}
               disabled={isUploading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="upload-submit"
             >
               {isUploading ? (
                 <>Yükleniyor...</>
@@ -127,18 +130,12 @@ export default function UploadModal({ isOpen, onClose }) {
 
           {/* Preview */}
           {previewUrl && (
-            <div className="mt-2 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-emerald-400">Yükleme Başarılı!</span>
+            <div className="upload-result">
+              <span className="upload-success">Yükleme Başarılı!</span>
+              <div className="upload-preview">
+                <img src={previewUrl} alt="Preview" />
               </div>
-              <div className="relative rounded-lg overflow-hidden border border-zinc-700 bg-zinc-950 flex items-center justify-center min-h-[200px]">
-                <img 
-                  src={previewUrl} 
-                  alt="Preview" 
-                  className="max-h-64 object-contain"
-                />
-              </div>
-              <p className="text-xs text-zinc-500 font-mono break-all bg-zinc-950 p-2 rounded border border-zinc-800">
+              <p className="upload-url">
                 {previewUrl}
               </p>
             </div>
