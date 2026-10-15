@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, PlaySquare, ChevronDown, ChevronRight, UserSquare2, History, ListVideo, Hash } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { getAllCategories } from '../services/categoryService';
 import './Sidebar.css';
 
 const subscriptions = [
@@ -16,8 +18,7 @@ const Sidebar = () => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetch('/api/categories')
-      .then(res => res.json())
+    getAllCategories()
       .then(data => setCategories(data))
       .catch(err => console.error('Error fetching categories:', err));
   }, []);
@@ -25,10 +26,11 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-section">
-        <div className="sidebar-item active">
+        {/* NavLink: adres "/" iken kendiliğinden "active" sınıfını ekler */}
+        <NavLink to="/" end className="sidebar-item">
           <Home size={24} />
           <span>Ana Sayfa</span>
-        </div>
+        </NavLink>
         <div className="sidebar-item">
           <PlaySquare size={24} />
           <span>Shorts</span>

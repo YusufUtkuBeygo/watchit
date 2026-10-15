@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getAllCategories } from '../services/categoryService';
 
 function Categories({ selectedCategory, onSelectCategory }) {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
+    async function uploadCategories() {
+      try {
+        const data = await getAllCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error("Kategoriler getirilemedi:", error);
+      }
+    }
+
     uploadCategories();
   }, []);
-
-  async function uploadCategories() {
-    try {
-      const data = await getAllCategories();
-      setCategories(data);
-    } catch (error) {
-      console.error("Kategoriler getirilemedi:", error);
-    }
-  }
 
   return (
     <div className="categories-container" style={{

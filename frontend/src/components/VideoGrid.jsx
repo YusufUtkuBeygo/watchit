@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import VideoCard from './VideoCard';
 import './VideoGrid.css';
 import { getAllVideos, getVideosByCategoryId } from '../services/videoService';
@@ -10,33 +10,32 @@ function VideoGrid({selectedCategory}){
   
   //when page opens first time and whe choosen category informs it runs
   useEffect(() => {
+    async function loadVideos(){
+
+      try{
+        let data;
+        //if a category choosen and its not all get as a filter
+        if(selectedCategory&&selectedCategory!=='all')
+        {
+          data = await getVideosByCategoryId(selectedCategory);
+        }
+        else{
+          //if all videos choosen and not yet made a decision get all
+          data = await getAllVideos();
+        }
+
+        setVideos(data);
+
+      }
+      catch(error){
+        console.error("An error occured while loading videos:",error);
+      }
+
+    }
+
     loadVideos();
   },[selectedCategory]);
 
-  async function loadVideos(){
-
-    try{
-      let data;
-      //if a category choosen and its not all get as a filter
-      if(selectedCategory&&selectedCategory!=='all')
-      {
-        data = await getVideosByCategoryId(selectedCategory);
-      }
-      else{
-        //if all videos choosen and not yet made a decision get all 
-        data = await getAllVideos();
-      }
-
-      setVideos(data);
-
-    }
-    catch(error){
-      console.error("An error occured while loading videos:",error);
-    }
-
-    
-  }
-  
 return (
     <div style={{
       display: 'grid',

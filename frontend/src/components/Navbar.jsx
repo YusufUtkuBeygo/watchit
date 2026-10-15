@@ -1,10 +1,24 @@
-import React, { useState } from 'react';
-import { Menu, Search, Mic, Plus, Bell, PlaySquare } from 'lucide-react';
+import { useState } from 'react';
+import { Menu, Search, Mic, Plus, Bell, PlaySquare, LogOut, CircleUser } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import UploadModal from './UploadModal';
+import LoginModal from './LoginModal';
+import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 const Navbar = () => {
+  const { user, signOut } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  //Video yüklemek giriş ister: giriş yoksa önce giriş penceresi açılır
+  const handleCreateClick = () => {
+    if (user) {
+      setIsModalOpen(true);
+    } else {
+      setIsLoginOpen(true);
+    }
+  };
 
   return (
     <>
@@ -13,11 +27,11 @@ const Navbar = () => {
         <button className="icon-btn menu-btn">
           <Menu size={24} />
         </button>
-        <div className="logo-container">
+        <Link to="/" className="logo-container">
           <PlaySquare size={28} color="#ff0000" fill="#ff0000" />
           <span className="logo-text">Premium</span>
           <span className="logo-country">TR</span>
-        </div>
+        </Link>
       </div>
 
       <div className="navbar-center">
@@ -35,19 +49,30 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-right">
-        <button className="create-btn" onClick={() => setIsModalOpen(true)}>
+        <button className="create-btn" onClick={handleCreateClick}>
           <Plus size={20} />
           <span>Oluştur</span>
         </button>
-        <button className="icon-btn">
-          <Bell size={20} />
-        </button>
-        <button className="profile-btn">
-          <img src="/avatar_1.png" alt="Profile" className="profile-img" />
-        </button>
+        {user ? (
+          <>
+            <button className="icon-btn">
+              <Bell size={20} />
+            </button>
+            <span className="navbar-username">{user.username}</span>
+            <button className="icon-btn" onClick={signOut} aria-label="Çıkış yap" title="Çıkış yap">
+              <LogOut size={20} />
+            </button>
+          </>
+        ) : (
+          <button className="login-btn" onClick={() => setIsLoginOpen(true)}>
+            <CircleUser size={20} />
+            <span>Giriş yap</span>
+          </button>
+        )}
       </div>
     </nav>
     <UploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </>
   );
 };

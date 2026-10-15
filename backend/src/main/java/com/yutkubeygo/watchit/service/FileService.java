@@ -4,6 +4,7 @@ import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.SetBucketPolicyArgs;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,14 +25,41 @@ public class FileService {
         this.minioClient = minioClient;
     }
 
+    //Kova hazırlandı mı? Uygulama açıkken hazırlık yalnız ilk yüklemede yapılır
+    private boolean bucketReady = false;
+
+    //Kova yoksa oluşturur ve içindeki dosyaları herkesin okuyabilmesine izin verir
+    //İzin yalnız okuma (s3:GetObject): adresini bilen dosyayı açar, kimse listeleyemez, yazamaz, silemez
+    private void prepareBucket() throws Exception {
+        if (bucketReady)
+            return;
+
+        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+        if (!found) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+        }
+
+        String policy = """
+                {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {"AWS": ["*"]},
+                      "Action": ["s3:GetObject"],
+                      "Resource": ["arn:aws:s3:::%s/*"]
+                    }
+                  ]
+                }
+                """.formatted(bucketName);
+
+        minioClient.setBucketPolicy(SetBucketPolicyArgs.builder().bucket(bucketName).config(policy).build());
+        bucketReady = true;
+    }
+
     public String uploadFile(MultipartFile file) {
         try {
-            // YENİ EKLENEN KISIM: Kova (Bucket) var mı kontrol et, yoksa oluştur!
-            boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
-            if (!found) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
-                System.out.println("Yeni kova (bucket) oluşturuldu: " + bucketName);
-            }
+            prepareBucket();
 
             // Dosya ismini benzersiz yap
             String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
