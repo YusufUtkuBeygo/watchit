@@ -18,5 +18,5 @@ public class CommentResponseDto {
         private Long likeCount;
         private Long parentCommentId;
         private boolean edited;
-
+        private String username;
 }

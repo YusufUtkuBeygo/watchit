@@ -5,14 +5,17 @@ import com.yutkubeygo.watchit.dto.VideoResponseDto;
 import com.yutkubeygo.watchit.entity.Category;
 import com.yutkubeygo.watchit.entity.Channel;
 import com.yutkubeygo.watchit.entity.Video;
+import com.yutkubeygo.watchit.entity.VideoLike;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.VideoMapper;
 import com.yutkubeygo.watchit.repository.CategoryRepository;
 import com.yutkubeygo.watchit.repository.ChannelRepository;
+import com.yutkubeygo.watchit.repository.VideoLikeRepository;
 import com.yutkubeygo.watchit.repository.VideoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class VideoService {
@@ -21,20 +24,34 @@ public class VideoService {
     private final ChannelRepository channelRepository;
     private final CategoryRepository categoryRepository;
     private final VideoRepository videoRepository;
+    private final VideoLikeRepository videoLikeRepository;
 
-    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository) {
+    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository) {
         this.videoMapper = videoMapper;
         this.channelRepository = channelRepository;
         this.categoryRepository = categoryRepository;
         this.videoRepository = videoRepository;
+        this.videoLikeRepository = videoLikeRepository;
     }
 
-    public VideoResponseDto getVideo(Long id)
+    public VideoResponseDto getVideo(Long id,Long userId)
     {
         Video video=videoRepository.findById(id).orElse(null);
         if(video==null)
             return null;
-        return videoMapper.toDto(video);
+
+
+        VideoResponseDto dto = videoMapper.toDto(video);
+        Long likeCount = videoLikeRepository.countByVideoId(id);
+        dto.setLikeCount(likeCount);
+        if(userId!=null)
+        {
+            Optional<VideoLike> myLike =videoLikeRepository.findByUserIdAndVideoId(userId,id);
+            if(myLike.isPresent())
+                dto.setLikedByMe(true);
+
+        }
+        return dto;
     }
 
     //VideoMapperdaki list methoduna dikkat et hata cikarsa return

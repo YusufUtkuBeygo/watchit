@@ -13,6 +13,7 @@ public interface CommentMapper {
     @Mapping(source = "user.id", target="userId")
     @Mapping(source = "video.id", target="videoId")
     @Mapping(source = "parentComment.id", target="parentCommentId")
+    @Mapping(source = "user.username", target="username")
     CommentResponseDto toDto(Comment comment);
     List<CommentResponseDto> toDtoList(List<Comment> comments);
     Comment toEntity(CommentRequestDto commentRequestDto);

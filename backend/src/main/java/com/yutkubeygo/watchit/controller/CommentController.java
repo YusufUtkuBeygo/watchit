@@ -46,10 +46,14 @@ public class CommentController {
         return ResponseEntity.ok(comment);
     }
 
+
     @GetMapping
-    public List<CommentResponseDto> getAllComments()
+    public ResponseEntity<List<CommentResponseDto>> getCommentsByVideoId(@RequestParam Long videoId)
     {
-        return commentService.getAllComments();
+        List <CommentResponseDto> comments = commentService.getCommentsByVideoId(videoId);
+        if(comments == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.ok(comments);
     }
 
     @PostMapping

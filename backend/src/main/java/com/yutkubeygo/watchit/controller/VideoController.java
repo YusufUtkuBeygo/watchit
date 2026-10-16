@@ -43,9 +43,9 @@ public class VideoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VideoResponseDto> getVideoById(@PathVariable long id)
+    public ResponseEntity<VideoResponseDto> getVideoById(@PathVariable long id,@AuthenticationPrincipal Long userId)
     {
-        VideoResponseDto video = videoService.getVideo(id);
+        VideoResponseDto video = videoService.getVideo(id,userId);
 
         if(video == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

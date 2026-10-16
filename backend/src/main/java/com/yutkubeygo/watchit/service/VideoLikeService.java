@@ -5,7 +5,6 @@ import com.yutkubeygo.watchit.dto.VideoLikeResponseDto;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
 import com.yutkubeygo.watchit.entity.VideoLike;
-import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.VideoLikeMapper;
 import com.yutkubeygo.watchit.repository.UserRepository;
 import com.yutkubeygo.watchit.repository.VideoLikeRepository;
@@ -61,18 +60,13 @@ public class VideoLikeService {
     }
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
-    //Beğeni başkasınınsa ForbiddenException fırlatır (403)
-    public boolean deleteVideoLikeById(Long id, Long userId)
+    public boolean deleteMyVideoLike(Long videoId, Long userId)
     {
-        VideoLike videoLike = videoLikeRepository.findById(id).orElse(null);
-        if(videoLike==null)
+        VideoLike myLike = videoLikeRepository.findByUserIdAndVideoId(userId,videoId).orElse(null);
+        if(myLike==null)
             return false;
 
-        Long ownerId = videoLike.getUser().getId();
-        if(!ownerId.equals(userId))
-            throw new ForbiddenException();
-
-        videoLikeRepository.deleteById(id);
+        videoLikeRepository.delete(myLike);
         return true;
     }
 

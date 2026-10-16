@@ -58,12 +58,13 @@ public class Comment {
     private Comment parentComment;
 
 
-    @OneToMany(mappedBy="parentComment")
+    //Yorum silinince cevapları da silinir (yoksa foreign key silmeye izin vermez, 409)
+    @OneToMany(mappedBy="parentComment", cascade = CascadeType.REMOVE)
     private List<Comment> replies;
 
     //Yorum beğenileri bilgisi tutulur
-    //Foreign key CommentLike tablosunda
-    @OneToMany(mappedBy="comment")
+    //Foreign key CommentLike tablosunda; yorum silinince beğenileri de silinir
+    @OneToMany(mappedBy="comment", cascade = CascadeType.REMOVE)
     private List<CommentLike> commentLikes;
 
 
