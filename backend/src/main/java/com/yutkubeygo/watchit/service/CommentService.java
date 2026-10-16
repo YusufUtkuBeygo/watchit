@@ -76,11 +76,6 @@ public class CommentService {
         return commentMapper.toDto(comment);
     }
 
-    public List<CommentResponseDto> getAllComments()
-    {
-        return commentMapper.toDtoList(commentRepository.findAll());
-    }
-
 
     //Yorum başkasınınsa ForbiddenException fırlatır (403)
     public CommentResponseDto updateComment(Long id, Long userId, CommentRequestDto commentRequestDto)
@@ -121,6 +116,17 @@ public class CommentService {
         return commentMapper.toDto(commentRepository.save(comment));
 
     }
+
+    public List<CommentResponseDto> getCommentsByVideoId(Long videoId)
+    {
+        if(!videoRepository.existsById(videoId))
+            return null;
+
+        List<Comment> comments = commentRepository.findByVideoIdOrderByCreatedAtDesc(videoId);
+        return commentMapper.toDtoList(comments);
+
+    }
+
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
     //Yorum başkasınınsa ForbiddenException fırlatır (403)
