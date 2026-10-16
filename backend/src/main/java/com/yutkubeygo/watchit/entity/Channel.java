@@ -25,6 +25,7 @@ public class Channel {
     //Gerekli diğer attriubeleri tanımladık
     private String channelName;
 
+    @Column(length = 5000)
     private String description;
 
     //Abone,görüntülenme ve yüklenen video verilerini tutmak için tanımlandı
