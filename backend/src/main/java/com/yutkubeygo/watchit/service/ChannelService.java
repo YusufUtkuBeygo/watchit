@@ -64,6 +64,15 @@ public class ChannelService {
         return channelMapper.toDto(channel);
     }
 
+    //Kullanıcının tek kanalını token'daki id ile bulur, kanalı yoksa null
+    public ChannelResponseDto getMyChannel(Long userId)
+    {
+        Channel channel=channelRepository.findByOwnerId(userId).orElse(null);
+        if(channel==null)
+            return null;
+        return channelMapper.toDto(channel);
+    }
+
     //Kanal başkasınınsa ForbiddenException fırlatır (403)
     public ChannelResponseDto updateChannel(Long id, ChannelRequestDto request, Long userId)
     {

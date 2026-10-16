@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        //Kendi kanalım giriş ister; alttaki açık /channels/** kuralından önce gelmeli (ilk uyan kural geçerli)
+                        .requestMatchers(HttpMethod.GET, "/channels/me").authenticated()
                         .requestMatchers(HttpMethod.GET,
                                 "/videos/**", "/channels/**", "/categories/**", "/comments/**").permitAll()
                         .anyRequest().authenticated()

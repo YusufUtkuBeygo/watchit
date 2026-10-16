@@ -40,6 +40,18 @@ public class ChannelController {
         return channelService.getAllChannels();
     }
 
+    //Giriş yapan kullanıcının kanalı; kanalı yoksa 404 (frontend "önce kanal oluştur" der)
+    @GetMapping("/me")
+    public ResponseEntity<ChannelResponseDto> getMyChannel(@AuthenticationPrincipal Long userId)
+    {
+        ChannelResponseDto channel = channelService.getMyChannel(userId);
+
+        if(channel == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(channel);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ChannelResponseDto> getChannel(@PathVariable Long id)
     {
