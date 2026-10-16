@@ -24,6 +24,7 @@ public class Video {
 
     // Video entity'sine ait temel alanlar
     private String title;
+    @Column(length = 5000)
     private String description;
     private String thumbnailUrl;
     private String videoUrl;

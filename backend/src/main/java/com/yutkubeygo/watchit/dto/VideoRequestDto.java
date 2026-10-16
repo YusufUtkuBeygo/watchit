@@ -1,6 +1,7 @@
 package com.yutkubeygo.watchit.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,9 @@ import lombok.Setter;
 @Setter
 public class VideoRequestDto {
     @NotBlank
+    @Size(max = 255)
     private String title;
+    @Size(max = 5000)
     private String description;
     private String thumbnailUrl;
     private String videoUrl;

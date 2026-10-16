@@ -244,7 +244,7 @@ export default function UploadModal({ onClose }) {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
-                  maxLength={255}
+                  maxLength={5000}
                   disabled={isSubmitting}
                 />
               </label>
