@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
-import { login, logout, getCurrentUser } from '../services/authService';
+import { login, register, logout, getCurrentUser } from '../services/authService';
 
 //Giriş yapmış kullanıcıyı tutar ve içine sarılan bütün bileşenlere sunar
 export default function AuthProvider({ children }) {
@@ -18,13 +18,19 @@ export default function AuthProvider({ children }) {
     setUser(loggedInUser);
   };
 
+  //Kayıt + otomatik giriş; hata fırlatırsa çağıran yakalar
+  const signUp = async (username, email, password) => {
+    const newUser = await register(username, email, password);
+    setUser(newUser);
+  };
+
   const signOut = () => {
     logout();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

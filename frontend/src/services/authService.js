@@ -8,6 +8,13 @@ export async function login(email, password) {
   return response.data.user;
 }
 
+//Yeni hesap açar (POST /users), sonra aynı bilgilerle giriş yapar; kullanıcıyı döner
+//Hatalar çağırana gider: 409 e-posta ya da kullanıcı adı kullanılıyor, 400 alan hataları ({ alan: mesaj })
+export async function register(username, email, password) {
+  await api.post('/users', { username, email, password });
+  return login(email, password);
+}
+
 //Çıkış: token'ı tarayıcıdan siler
 export function logout() {
   localStorage.removeItem(TOKEN_KEY);

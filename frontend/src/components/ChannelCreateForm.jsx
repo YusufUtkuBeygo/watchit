@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { createChannel } from '../services/channelService';
+import { useAuth } from '../context/AuthContext';
 
 //Kanalı olmayan kullanıcıya yükleme penceresinde gösterilir
 //onCreated(kanal): kanal oluşunca çağrılır, pencere yükleme formuna geçer
 export default function ChannelCreateForm({ onCreated }) {
-  const [channelName, setChannelName] = useState('');
+  const { user } = useAuth();
+  //YouTube gibi: ad kullanıcı adıyla dolu gelir, istenirse değiştirilir
+  const [channelName, setChannelName] = useState(user?.username ?? '');
   const [description, setDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,7 +65,7 @@ export default function ChannelCreateForm({ onCreated }) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          maxLength={255}
+          maxLength={5000}
         />
       </label>
 

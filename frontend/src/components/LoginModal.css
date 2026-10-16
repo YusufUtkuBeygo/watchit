@@ -85,3 +85,25 @@
   opacity: 0.6;
   cursor: default;
 }
+
+.login-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* "Hesabın yok mu? Kayıt ol" satırı */
+.login-switch {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.login-switch-btn {
+  color: #3ea6ff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.login-switch-btn:hover {
+  text-decoration: underline;
+}
