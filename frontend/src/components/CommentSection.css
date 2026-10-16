@@ -1,0 +1,160 @@
+.comments {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.comments-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.comments-hint {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.comments-list,
+.comments-replies {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Cevaplar üst yorumun altında, avatar genişliği kadar içeride */
+.comments-replies {
+  margin-top: 12px;
+  padding-left: 52px;
+}
+
+.comment {
+  display: flex;
+  gap: 12px;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #555;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.comments-replies .comment-avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+}
+
+.comment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.comment-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.comment-author {
+  font-weight: 500;
+}
+
+.comment-date {
+  color: var(--text-secondary);
+}
+
+.comment-content {
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.comment-action {
+  padding: 4px 8px;
+  margin-left: -8px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.comment-action:hover {
+  background-color: var(--hover-color);
+  color: var(--text-primary);
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+.comment-input:focus {
+  border-bottom-color: var(--text-primary);
+}
+
+.comment-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.comment-submit,
+.comment-cancel {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 18px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.comment-submit {
+  background-color: #3ea6ff;
+  color: #0f0f0f;
+}
+
+.comment-submit:disabled {
+  background-color: var(--hover-color);
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.comment-cancel:hover {
+  background-color: var(--hover-color);
+}
+
+.comment-error {
+  font-size: 13px;
+  color: #ff6b6b;
+}

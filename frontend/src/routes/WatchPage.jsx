@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getVideoById } from '../services/videoService';
 import { getChannelById } from '../services/channelService';
+import CommentSection from '../components/CommentSection';
+import LikeButton from '../components/LikeButton';
 import './WatchPage.css';
 
 function WatchPage() {
@@ -89,6 +91,12 @@ function WatchPage() {
             <div className="watch-subscribers">{channel.subscriberCount} abone</div>
           )}
         </div>
+        <LikeButton
+          key={video.id}
+          videoId={video.id}
+          initialCount={video.likeCount}
+          initialLiked={video.likedByMe}
+        />
       </div>
 
       <div className="watch-description">
@@ -97,6 +105,9 @@ function WatchPage() {
         )}
         <p>{video.description || 'Açıklama yok.'}</p>
       </div>
+
+      {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
+      <CommentSection key={video.id} videoId={video.id} />
     </div>
   );
 }
