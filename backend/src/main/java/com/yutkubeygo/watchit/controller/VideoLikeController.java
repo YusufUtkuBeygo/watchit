@@ -50,10 +50,10 @@ public class VideoLikeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(videoLike);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVideoLikeById(@PathVariable Long id,@AuthenticationPrincipal Long userId)
+    @DeleteMapping
+    public ResponseEntity<Void> deleteMyVideoLike(@RequestParam Long videoId, @AuthenticationPrincipal Long userId)
     {
-        if(!videoLikeService.deleteVideoLikeById(id,userId))
+        if(!videoLikeService.deleteMyVideoLike(videoId,userId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
