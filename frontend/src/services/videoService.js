@@ -19,6 +19,14 @@ export async function getVideoById(id)
   return response.data;
 }
 
+//videoData: { title, description, videoUrl, thumbnailUrl, durationInSeconds, categoryId } -> VideoRequestDto
+//Kanalı backend token'dan bulur
+export async function createVideo(videoData)
+{
+  const response = await api.post('/videos', videoData);
+  return response.data;
+}
+
 export async function deleteVideoById(id)
 {
   await api.delete(`/videos/${id}`);

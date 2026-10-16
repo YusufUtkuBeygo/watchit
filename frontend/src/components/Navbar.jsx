@@ -71,7 +71,8 @@ const Navbar = () => {
         )}
       </div>
     </nav>
-    <UploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    {/* Yalnız açıkken çizilir: her açılışta kanal kontrolü baştan yapılır, eski form kalmaz */}
+    {isModalOpen && <UploadModal onClose={() => setIsModalOpen(false)} />}
     <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </>
   );

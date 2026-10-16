@@ -153,3 +153,66 @@
   font-size: 12px;
   word-break: break-all;
 }
+
+/* Video bilgileri formu ve kanal oluşturma formu */
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.upload-dropzone.compact {
+  padding: 16px;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.upload-input {
+  min-height: 40px;
+  padding: 8px 12px;
+  background-color: #121212;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+}
+
+.upload-input:focus {
+  border-color: #3ea6ff;
+}
+
+.upload-textarea {
+  resize: vertical;
+}
+
+.upload-file-field {
+  font-size: 14px;
+}
+
+.upload-preview-small {
+  min-height: 0;
+}
+
+.upload-preview-small img {
+  max-height: 140px;
+}
+
+.upload-error {
+  font-size: 14px;
+  color: #ff6b6b;
+}
+
+.upload-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
