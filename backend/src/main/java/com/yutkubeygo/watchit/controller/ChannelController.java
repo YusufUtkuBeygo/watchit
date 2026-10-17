@@ -53,9 +53,9 @@ public class ChannelController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ChannelResponseDto> getChannel(@PathVariable Long id)
+    public ResponseEntity<ChannelResponseDto> getChannel(@PathVariable Long id,@AuthenticationPrincipal Long userId)
     {
-        ChannelResponseDto channel = channelService.getChannelById(id);
+        ChannelResponseDto channel = channelService.getChannelById(id,userId);
 
         if(channel == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

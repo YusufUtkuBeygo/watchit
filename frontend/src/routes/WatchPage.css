@@ -90,3 +90,14 @@
 .watch-link {
   color: #3ea6ff;
 }
+
+/* Kanal avatarı ve adı kanal sayfasına bağlantı */
+.watch-channel-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.watch-channel-link:hover {
+  color: var(--text-primary);
+}

@@ -36,10 +36,21 @@ public class VideoController {
     }
 
     //db'den eleman getirilecek/get edilecek
+    //GET /videos -> bütün videolar, GET /videos?channelId=3 -> yalnız o kanalın videoları
     @GetMapping
-    public List<VideoResponseDto> getAllVideos()
+    public ResponseEntity<List<VideoResponseDto>> getAllVideos(@RequestParam(required = false) Long channelId)
     {
-        return videoService.getAllVideos();
+        //channelId verilmediyse eskisi gibi hepsi
+        if(channelId == null)
+            return ResponseEntity.ok(videoService.getAllVideos());
+
+        List<VideoResponseDto> videos = videoService.getVideosByChannelId(channelId);
+
+        //Servis null döndüyse kanal yoktur
+        if(videos == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(videos);
     }
 
     @GetMapping("/{id}")

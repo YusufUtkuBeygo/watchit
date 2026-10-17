@@ -61,6 +61,16 @@ public class VideoService {
         return videoMapper.toDtoList(videos);
     }
 
+    //Kanalın videoları; kanal yoksa null (controller 404 döner)
+    public List<VideoResponseDto> getVideosByChannelId(Long channelId)
+    {
+        if(!channelRepository.existsById(channelId))
+            return null;
+
+        List<Video> videos=videoRepository.findByChannelIdOrderByCreatedAtDesc(channelId);
+        return videoMapper.toDtoList(videos);
+    }
+
     public VideoResponseDto createVideo(VideoRequestDto videoRequestDto,Long userId)
     {
         Video video=videoMapper.toEntity(videoRequestDto);

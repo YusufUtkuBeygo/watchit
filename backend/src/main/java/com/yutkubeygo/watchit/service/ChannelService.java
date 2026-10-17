@@ -3,14 +3,17 @@ package com.yutkubeygo.watchit.service;
 import com.yutkubeygo.watchit.dto.ChannelRequestDto;
 import com.yutkubeygo.watchit.dto.ChannelResponseDto;
 import com.yutkubeygo.watchit.entity.Channel;
+import com.yutkubeygo.watchit.entity.Subscription;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.ChannelMapper;
 import com.yutkubeygo.watchit.repository.ChannelRepository;
+import com.yutkubeygo.watchit.repository.SubscriptionRepository;
 import com.yutkubeygo.watchit.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ChannelService {
@@ -18,11 +21,13 @@ public class ChannelService {
     private final ChannelMapper channelMapper;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
-    public ChannelService(ChannelMapper channelMapper, ChannelRepository channelRepository, UserRepository userRepository) {
+    public ChannelService(ChannelMapper channelMapper, ChannelRepository channelRepository, UserRepository userRepository, SubscriptionRepository subscriptionRepository) {
         this.channelMapper = channelMapper;
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     public ChannelResponseDto createChannel(ChannelRequestDto request,Long userId)
@@ -54,14 +59,24 @@ public class ChannelService {
     }
 
 
-    public ChannelResponseDto getChannelById(Long id)
+    public ChannelResponseDto getChannelById(Long id,Long userId)
     {
         //İstenilen ıd'deki videoyu repository aracılığıyla buluryoruz (YOKSA NULL)
         Channel channel=channelRepository.findById(id).orElse(null);
         if(channel==null)
             return null;
         //Sonra bulduğumuz/istenilen bu kanal nesnesini dto nesnesine çevirip return ediyoruz
-        return channelMapper.toDto(channel);
+        ChannelResponseDto dto=channelMapper.toDto(channel);
+        Long subscriberCount = subscriptionRepository.countByChannelId(id);
+        dto.setSubscriberCount(subscriberCount);
+        if(userId!=null)
+        {
+            Optional<Subscription> mySubscription = subscriptionRepository.findBySubscriberIdAndChannelId(userId,id);
+            if(mySubscription.isPresent())
+                dto.setSubscribedByMe(true);
+
+        }
+        return dto;
     }
 
     //Kullanıcının tek kanalını token'daki id ile bulur, kanalı yoksa null
