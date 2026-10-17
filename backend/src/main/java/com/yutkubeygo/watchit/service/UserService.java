@@ -33,6 +33,9 @@ public class UserService {
     {
         if(userRepository.existsByEmail(request.getEmail()))
             return null;
+        //Kullanıcı adı da tek olmalı (V5: veritabanında da benzersiz); null -> controller 409 döner
+        if(userRepository.existsByUsernameIgnoreCase(request.getUsername()))
+            return null;
         //Dışardan gelen json user entitiysinin bir nesnesine dönüştürülür
         User user = userMapper.toEntity(request);
         //şifre hashleniyor

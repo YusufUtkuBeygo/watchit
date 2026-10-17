@@ -18,6 +18,7 @@ import java.util.List;
 
 
 @RestController
+//Yazma uçları (POST/PUT/DELETE) SecurityConfig'te kapalı (denyAll): yalnız okuma herkese açık
 @RequestMapping("/categories")
 public class CategoryController {
     private final CategoryService categoryService;

@@ -98,9 +98,9 @@ function WatchPage() {
           )}
         </div>
         {/* Abone olunca sayfadaki kanal bilgisi (abone sayısı) güncellenir */}
-        {channel && <SubscribeButton key={channel.id} channel={channel} onChannelChange={setChannel} />}
+        {channel && <SubscribeButton key={`kanal-${channel.id}`} channel={channel} onChannelChange={setChannel} />}
         <LikeButton
-          key={video.id}
+          key={`begeni-${video.id}`}
           videoId={video.id}
           initialCount={video.likeCount}
           initialLiked={video.likedByMe}

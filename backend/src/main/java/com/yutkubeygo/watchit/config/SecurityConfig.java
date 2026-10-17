@@ -35,6 +35,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/channels/me").authenticated()
                         .requestMatchers(HttpMethod.GET,
                                 "/videos/**", "/channels/**", "/categories/**", "/comments/**").permitAll()
+                        //Kategori ekleme/değiştirme/silme kimseye açık değil (rol sistemi yok, kategoriler veritabanından yönetilir)
+                        //Okuma üstteki GET kuralına uyduğu için buraya hiç gelmez
+                        .requestMatchers("/categories/**").denyAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
