@@ -90,27 +90,9 @@ public class CommentService {
         if(!ownerId.equals(userId))
             throw new ForbiddenException();
 
-        //db'de boyle bir video var mi ?
-        Video video = videoRepository.findById(commentRequestDto.getVideoId()).orElse(null);
-        if(video==null)
-            return null;
-
-        //ilk basta parentComment alani null olarak ayarlanir gelen doysadaki bilgiere gore tekrar revize edilir
-        Comment parentComment = null;
-
-        if (commentRequestDto.getParentCommentId() != null) {
-            parentComment = commentRepository
-                    .findById(commentRequestDto.getParentCommentId())
-                    .orElse(null);
-
-            if(parentComment == null)
-            return null;
-        }
-
-
+        //Düzenlemede yalnız metin değişir: yorumun videosu ve bağlı olduğu üst yorum sabit kalır
+        //(eskiden istekteki videoId/parentCommentId ile yorum başka videoya taşınabiliyordu)
         comment.setContent(commentRequestDto.getContent());
-        comment.setVideo(video);
-        comment.setParentComment(parentComment);
         comment.setEdited(true);
 
         return commentMapper.toDto(commentRepository.save(comment));

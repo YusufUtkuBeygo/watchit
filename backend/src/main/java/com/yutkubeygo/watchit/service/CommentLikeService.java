@@ -48,18 +48,23 @@ public class CommentLikeService {
 
     }
 
-    public CommentLikeResponseDto getCommentLikeById(Long id)
+    //Beğeni yoksa null (404), başkasınınsa ForbiddenException (403)
+    public CommentLikeResponseDto getCommentLikeById(Long id, Long userId)
     {
         CommentLike commentLike = commentLikeRepository.findById(id).orElse(null);
         if(commentLike==null)
             return null;
 
+        if(!commentLike.getUser().getId().equals(userId))
+            throw new ForbiddenException();
+
         return commentLikeMapper.toDto(commentLike);
     }
 
-    public List<CommentLikeResponseDto> getAllCommentLikes()
+    //Yalnız kendi yorum beğenilerim: sorgu baştan kullanıcının id'siyle yapılır
+    public List<CommentLikeResponseDto> getMyCommentLikes(Long userId)
     {
-        return commentLikeMapper.toDtoList(commentLikeRepository.findAll());
+        return commentLikeMapper.toDtoList(commentLikeRepository.findByUserId(userId));
     }
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)

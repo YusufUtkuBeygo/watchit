@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import  org.springframework.stereotype.Service;
 
+import java.util.Locale;
+
 
 @Service
 @RequiredArgsConstructor
@@ -31,13 +33,19 @@ public class UserService {
 
     public  UserResponseDto createUser(UserRequestDto request)
     {
-        if(userRepository.existsByEmail(request.getEmail()))
+        //E-posta küçük harfle, kenar boşlukları kırpılarak saklanır: "Ayse@X.com " ile "ayse@x.com" aynı hesap
+        String email = normalizeEmail(request.getEmail());
+        String username = request.getUsername().trim();
+
+        if(userRepository.existsByEmail(email))
             return null;
         //Kullanıcı adı da tek olmalı (V5: veritabanında da benzersiz); null -> controller 409 döner
-        if(userRepository.existsByUsernameIgnoreCase(request.getUsername()))
+        if(userRepository.existsByUsernameIgnoreCase(username))
             return null;
         //Dışardan gelen json user entitiysinin bir nesnesine dönüştürülür
         User user = userMapper.toEntity(request);
+        user.setEmail(email);
+        user.setUsername(username);
         //şifre hashleniyor
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         //Nesne oluşturulduktan sonra dto'ya çevirip return etmek için savedUser' atıyoruz elimizdeklieri
@@ -87,8 +95,8 @@ public class UserService {
             return null;
 
 
-        user.setUsername(newUser.getUsername());
-        user.setEmail(newUser.getEmail());
+        user.setUsername(newUser.getUsername().trim());
+        user.setEmail(normalizeEmail(newUser.getEmail()));
         //şifre hashleniyor
         user.setPassword(passwordEncoder.encode(newUser.getPassword()));
 
@@ -109,7 +117,7 @@ public class UserService {
     public LoginResponseDto login(LoginRequestDto request)
     {
         //requestin içindeki e-postayla kullanıcıyı bul
-        User loginUser = userRepository.findByEmail(request.getEmail()).orElse(null);
+        User loginUser = userRepository.findByEmail(normalizeEmail(request.getEmail())).orElse(null);
 
         if(loginUser==null)
             return null;
@@ -130,4 +138,11 @@ public class UserService {
 
     }
 
+
+    //E-postayı tek biçime getirir: kenar boşlukları kırpılır, küçük harfe çevrilir.
+    //Locale.ROOT şart: Türkçe ayarlı bir bilgisayarda "I".toLowerCase() "ı" olur ve "INFO@x.com" bozulurdu
+    public static String normalizeEmail(String email)
+    {
+        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
+    }
 }

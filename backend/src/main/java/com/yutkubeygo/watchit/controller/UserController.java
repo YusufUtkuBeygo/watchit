@@ -5,6 +5,7 @@ import com.yutkubeygo.watchit.dto.LoginResponseDto;
 import com.yutkubeygo.watchit.dto.PublicUserResponseDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
+import com.yutkubeygo.watchit.service.LoginAttemptService;
 import com.yutkubeygo.watchit.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final LoginAttemptService loginAttemptService;
 
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, LoginAttemptService loginAttemptService) {
         this.userService = userService;
+        this.loginAttemptService = loginAttemptService;
     }
 
 
@@ -86,11 +89,22 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request)
     {
+        //Sayaç küçük harfli e-postaya göre: "A@x.com" ile "a@x.com" aynı hesap
+        String email = UserService.normalizeEmail(request.getEmail());
+
+        //Çok fazla yanlış deneme: şifre doğru olsa bile süre dolana kadar 429
+        if(loginAttemptService.isBlocked(email))
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+
         LoginResponseDto logined = userService.login(request);
 
         if(logined == null)
+        {
+            loginAttemptService.recordFailure(email);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
+        loginAttemptService.recordSuccess(email);
         return ResponseEntity.ok(logined);
     }
 }

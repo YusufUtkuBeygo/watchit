@@ -6,6 +6,7 @@ import com.yutkubeygo.watchit.entity.Category;
 import com.yutkubeygo.watchit.entity.Channel;
 import com.yutkubeygo.watchit.entity.Video;
 import com.yutkubeygo.watchit.entity.VideoLike;
+import com.yutkubeygo.watchit.exception.BadRequestException;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.VideoMapper;
 import com.yutkubeygo.watchit.repository.CategoryRepository;
@@ -25,13 +26,15 @@ public class VideoService {
     private final CategoryRepository categoryRepository;
     private final VideoRepository videoRepository;
     private final VideoLikeRepository videoLikeRepository;
+    private final FileService fileService;
 
-    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository) {
+    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService) {
         this.videoMapper = videoMapper;
         this.channelRepository = channelRepository;
         this.categoryRepository = categoryRepository;
         this.videoRepository = videoRepository;
         this.videoLikeRepository = videoLikeRepository;
+        this.fileService = fileService;
     }
 
     public VideoResponseDto getVideo(Long id,Long userId)
@@ -73,6 +76,8 @@ public class VideoService {
 
     public VideoResponseDto createVideo(VideoRequestDto videoRequestDto,Long userId)
     {
+        checkFileUrls(videoRequestDto);
+
         Video video=videoMapper.toEntity(videoRequestDto);
 
         Channel channel= channelRepository.findByOwnerId(userId).orElse(null);
@@ -109,6 +114,8 @@ public class VideoService {
         Long ownerId=video.getChannel().getOwner().getId();
         if(!ownerId.equals(userId))
             throw new ForbiddenException();
+
+        checkFileUrls(videoRequestDto);
 
         Category category=categoryRepository.findById(videoRequestDto.getCategoryId()).orElse(null);
         if(category==null)
@@ -148,4 +155,11 @@ public class VideoService {
 
 
 
+
+    //Video ve kapak adresi yalnız bizim MinIO kovamızdan olabilir (dış siteye bağlantı, takip resmi engellenir)
+    private void checkFileUrls(VideoRequestDto videoRequestDto)
+    {
+        if(!fileService.isOwnFileUrl(videoRequestDto.getVideoUrl()) || !fileService.isOwnFileUrl(videoRequestDto.getThumbnailUrl()))
+            throw new BadRequestException();
+    }
 }
