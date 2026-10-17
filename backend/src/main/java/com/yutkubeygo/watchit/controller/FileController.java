@@ -30,6 +30,11 @@ public class FileController {
     @PostMapping("/upload-url")
     public ResponseEntity<UploadUrlResponseDto> createUploadUrl(@RequestParam("fileName") String fileName)
     {
+        //Dosya adı 1-150 karakter: adres "MinIO adresi + kova + UUID_ad" diye kurulur (~74 + ad),
+        //videos.video_url sütunu 255 karakter. Daha uzun ad, video kaydında sığmazdı
+        if(fileName.isBlank() || fileName.length() > 150)
+            return ResponseEntity.badRequest().build();
+
         UploadUrlResponseDto uploadUrlResponseDto = fileService.createUploadUrl(fileName);
         return ResponseEntity.ok(uploadUrlResponseDto);
     }
