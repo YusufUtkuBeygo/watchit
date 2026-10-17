@@ -36,15 +36,16 @@ public class CommentLikeController {
     }
 
     @GetMapping
-    public List<CommentLikeResponseDto> getAllCommentLikes()
+    //Yalnız benim yorum beğenilerim
+    public List<CommentLikeResponseDto> getMyCommentLikes(@AuthenticationPrincipal Long userId)
     {
-        return commentLikeService.getAllCommentLikes();
+        return commentLikeService.getMyCommentLikes(userId);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommentLikeResponseDto> getCommentLike(@PathVariable Long id)
+    public ResponseEntity<CommentLikeResponseDto> getCommentLike(@PathVariable Long id, @AuthenticationPrincipal Long userId)
     {
-        CommentLikeResponseDto commentLike = commentLikeService.getCommentLikeById(id);
+        CommentLikeResponseDto commentLike = commentLikeService.getCommentLikeById(id, userId);
 
         if(commentLike == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

@@ -22,9 +22,9 @@ public class VideoLikeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VideoLikeResponseDto> getVideoLikeById(@PathVariable Long id)
+    public ResponseEntity<VideoLikeResponseDto> getVideoLikeById(@PathVariable Long id, @AuthenticationPrincipal Long userId)
     {
-        VideoLikeResponseDto videoLike = videoLikeService.getVideoLikeById(id);
+        VideoLikeResponseDto videoLike = videoLikeService.getVideoLikeById(id, userId);
 
         if(videoLike == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -33,9 +33,10 @@ public class VideoLikeController {
     }
 
     @GetMapping
-    public List<VideoLikeResponseDto> getAllVideoLike()
+    //Yalnız benim beğenilerim (kim neyi beğendi başkasına gösterilmez)
+    public List<VideoLikeResponseDto> getMyVideoLikes(@AuthenticationPrincipal Long userId)
     {
-        return videoLikeService.getAllVideoLikes();
+        return videoLikeService.getMyVideoLikes(userId);
     }
 
     @PostMapping

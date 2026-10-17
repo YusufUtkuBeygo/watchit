@@ -5,6 +5,7 @@ import com.yutkubeygo.watchit.dto.VideoLikeResponseDto;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
 import com.yutkubeygo.watchit.entity.VideoLike;
+import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.VideoLikeMapper;
 import com.yutkubeygo.watchit.repository.UserRepository;
 import com.yutkubeygo.watchit.repository.VideoLikeRepository;
@@ -46,17 +47,23 @@ public class VideoLikeService {
         return videoLikeMapper.toDto(videoLikeRepository.save(videoLike));
     }
 
-    public VideoLikeResponseDto getVideoLikeById(Long id)
+    //Beğeni yoksa null (404), başkasınınsa ForbiddenException (403)
+    public VideoLikeResponseDto getVideoLikeById(Long id, Long userId)
     {
         VideoLike videoLike = videoLikeRepository.findById(id).orElse(null);
         if(videoLike==null)
             return null;
+
+        if(!videoLike.getUser().getId().equals(userId))
+            throw new ForbiddenException();
+
         return videoLikeMapper.toDto(videoLike);
     }
 
-    public List<VideoLikeResponseDto> getAllVideoLikes()
+    //Yalnız kendi beğenilerim: sorgu baştan kullanıcının id'siyle yapılır
+    public List<VideoLikeResponseDto> getMyVideoLikes(Long userId)
     {
-        return videoLikeMapper.toDtoList(videoLikeRepository.findAll());
+        return videoLikeMapper.toDtoList(videoLikeRepository.findByUserId(userId));
     }
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
