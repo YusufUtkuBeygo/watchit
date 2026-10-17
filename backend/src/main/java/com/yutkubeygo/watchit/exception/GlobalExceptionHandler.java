@@ -38,6 +38,13 @@ public class GlobalExceptionHandler {
         return null;
     }
 
+    //Servis "istekteki veri kurala uymuyor" dediğinde gövdesiz 400 döner
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Void> handleBadRequest()
+    {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+
     //Servis "bu kayıt senin değil" dediğinde gövdesiz 403 döner
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Void> handleForbidden()

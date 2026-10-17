@@ -5,7 +5,6 @@ import io.minio.*;
 import io.minio.http.Method;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -59,32 +58,23 @@ public class FileService {
         bucketReady = true;
     }
 
-    public String uploadFile(MultipartFile file) {
-        try {
-            prepareBucket();
-
-            // Dosya ismini benzersiz yap
-            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-
-            // Dosyayı MinIO'ya fırlat
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(fileName)
-                            .stream(file.getInputStream(), file.getSize(), -1)
-                            .contentType(file.getContentType())
-                            .build()
-            );
-
-            // React için URL'yi dön
-            return minioUrl + "/" + bucketName + "/" + fileName;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Dosya yuklenirken minio da bir hata olustu: " + e.getMessage());
-        }
+    //Yüklenebilecek tipler: yalnız video ve resim (ör. "video/mp4", "image/jpeg").
+    //Tip sonradan tarayıcıya aynen söylenir; HTML gibi bir tip olsaydı dosya web sayfası olarak açılırdı
+    public boolean isAllowedContentType(String contentType)
+    {
+        return contentType != null
+                && contentType.length() <= 100
+                && contentType.matches("(video|image)/[a-zA-Z0-9.+-]+");
     }
 
-    public UploadUrlResponseDto createUploadUrl(String originalFileName) {
+    //Adres bizim kovamızdaki bir dosya mı? (videoUrl, thumbnailUrl, profil/kapak resmi için)
+    //Boş adres (alan doldurulmamış) geçerli sayılır
+    public boolean isOwnFileUrl(String url)
+    {
+        return url == null || url.isEmpty() || url.startsWith(minioUrl + "/" + bucketName + "/");
+    }
+
+    public UploadUrlResponseDto createUploadUrl(String originalFileName, String contentType) {
         try {
 
             UploadUrlResponseDto uploadUrlResponseDto = new UploadUrlResponseDto();
@@ -94,7 +84,7 @@ public class FileService {
 
             PostPolicy policy = new PostPolicy(bucketName, ZonedDateTime.now().plusMinutes(15)); // kova + son geçerlilik zamanı
             policy.addEqualsCondition("key", fileName);                    // dosya adı tam olarak bu olmalı
-            policy.addStartsWithCondition("Content-Type", "");             // dosya tipi serbest (boş = her şey)
+            policy.addEqualsCondition("Content-Type", contentType);        // dosya tipi tam olarak bu olmalı (video/... ya da image/...)
             policy.addContentLengthRangeCondition(1L, 2L * 1024 * 1024 * 1024); // boyut: 1 bayt ile 2 GB arası
 
             Map<String, String> formData = minioClient.getPresignedPostFormData(policy);

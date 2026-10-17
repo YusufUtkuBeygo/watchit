@@ -17,16 +17,20 @@ function safeFileName(name)
 //onProgress(yüzde) verilirse yükleme ilerledikçe çağrılır
 export async function uploadFile(file, onProgress)
 {
+  //Dosya tipi (ör. "video/mp4"). Backend yalnız video/... ve image/... kabul eder ve imzayı bu tipe kilitler
+  const contentType = file.type;
+
   //Backend adresi /api/files/upload-url; baştaki /api proxy için (bkz. api.js)
   const response = await api.post('/api/files/upload-url', null, {
-    params: { fileName: safeFileName(file.name) },
+    params: { fileName: safeFileName(file.name), contentType },
   });
   const { uploadUrl, fileUrl, formData } = response.data;
 
   //MinIO'nun beklediği form: backend'in verdiği kutular (key, policy, imza...) + dosya tipi + dosya
+  //Tip, backend'e söylenenle birebir aynı olmalı; değilse MinIO imzayı reddeder
   const form = new FormData();
   Object.entries(formData).forEach(([name, value]) => form.append(name, value));
-  form.append('Content-Type', file.type || 'application/octet-stream');
+  form.append('Content-Type', contentType);
   //Dosya en sonda olmalı: MinIO dosyadan sonra gelen alanları okumaz
   form.append('file', file);
 

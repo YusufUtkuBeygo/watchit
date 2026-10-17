@@ -5,6 +5,7 @@ import com.yutkubeygo.watchit.dto.ChannelResponseDto;
 import com.yutkubeygo.watchit.entity.Channel;
 import com.yutkubeygo.watchit.entity.Subscription;
 import com.yutkubeygo.watchit.entity.User;
+import com.yutkubeygo.watchit.exception.BadRequestException;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.ChannelMapper;
 import com.yutkubeygo.watchit.repository.ChannelRepository;
@@ -22,17 +23,21 @@ public class ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final FileService fileService;
 
-    public ChannelService(ChannelMapper channelMapper, ChannelRepository channelRepository, UserRepository userRepository, SubscriptionRepository subscriptionRepository) {
+    public ChannelService(ChannelMapper channelMapper, ChannelRepository channelRepository, UserRepository userRepository, SubscriptionRepository subscriptionRepository, FileService fileService) {
         this.channelMapper = channelMapper;
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.fileService = fileService;
     }
 
     public ChannelResponseDto createChannel(ChannelRequestDto request,Long userId)
     {
         //Dışardan gelen json istek dosyasındaki bilgieri kullanarak bir nesne oluşturur
+        checkFileUrls(request);
+
         Channel channel=channelMapper.toEntity(request);
         //Kanalın sahibi isteği atan kullanıcıdır, id'si token'dan gelir
         User owner= userRepository.findById(userId).orElse(null);
@@ -101,6 +106,8 @@ public class ChannelService {
         if(!ownerId.equals(userId))
             throw new ForbiddenException();
 
+        checkFileUrls(request);
+
         //Uptade istenilen elemanın bilgierini requestten gelen bilgieri kullanarak revize ediyoruz
         channel.setChannelName(request.getChannelName());
         channel.setBannerImageUrl(request.getBannerImageUrl());
@@ -128,5 +135,12 @@ public class ChannelService {
 
         channelRepository.deleteById(id);
         return true;
+    }
+
+    //Profil ve kapak resmi adresi yalnız bizim MinIO kovamızdan olabilir (dış siteye bağlantı, takip resmi engellenir)
+    private void checkFileUrls(ChannelRequestDto request)
+    {
+        if(!fileService.isOwnFileUrl(request.getProfilePictureUrl()) || !fileService.isOwnFileUrl(request.getBannerImageUrl()))
+            throw new BadRequestException();
     }
 }
