@@ -29,7 +29,7 @@ public class UserController {
     {
             UserResponseDto user = userService.createUser(request);
 
-            //Eger varolan bir maille kayit olmak dednirse conflict uyarisi gonderir
+            //E-posta ya da kullanıcı adı zaten kullanılıyorsa conflict (409) gönderir
             if(user == null)
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
 

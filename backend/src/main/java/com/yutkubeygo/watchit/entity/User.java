@@ -30,6 +30,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //Benzersizlik veritabanında: V5'teki lower(username) indeksi (büyük/küçük harf farkı gözetmez)
+    @Column(nullable = false)
     private String username;
     @Column(unique = true , nullable = false)
     private String email;
