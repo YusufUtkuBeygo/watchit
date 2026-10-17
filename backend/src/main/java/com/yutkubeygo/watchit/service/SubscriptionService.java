@@ -35,6 +35,8 @@ public class SubscriptionService {
         Channel channel = channelRepository.findById(subscriptionRequestDto.getChannelId()).orElse(null);
         if(channel==null)
             return null;
+        if(channel.getOwner().getId().equals(userId))
+            throw new ForbiddenException();
 
         User subscriber = userRepository.findById(userId).orElse(null);
         if(subscriber==null)
@@ -70,17 +72,14 @@ public class SubscriptionService {
 
     //Silinecek kayıt yoksa false, silindiyse true döner (controller 404/204 kararını buna göre verir)
     //Abonelik başkasınınsa ForbiddenException fırlatır (403)
-    public boolean deleteSubscriptionById(Long subscriptionId, Long userId)
+    public boolean deleteMySubscription(Long userId,Long channelId)
     {
-        Subscription subscription = subscriptionRepository.findById(subscriptionId).orElse(null);
+        Subscription subscription = subscriptionRepository.findBySubscriberIdAndChannelId(userId,channelId).orElse(null);
         if(subscription==null)
             return false;
 
-        Long ownerId = subscription.getSubscriber().getId();
-        if(!ownerId.equals(userId))
-            throw new ForbiddenException();
 
-        subscriptionRepository.deleteById(subscriptionId);
+        subscriptionRepository.delete(subscription);
         return true;
     }
 

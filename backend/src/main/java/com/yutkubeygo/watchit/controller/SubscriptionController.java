@@ -2,7 +2,6 @@ package com.yutkubeygo.watchit.controller;
 
 import com.yutkubeygo.watchit.dto.SubscriptionRequestDto;
 import com.yutkubeygo.watchit.dto.SubscriptionResponseDto;
-import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.service.SubscriptionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -52,10 +51,10 @@ public class SubscriptionController {
         return subscriptionService.getSubscriptionByUserId(userId);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSubscriptionById(@PathVariable Long id,@AuthenticationPrincipal Long userId)
+    @DeleteMapping
+    public ResponseEntity<Void> deleteSubscription(@AuthenticationPrincipal Long userId,@RequestParam Long channelId)
     {
-        if(!subscriptionService.deleteSubscriptionById(id,userId))
+        if(!subscriptionService.deleteMySubscription(userId,channelId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

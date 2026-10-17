@@ -22,6 +22,7 @@ public class ChannelResponseDto {
     private String profilePictureUrl;
     private String bannerImageUrl;
 
+    private boolean subscribedByMe;
     private Boolean verified;
     private String handle;
     private LocalDateTime createdAt;
