@@ -4,6 +4,7 @@ import { getVideoById } from '../services/videoService';
 import { getChannelById } from '../services/channelService';
 import CommentSection from '../components/CommentSection';
 import LikeButton from '../components/LikeButton';
+import SubscribeButton from '../components/SubscribeButton';
 import './WatchPage.css';
 
 function WatchPage() {
@@ -80,17 +81,24 @@ function WatchPage() {
       <h1 className="watch-title">{video.title}</h1>
 
       <div className="watch-channel">
-        {channel?.profilePictureUrl ? (
-          <img className="watch-avatar" src={channel.profilePictureUrl} alt="" />
-        ) : (
-          <div className="watch-avatar" />
-        )}
+        {/* Avatar ve kanal adı kanal sayfasına götürür */}
+        <Link to={`/channel/${video.channelId}`} className="watch-channel-link">
+          {channel?.profilePictureUrl ? (
+            <img className="watch-avatar" src={channel.profilePictureUrl} alt="" />
+          ) : (
+            <div className="watch-avatar" />
+          )}
+        </Link>
         <div>
-          <div className="watch-channel-name">{channel?.channelName || 'Bilinmeyen kanal'}</div>
+          <Link to={`/channel/${video.channelId}`} className="watch-channel-name watch-channel-link">
+            {channel?.channelName || 'Bilinmeyen kanal'}
+          </Link>
           {channel?.subscriberCount != null && (
             <div className="watch-subscribers">{channel.subscriberCount} abone</div>
           )}
         </div>
+        {/* Abone olunca sayfadaki kanal bilgisi (abone sayısı) güncellenir */}
+        {channel && <SubscribeButton key={channel.id} channel={channel} onChannelChange={setChannel} />}
         <LikeButton
           key={video.id}
           videoId={video.id}

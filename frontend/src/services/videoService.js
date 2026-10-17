@@ -13,6 +13,12 @@ export async function getVideosByCategoryId(categoryId) {
   return response.data;
 }
 
+//Kanalın videoları, en yeni en üstte. Kanal yoksa backend 404 döner
+export async function getVideosByChannelId(channelId) {
+  const response = await api.get('/videos', { params: { channelId } });
+  return response.data;
+}
+
 export async function getVideoById(id)
 {
   const response = await api.get(`/videos/${id}`);

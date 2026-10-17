@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import HomePage from './routes/HomePage';
 import NotFoundPage from './routes/NotFoundPage';
 import WatchPage from './routes/WatchPage';
+import ChannelPage from './routes/ChannelPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/watch/:id" element={<WatchPage />} />
+            <Route path="/channel/:id" element={<ChannelPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
