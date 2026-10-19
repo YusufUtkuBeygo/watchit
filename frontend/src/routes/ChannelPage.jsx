@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getChannelById } from '../services/channelService';
+import { Pencil } from 'lucide-react';
+import { getChannelById, getMyChannel } from '../services/channelService';
+import { useAuth } from '../context/AuthContext';
+import ChannelEditModal from '../components/ChannelEditModal';
 import { getVideosByChannelId } from '../services/videoService';
 import SubscribeButton from '../components/SubscribeButton';
 import VideoCard from '../components/VideoCard';
@@ -16,6 +19,19 @@ function ChannelPage() {
   const [videos, setVideos] = useState([]);
   //'loading' | 'ready' | 'notFound' | 'error'
   const [status, setStatus] = useState('loading');
+  const { user } = useAuth();
+  //Giriş yapanın kanalı mı (öyleyse "Kanalı düzenle" gösterilir)
+  const [myChannelId, setMyChannelId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+    const request = user ? getMyChannel() : Promise.resolve(null);
+    request
+      .then((channel) => { if (!ignore) setMyChannelId(channel ? channel.id : null); })
+      .catch(() => { if (!ignore) setMyChannelId(null); });
+    return () => { ignore = true; };
+  }, [user]);
 
   useEffect(() => {
     //Kullanıcı istek bitmeden başka kanala geçerse eski cevabı yok say
@@ -95,6 +111,9 @@ function ChannelPage() {
           {channel.description && <p className="channel-description">{channel.description}</p>}
           {/* Abone olunca bu sayfadaki kanal bilgisi (abone sayısı) güncellenir */}
           <SubscribeButton key={channel.id} channel={channel} onChannelChange={setChannel} />
+          {myChannelId === channel.id && (
+            <button className="btn" onClick={() => setIsEditing(true)}><Pencil size={16} /> Kanalı düzenle</button>
+          )}
         </div>
       </div>
 
@@ -107,6 +126,18 @@ function ChannelPage() {
             <VideoCard key={video.id} video={video} />
           ))}
         </div>
+      )}
+
+      {isEditing && (
+        <ChannelEditModal
+          channel={channel}
+          onClose={() => setIsEditing(false)}
+          //Abone sayısı gibi hesaplanan bilgiler ekrandakinden korunur
+          onSaved={(saved) => {
+            setChannel((old) => ({ ...old, ...saved, subscriberCount: old.subscriberCount, subscribedByMe: old.subscribedByMe }));
+            setIsEditing(false);
+          }}
+        />
       )}
     </div>
   );

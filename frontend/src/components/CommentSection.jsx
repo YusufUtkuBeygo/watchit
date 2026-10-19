@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getCommentsByVideoId, createComment, deleteComment } from '../services/commentService';
+import { getCommentsByVideoId, createComment, deleteComment, updateComment } from '../services/commentService';
 import './CommentSection.css';
 
 //Yorum içeriği veritabanında en fazla 1000 karakter (comments.content varchar(1000))
@@ -89,6 +89,7 @@ export default function CommentSection({ videoId }) {
               comment={comment}
               canDelete={user?.id === comment.userId}
               onDelete={handleDelete}
+              onEdited={reload}
               onReply={user ? () => setReplyingTo(comment.id) : null}
             />
 
@@ -100,6 +101,7 @@ export default function CommentSection({ videoId }) {
                       comment={reply}
                       canDelete={user?.id === reply.userId}
                       onDelete={handleDelete}
+                      onEdited={reload}
                       //Cevaba cevap da aynı üst yoruma bağlanır (tek seviye, YouTube gibi)
                       onReply={user ? () => setReplyingTo(comment.id) : null}
                     />
@@ -126,8 +128,11 @@ export default function CommentSection({ videoId }) {
   );
 }
 
-//Tek bir yorum: kullanıcı adı, tarih, metin, Yanıtla / Sil
-function CommentItem({ comment, canDelete, onDelete, onReply }) {
+//Tek bir yorum: kullanıcı adı, tarih, metin, Yanıtla / Düzenle / Sil
+//canDelete: yorum benimse true (yalnız yazarı düzenleyip silebilir)
+function CommentItem({ comment, canDelete, onDelete, onReply, onEdited }) {
+  const [isEditing, setIsEditing] = useState(false);
+
   return (
     <div className="comment">
       <div className="comment-avatar">{(comment.username || '?').charAt(0).toUpperCase()}</div>
@@ -139,15 +144,73 @@ function CommentItem({ comment, canDelete, onDelete, onReply }) {
             {comment.edited && ' (düzenlendi)'}
           </span>
         </div>
-        <p className="comment-content">{comment.content}</p>
-        <div className="comment-actions">
-          {onReply && <button className="comment-action" onClick={onReply}>Yanıtla</button>}
-          {canDelete && (
-            <button className="comment-action" onClick={() => onDelete(comment.id)}>Sil</button>
-          )}
-        </div>
+        {isEditing ? (
+          <CommentEditForm
+            comment={comment}
+            onCancel={() => setIsEditing(false)}
+            onSaved={() => { setIsEditing(false); onEdited(); }}
+          />
+        ) : (
+          <>
+            <p className="comment-content">{comment.content}</p>
+            <div className="comment-actions">
+              {onReply && <button className="comment-action" onClick={onReply}>Yanıtla</button>}
+              {canDelete && (
+                <>
+                  <button className="comment-action" onClick={() => setIsEditing(true)}>Düzenle</button>
+                  <button className="comment-action" onClick={() => onDelete(comment.id)}>Sil</button>
+                </>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
+  );
+}
+
+//Yorum düzenleme kutusu: yalnız metin değişir
+function CommentEditForm({ comment, onCancel, onSaved }) {
+  const [content, setContent] = useState(comment.content);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setIsSubmitting(true);
+    try {
+      await updateComment(comment.id, content.trim(), comment.videoId);
+      onSaved();
+    } catch (error) {
+      const status = error.response ? error.response.status : null;
+      setErrorMessage(status === 401 ? 'Oturumun süresi dolmuş, tekrar giriş yap.' : 'Yorum kaydedilemedi.');
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form className="comment-form" onSubmit={handleSubmit}>
+      <textarea
+        className="comment-input"
+        name="content"
+        aria-label="Yorumu düzenle"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        maxLength={MAX_LENGTH}
+        rows={2}
+        autoFocus
+        disabled={isSubmitting}
+      />
+      {errorMessage && <p className="comment-error">{errorMessage}</p>}
+      <div className="comment-form-actions">
+        <button type="button" className="comment-cancel" onClick={onCancel}>İptal</button>
+        <button type="submit" className="comment-submit"
+          disabled={isSubmitting || !content.trim() || content.trim() === comment.content}>
+          {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
+        </button>
+      </div>
+    </form>
   );
 }
 

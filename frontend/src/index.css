@@ -226,3 +226,9 @@ textarea.input {
   border-radius: 12px;
   padding: 20px;
 }
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
