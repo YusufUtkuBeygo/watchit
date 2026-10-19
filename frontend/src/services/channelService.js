@@ -45,7 +45,15 @@ export async function updateChannel(id, channelData)
   return response.data;
 }
 
-//Giriş yapanın abone olduğu kanallar (tam kanal bilgisiyle)
+//Aboneliklerim, kanal adı ve resmiyle ({ id, channelId, channelName, channelProfilePictureUrl })
+//Sol menü gibi yalnız ad ve resim gereken yerler için: tek istek
+export async function getMySubscriptions()
+{
+  const response = await api.get('/subscriptions');
+  return response.data;
+}
+
+//Giriş yapanın abone olduğu kanallar (tam kanal bilgisiyle: abone sayısı vb.)
 //Backend yalnız abonelik kayıtlarını ({ id, channelId }) verir, kanal bilgileri ayrı ayrı istenir
 export async function getMySubscribedChannels()
 {

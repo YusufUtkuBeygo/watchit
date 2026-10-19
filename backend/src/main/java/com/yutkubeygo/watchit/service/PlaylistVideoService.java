@@ -69,6 +69,20 @@ public class PlaylistVideoService
         return playlistVideoMapper.toDto(playlistVideo);
     }
 
+    //Tek listenin videoları; liste yoksa null (404), gizliyse ve sahibi değilsem ForbiddenException (403)
+    //Giriş yoksa userId null: gizli listede sahip kontrolü tutmaz, 403 döner
+    public List<PlaylistVideoResponseDto> getPlaylistVideosByPlaylistId(Long playlistId, Long userId)
+    {
+        Playlist playlist = playlistRepository.findById(playlistId).orElse(null);
+        if(playlist == null)
+            return null;
+
+        if(!Boolean.TRUE.equals(playlist.getIsPublic()) && !playlist.getOwner().getId().equals(userId))
+            throw new ForbiddenException();
+
+        return playlistVideoMapper.toDtoList(playlistVideoRepository.findByPlaylistIdOrderByOrderIndexAscIdAsc(playlistId));
+    }
+
     public List<PlaylistVideoResponseDto> getAllPlaylistVideos(Long userId)
     {
         List<PlaylistVideo> playlistVideos = playlistVideoRepository.findByPlaylistIsPublicTrueOrPlaylistOwnerId(userId);

@@ -15,6 +15,8 @@ public interface SubscriptionMapper {
 
     @Mapping(source = "subscriber.id", target = "subscriberId")
     @Mapping(source = "channel.id", target = "channelId")
+    @Mapping(source = "channel.channelName", target = "channelName")
+    @Mapping(source = "channel.profilePictureUrl", target = "channelProfilePictureUrl")
     public SubscriptionResponseDto toDto(Subscription subscription);
     public List<SubscriptionResponseDto> toDtoList(List<Subscription> subscriptions);
     //Request DTO'sunda olmayan alanlar (id, ilişkiler, tarihler) serviste ya da veritabanında dolar

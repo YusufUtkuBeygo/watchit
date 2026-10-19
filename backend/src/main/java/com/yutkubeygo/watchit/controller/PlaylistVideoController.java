@@ -22,10 +22,20 @@ public class PlaylistVideoController {
         this.playlistVideoService = playlistVideoService;
     }
 
+    //GET /playlistvideos -> görebildiğim bütün kayıtlar (açık listeler + benimkiler)
+    //GET /playlistvideos?playlistId=3 -> yalnız o listenin videoları, sırasıyla (liste yoksa 404, gizliyse ve benim değilse 403)
     @GetMapping
-    public List<PlaylistVideoResponseDto> getAllPlaylistVideo(@AuthenticationPrincipal Long userId)
+    public ResponseEntity<List<PlaylistVideoResponseDto>> getAllPlaylistVideo(@RequestParam(required = false) Long playlistId,
+                                                                              @AuthenticationPrincipal Long userId)
     {
-        return playlistVideoService.getAllPlaylistVideos(userId);
+        if(playlistId == null)
+            return ResponseEntity.ok(playlistVideoService.getAllPlaylistVideos(userId));
+
+        List<PlaylistVideoResponseDto> entries = playlistVideoService.getPlaylistVideosByPlaylistId(playlistId, userId);
+        if(entries == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.ok(entries);
     }
 
     @GetMapping("/{id}")

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { getAllCategories } from '../services/categoryService';
-import { getMyChannel, getMySubscribedChannels, SUBSCRIPTIONS_CHANGED } from '../services/channelService';
+import { getMyChannel, getMySubscriptions, SUBSCRIPTIONS_CHANGED } from '../services/channelService';
 import { useAuth } from '../context/AuthContext';
 import Avatar from './Avatar';
 import LoginModal from './LoginModal';
@@ -29,7 +29,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     let ignore = false;
 
     const loadSubscriptions = () => {
-      getMySubscribedChannels()
+      getMySubscriptions()
         .then((list) => { if (!ignore) setSubscriptions(list); })
         .catch((err) => console.error('Abonelikler getirilemedi:', err));
     };
@@ -99,10 +99,10 @@ const Sidebar = ({ isOpen, onClose }) => {
               <div className="sidebar-divider"></div>
               <nav className="sidebar-section" aria-label="Abone olunan kanallar">
                 <h3 className="section-title">Abonelikler</h3>
-                {subscriptions.map((channel) => (
-                  <NavLink to={`/channel/${channel.id}`} className="sidebar-item sub-item" key={channel.id}>
-                    <Avatar className="sub-avatar" src={channel.profilePictureUrl} name={channel.channelName} />
-                    <span className="sub-name">{channel.channelName}</span>
+                {subscriptions.map((sub) => (
+                  <NavLink to={`/channel/${sub.channelId}`} className="sidebar-item sub-item" key={sub.id}>
+                    <Avatar className="sub-avatar" src={sub.channelProfilePictureUrl} name={sub.channelName} />
+                    <span className="sub-name">{sub.channelName}</span>
                   </NavLink>
                 ))}
               </nav>
