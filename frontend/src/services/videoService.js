@@ -37,3 +37,21 @@ export async function deleteVideoById(id)
 {
   await api.delete(`/videos/${id}`);
 }
+
+//Başlığa göre arama.
+//ŞİMDİLİK tarayıcıda süzüyor (bütün videoları çekip başlıkta arıyor).
+//Backend'e arama sorgusu yazılınca (ör. GET /videos?search=...) yalnız bu fonksiyonun içi değişecek.
+export async function searchVideos(text)
+{
+  const needle = text.trim().toLocaleLowerCase('tr-TR');
+  const videos = await getAllVideos();
+  return videos.filter((video) => (video.title || '').toLocaleLowerCase('tr-TR').includes(needle));
+}
+
+//Videonun başlık, açıklama, kategori, kapak bilgilerini günceller (yalnız sahibi; başkasınınsa 403)
+//videoData: VideoRequestDto ile aynı alanlar (kanal değişmez)
+export async function updateVideo(id, videoData)
+{
+  const response = await api.put(`/videos/${id}`, videoData);
+  return response.data;
+}

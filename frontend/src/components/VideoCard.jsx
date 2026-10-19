@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { formatDuration, timeAgo, initialOf } from '../utils/format';
+import { formatDuration, timeAgo } from '../utils/format';
+import Avatar from './Avatar';
 import './VideoCard.css';
 
 //Video kartı: kapak + süre, kanal avatarı, başlık, kanal adı, tarih
@@ -25,12 +26,8 @@ function VideoCard({ video }) {
       </Link>
 
       <div className="video-info">
-        <Link to={channelUrl} className="vc-avatar" aria-label={video.channelName || 'Kanal'}>
-          {video.channelProfilePictureUrl ? (
-            <img src={video.channelProfilePictureUrl} alt="" loading="lazy" />
-          ) : (
-            <span>{initialOf(video.channelName)}</span>
-          )}
+        <Link to={channelUrl} className="vc-avatar-link" aria-label={video.channelName || 'Kanal'}>
+          <Avatar className="vc-avatar" src={video.channelProfilePictureUrl} name={video.channelName} />
         </Link>
 
         <div className="video-details">

@@ -103,3 +103,8 @@
 .vc-channel:hover {
   color: var(--text-primary);
 }
+
+.vc-avatar-link {
+  border-radius: 50%;
+  flex-shrink: 0;
+}

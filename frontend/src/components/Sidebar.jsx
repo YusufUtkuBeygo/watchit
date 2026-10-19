@@ -1,101 +1,142 @@
 import { useState, useEffect } from 'react';
-import { Home, PlaySquare, ChevronDown, ChevronRight, UserSquare2, History, ListVideo, Hash } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser } from 'lucide-react';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { getAllCategories } from '../services/categoryService';
+import { getMyChannel, getMySubscribedChannels, SUBSCRIPTIONS_CHANGED } from '../services/channelService';
+import { useAuth } from '../context/AuthContext';
+import Avatar from './Avatar';
+import LoginModal from './LoginModal';
 import './Sidebar.css';
 
-const subscriptions = [
-  { name: 'Panky', hasNew: true, avatar: '/avatar_1.png' },
-  { name: 'SDA', hasNew: false, avatar: '/avatar_1.png' },
-  { name: 'husamviyuviyu', hasNew: false, avatar: '/avatar_1.png' },
-  { name: 'Closer', hasNew: true, avatar: '/avatar_1.png' },
-  { name: 'Mevtcan Bahav', hasNew: true, avatar: '/avatar_1.png' },
-  { name: 'TepkiKolik', hasNew: true, avatar: '/avatar_1.png' },
-  { name: 'cptN', hasNew: true, avatar: '/avatar_1.png' },
-];
-
-const Sidebar = () => {
+//Sol menü. isOpen: dar ekranda açık mı (App tutar), onClose: dar ekranda kapatmak için
+const Sidebar = ({ isOpen, onClose }) => {
+  const { user } = useAuth();
+  const location = useLocation();
   const [categories, setCategories] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [myChannelId, setMyChannelId] = useState(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   useEffect(() => {
     getAllCategories()
-      .then(data => setCategories(data))
-      .catch(err => console.error('Error fetching categories:', err));
+      .then(setCategories)
+      .catch((err) => console.error('Kategoriler getirilemedi:', err));
   }, []);
 
+  //Giriş yapınca: kanalım ve aboneliklerim. Abone olunca/çıkınca liste yenilenir
+  useEffect(() => {
+    if (!user) return;
+    let ignore = false;
+
+    const loadSubscriptions = () => {
+      getMySubscribedChannels()
+        .then((list) => { if (!ignore) setSubscriptions(list); })
+        .catch((err) => console.error('Abonelikler getirilemedi:', err));
+    };
+
+    getMyChannel()
+      .then((channel) => { if (!ignore) setMyChannelId(channel ? channel.id : null); })
+      .catch(() => {});
+    loadSubscriptions();
+
+    window.addEventListener(SUBSCRIPTIONS_CHANGED, loadSubscriptions);
+    return () => {
+      ignore = true;
+      window.removeEventListener(SUBSCRIPTIONS_CHANGED, loadSubscriptions);
+    };
+  }, [user]);
+
+  //Dar ekranda bir bağlantıya tıklanınca menü kapanır
+  useEffect(() => {
+    onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, location.search]);
+
+  //Seçili kategori adresten okunur (ana sayfada /?category=2)
+  const activeCategory = location.pathname === '/' ? new URLSearchParams(location.search).get('category') : null;
+
   return (
-    <aside className="sidebar">
-      <div className="sidebar-section">
-        {/* NavLink: adres "/" iken kendiliğinden "active" sınıfını ekler */}
-        <NavLink to="/" end className="sidebar-item">
+    <>
+    {/* Dar ekranda menü açıkken arkadaki karartma; tıklayınca kapanır */}
+    {isOpen && <div className="sidebar-backdrop" onClick={onClose} aria-hidden="true" />}
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`} aria-label="Ana menü">
+      <nav className="sidebar-section">
+        {/* NavLink: adres eşleşince kendiliğinden "active" sınıfını ekler */}
+        <NavLink to="/" end className={() => `sidebar-item ${location.pathname === '/' && !activeCategory ? 'active' : ''}`}>
           <Home size={24} />
           <span>Ana Sayfa</span>
         </NavLink>
-        <div className="sidebar-item">
-          <PlaySquare size={24} />
-          <span>Shorts</span>
-        </div>
-      </div>
+        <NavLink to="/subscriptions" className="sidebar-item">
+          <Users size={24} />
+          <span>Abonelikler</span>
+        </NavLink>
+      </nav>
 
       <div className="sidebar-divider"></div>
 
-      <div className="sidebar-section">
-        <h3 className="section-title">
-          Abonelikler <ChevronRight size={16} />
-        </h3>
-        {subscriptions.map((sub, idx) => (
-          <div className="sidebar-item sub-item" key={idx}>
-            <img src={sub.avatar} alt={sub.name} className="sub-avatar" />
-            <span className="sub-name">{sub.name}</span>
-            {sub.hasNew && <div className="new-dot"></div>}
-          </div>
+      {user ? (
+        <>
+          <nav className="sidebar-section" aria-label="Siz">
+            <h3 className="section-title">Siz</h3>
+            {myChannelId && (
+              <NavLink to={`/channel/${myChannelId}`} className="sidebar-item">
+                <UserSquare2 size={24} />
+                <span>Kanalınız</span>
+              </NavLink>
+            )}
+            <NavLink to="/history" className="sidebar-item">
+              <History size={24} />
+              <span>Geçmiş</span>
+            </NavLink>
+            <NavLink to="/playlists" className="sidebar-item">
+              <ListVideo size={24} />
+              <span>Oynatma listeleri</span>
+            </NavLink>
+          </nav>
+
+          {subscriptions.length > 0 && (
+            <>
+              <div className="sidebar-divider"></div>
+              <nav className="sidebar-section" aria-label="Abone olunan kanallar">
+                <h3 className="section-title">Abonelikler</h3>
+                {subscriptions.map((channel) => (
+                  <NavLink to={`/channel/${channel.id}`} className="sidebar-item sub-item" key={channel.id}>
+                    <Avatar className="sub-avatar" src={channel.profilePictureUrl} name={channel.channelName} />
+                    <span className="sub-name">{channel.channelName}</span>
+                  </NavLink>
+                ))}
+              </nav>
+            </>
+          )}
+        </>
+      ) : (
+        <div className="sidebar-section sidebar-login">
+          <p>Videoları beğenmek, yorum yapmak ve abone olmak için oturum aç.</p>
+          <button className="login-btn" onClick={() => setIsLoginOpen(true)}>
+            <CircleUser size={20} />
+            <span>Giriş yap</span>
+          </button>
+        </div>
+      )}
+
+      <div className="sidebar-divider"></div>
+
+      <nav className="sidebar-section" aria-label="Kategoriler">
+        <h3 className="section-title">Kategoriler</h3>
+        {categories.map((category) => (
+          <Link
+            to={`/?category=${category.id}`}
+            className={`sidebar-item ${activeCategory === String(category.id) ? 'active' : ''}`}
+            key={category.id}
+          >
+            <Hash size={24} />
+            <span>{category.name}</span>
+          </Link>
         ))}
-        <div className="sidebar-item">
-          <ChevronDown size={24} />
-          <span>Daha fazla göster</span>
-        </div>
-      </div>
-
-      <div className="sidebar-divider"></div>
-
-      <div className="sidebar-section">
-        <h3 className="section-title">
-          Kategoriler <ChevronRight size={16} />
-        </h3>
-        {categories.length > 0 ? (
-          categories.map((category) => (
-            <div className="sidebar-item" key={category.id}>
-              <Hash size={24} />
-              <span>{category.name}</span>
-            </div>
-          ))
-        ) : (
-          <div className="sidebar-item">
-            <span>Yükleniyor...</span>
-          </div>
-        )}
-      </div>
-
-      <div className="sidebar-divider"></div>
-
-      <div className="sidebar-section">
-        <h3 className="section-title">
-          Siz <ChevronRight size={16} />
-        </h3>
-        <div className="sidebar-item">
-          <UserSquare2 size={24} />
-          <span>Kanalınız</span>
-        </div>
-        <div className="sidebar-item">
-          <History size={24} />
-          <span>Geçmiş</span>
-        </div>
-        <div className="sidebar-item">
-          <ListVideo size={24} />
-          <span>Oynatma listeleri</span>
-        </div>
-      </div>
+      </nav>
     </aside>
+    <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+    </>
   );
 };
 

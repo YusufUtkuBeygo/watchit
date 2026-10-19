@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getChannelById, getMyChannel, subscribe, unsubscribe } from '../services/channelService';
+import { getChannelById, getMyChannel, subscribe, unsubscribe, SUBSCRIPTIONS_CHANGED } from '../services/channelService';
 import './SubscribeButton.css';
 
 //İzleme sayfasındaki "Abone ol" düğmesi.
@@ -60,6 +60,8 @@ export default function SubscribeButton({ channel, onChannelChange }) {
       } else {
         await subscribe(channelId);
       }
+      //Sol menüdeki abonelik listesi yenilensin
+      window.dispatchEvent(new Event(SUBSCRIPTIONS_CHANGED));
     } catch (error) {
       const status = error.response ? error.response.status : null;
       if (status === 403) {
