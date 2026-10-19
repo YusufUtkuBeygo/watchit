@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --bg-color: #0f0f0f;
   --surface-color: #0f0f0f;
   --hover-color: #272727;
@@ -232,3 +233,35 @@ textarea.input {
   font-weight: 600;
   margin-bottom: 16px;
 }
+
+/* Klavyeyle gezen için bütün düğmelerde görünür odak çerçevesi */
+button:focus-visible,
+select:focus-visible,
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid #3ea6ff;
+  outline-offset: 2px;
+}
+
+.page-title,
+.page-message h2 {
+  text-wrap: balance;
+}
+
+/* "İçeriğe geç" bağlantısı: yalnız klavyeyle odaklanınca görünür */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 300;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #3ea6ff;
+  color: #0f0f0f;
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+

@@ -37,7 +37,7 @@ function SearchPage() {
   return (
     <div className="page">
       <h1 className="page-title">“{query}” için sonuçlar</h1>
-      {status === 'loading' && <p className="grid-message">Aranıyor...</p>}
+      {status === 'loading' && <p className="grid-message">Aranıyor…</p>}
       {status === 'error' && <p className="grid-message">Arama yapılamadı. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && videos.length === 0 && (
         <p className="grid-message">Bu aramayla eşleşen video yok.</p>

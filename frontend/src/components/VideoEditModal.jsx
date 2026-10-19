@@ -83,7 +83,7 @@ export default function VideoEditModal({ video, onClose, onSaved }) {
         <div className="form-actions">
           <button type="button" className="btn btn-ghost" onClick={onClose}>İptal</button>
           <button type="submit" className="btn btn-primary" disabled={isSubmitting || !title.trim() || !categoryId}>
-            {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
+            {isSubmitting ? 'Kaydediliyor…' : 'Kaydet'}
           </button>
         </div>
       </form>

@@ -44,7 +44,7 @@ function HistoryList() {
   return (
     <div className="page">
       <h1 className="page-title">İzleme geçmişi</h1>
-      {status === 'loading' && <p className="grid-message">Yükleniyor...</p>}
+      {status === 'loading' && <p className="grid-message">Yükleniyor…</p>}
       {status === 'error' && <p className="grid-message">Geçmiş yüklenemedi. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && entries.length === 0 && (
         <p className="grid-message">Henüz bir video izlemedin.</p>

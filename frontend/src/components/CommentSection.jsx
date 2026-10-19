@@ -71,12 +71,12 @@ export default function CommentSection({ videoId }) {
       </h2>
 
       {user ? (
-        <CommentForm videoId={videoId} onPosted={reload} placeholder="Yorum ekle..." />
+        <CommentForm videoId={videoId} onPosted={reload} placeholder="Yorum ekle…" />
       ) : (
         <p className="comments-hint">Yorum yapmak için giriş yap.</p>
       )}
 
-      {status === 'loading' && <p className="comments-hint">Yorumlar yükleniyor...</p>}
+      {status === 'loading' && <p className="comments-hint">Yorumlar yükleniyor…</p>}
       {status === 'error' && <p className="comments-hint">Yorumlar yüklenemedi.</p>}
       {status === 'ready' && comments.length === 0 && (
         <p className="comments-hint">Henüz yorum yok. İlk yorumu sen yaz.</p>
@@ -112,7 +112,7 @@ export default function CommentSection({ videoId }) {
                     <CommentForm
                       videoId={videoId}
                       parentCommentId={comment.id}
-                      placeholder="Yanıt ekle..."
+                      placeholder="Yanıt ekle…"
                       autoFocus
                       onPosted={() => { setReplyingTo(null); reload(); }}
                       onCancel={() => setReplyingTo(null)}
@@ -207,7 +207,7 @@ function CommentEditForm({ comment, onCancel, onSaved }) {
         <button type="button" className="comment-cancel" onClick={onCancel}>İptal</button>
         <button type="submit" className="comment-submit"
           disabled={isSubmitting || !content.trim() || content.trim() === comment.content}>
-          {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
+          {isSubmitting ? 'Kaydediliyor…' : 'Kaydet'}
         </button>
       </div>
     </form>
@@ -256,7 +256,7 @@ function CommentForm({ videoId, parentCommentId = null, placeholder, autoFocus, 
           <button type="button" className="comment-cancel" onClick={onCancel}>İptal</button>
         )}
         <button type="submit" className="comment-submit" disabled={isSubmitting || !content.trim()}>
-          {isSubmitting ? 'Gönderiliyor...' : parentCommentId ? 'Yanıtla' : 'Yorum yap'}
+          {isSubmitting ? 'Gönderiliyor…' : parentCommentId ? 'Yanıtla' : 'Yorum yap'}
         </button>
       </div>
     </form>

@@ -71,7 +71,7 @@ function WatchPage() {
   }, [id]);
 
   if (status === 'loading') {
-    return <p className="watch-message">Yükleniyor...</p>;
+    return <p className="watch-message">Yükleniyor…</p>;
   }
 
   if (status === 'notFound' || status === 'error') {

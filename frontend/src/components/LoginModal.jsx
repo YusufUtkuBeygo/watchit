@@ -162,7 +162,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
           <button type="submit" className="login-submit" disabled={isSubmitting}>
             {isSubmitting
-              ? (isRegister ? 'Hesap oluşturuluyor...' : 'Giriş yapılıyor...')
+              ? (isRegister ? 'Hesap oluşturuluyor…' : 'Giriş yapılıyor…')
               : (isRegister ? 'Hesap oluştur' : 'Giriş yap')}
           </button>
 

@@ -79,7 +79,7 @@ export default function ChannelEditModal({ channel, onClose, onSaved }) {
         <div className="form-actions">
           <button type="button" className="btn btn-ghost" onClick={onClose}>İptal</button>
           <button type="submit" className="btn btn-primary" disabled={isSubmitting || !channelName.trim()}>
-            {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
+            {isSubmitting ? 'Kaydediliyor…' : 'Kaydet'}
           </button>
         </div>
       </form>

@@ -42,7 +42,7 @@ export default function PlaylistForm({ initial, submitLabel, onSubmit, onCancel 
       <div className="form-actions">
         {onCancel && <button type="button" className="btn btn-ghost" onClick={onCancel}>İptal</button>}
         <button type="submit" className="btn btn-primary" disabled={isSubmitting || !title.trim()}>
-          {isSubmitting ? 'Kaydediliyor...' : submitLabel}
+          {isSubmitting ? 'Kaydediliyor…' : submitLabel}
         </button>
       </div>
     </form>

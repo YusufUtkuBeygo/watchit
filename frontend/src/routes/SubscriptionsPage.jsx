@@ -49,7 +49,7 @@ function SubscriptionsFeed() {
     return () => { ignore = true; };
   }, []);
 
-  if (status === 'loading') return <p className="grid-message">Yükleniyor...</p>;
+  if (status === 'loading') return <p className="grid-message">Yükleniyor…</p>;
   if (status === 'error') return <p className="grid-message">Abonelikler yüklenemedi. Biraz sonra tekrar dene.</p>;
 
   if (channels.length === 0) {

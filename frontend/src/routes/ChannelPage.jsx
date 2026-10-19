@@ -60,7 +60,7 @@ function ChannelPage() {
   }, [id]);
 
   if (status === 'loading') {
-    return <p className="channel-message">Yükleniyor...</p>;
+    return <p className="channel-message">Yükleniyor…</p>;
   }
 
   if (status === 'notFound' || status === 'error') {

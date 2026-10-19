@@ -102,7 +102,7 @@ function ProfileForm() {
         {successMessage && <p className="form-success" role="status">{successMessage}</p>}
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-            {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
+            {isSubmitting ? 'Kaydediliyor…' : 'Kaydet'}
           </button>
         </div>
       </form>
@@ -149,7 +149,7 @@ function DeleteAccount() {
         {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
         <div className="form-actions">
           <button type="submit" className="btn btn-danger" disabled={isDeleting || confirmText !== user.username}>
-            {isDeleting ? 'Siliniyor...' : 'Hesabımı kalıcı olarak sil'}
+            {isDeleting ? 'Siliniyor…' : 'Hesabımı kalıcı olarak sil'}
           </button>
         </div>
       </form>

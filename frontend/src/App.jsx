@@ -29,10 +29,11 @@ function App() {
 
   return (
     <div className={`app-container ${isSidebarOpen ? '' : 'sidebar-hidden'}`}>
+      <a href="#icerik" className="skip-link">İçeriğe geç</a>
       <Navbar onMenuClick={toggleSidebar} />
       <div className="main-content">
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebarOnSmallScreen} />
-        <main className={`content-area ${isSidebarOpen ? 'with-sidebar' : ''}`}>
+        <main id="icerik" tabIndex={-1} className={`content-area ${isSidebarOpen ? 'with-sidebar' : ''}`}>
           {/* Adrese göre hangi sayfanın çizileceği burada seçilir */}
           <Routes>
             <Route path="/" element={<HomePage />} />

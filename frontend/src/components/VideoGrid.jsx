@@ -33,7 +33,7 @@ function VideoGrid({ selectedCategory }) {
     return () => { ignore = true; };
   }, [selectedCategory]);
 
-  if (status === 'loading') return <p className="grid-message">Yükleniyor...</p>;
+  if (status === 'loading') return <p className="grid-message">Yükleniyor…</p>;
   if (status === 'error') return <p className="grid-message">Videolar yüklenemedi. Biraz sonra tekrar dene.</p>;
   if (videos.length === 0) {
     return (

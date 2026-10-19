@@ -85,7 +85,7 @@ function MyPlaylists() {
         </div>
       )}
 
-      {status === 'loading' && <p className="grid-message">Yükleniyor...</p>}
+      {status === 'loading' && <p className="grid-message">Yükleniyor…</p>}
       {status === 'error' && <p className="grid-message">Listeler yüklenemedi. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && playlists.length === 0 && !isCreating && (
         <p className="grid-message">

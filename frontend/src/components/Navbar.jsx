@@ -55,7 +55,7 @@ const Navbar = ({ onMenuClick }) => {
             <input
               type="search"
               name="q"
-              placeholder="Ara"
+              placeholder="Ara…"
               aria-label="Video ara"
               autoComplete="off"
               className="search-input"

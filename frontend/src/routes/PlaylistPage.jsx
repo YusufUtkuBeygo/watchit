@@ -19,7 +19,7 @@ function PlaylistPage() {
 
   const [playlist, setPlaylist] = useState(null);
   const [entries, setEntries] = useState([]);
-  //'loading' | 'ready' | 'notFound' | 'forbidden' | 'error'
+  //'loading' | 'ready' | 'notFound' | 'forbidden' | 'login' | 'error'
   const [status, setStatus] = useState('loading');
   const [isEditing, setIsEditing] = useState(false);
 
@@ -38,7 +38,7 @@ function PlaylistPage() {
       } catch (error) {
         if (ignore) return;
         const code = error.response?.status;
-        setStatus(code === 404 ? 'notFound' : code === 403 || code === 401 ? 'forbidden' : 'error');
+        setStatus(code === 404 ? 'notFound' : code === 403 ? 'forbidden' : code === 401 ? 'login' : 'error');
       }
     }
 
@@ -46,11 +46,12 @@ function PlaylistPage() {
     return () => { ignore = true; };
   }, [playlistId, user?.id]);
 
-  if (status === 'loading') return <p className="grid-message">Yükleniyor...</p>;
+  if (status === 'loading') return <p className="grid-message">Yükleniyor…</p>;
   if (status !== 'ready') {
     const texts = {
       notFound: ['Liste bulunamadı', 'Bu liste silinmiş ya da hiç olmamış olabilir.'],
       forbidden: ['Bu liste gizli', 'Gizli listeleri yalnız sahibi görebilir.'],
+      login: ['Bu listeyi görmek için giriş yap', 'Oynatma listeleri yalnız giriş yapınca görünür.'],
       error: ['Liste yüklenemedi', 'Bir hata oluştu, biraz sonra tekrar dene.'],
     };
     return (
