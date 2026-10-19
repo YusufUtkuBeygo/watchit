@@ -6,6 +6,7 @@ import CommentSection from '../components/CommentSection';
 import LikeButton from '../components/LikeButton';
 import SubscribeButton from '../components/SubscribeButton';
 import VideoPlayer from '../components/VideoPlayer';
+import SaveToPlaylist from '../components/SaveToPlaylist';
 import './WatchPage.css';
 
 function WatchPage() {
@@ -100,12 +101,15 @@ function WatchPage() {
         </div>
         {/* Abone olunca sayfadaki kanal bilgisi (abone sayısı) güncellenir */}
         {channel && <SubscribeButton key={`kanal-${channel.id}`} channel={channel} onChannelChange={setChannel} />}
-        <LikeButton
-          key={`begeni-${video.id}`}
-          videoId={video.id}
-          initialCount={video.likeCount}
-          initialLiked={video.likedByMe}
-        />
+        <div className="watch-actions">
+          <LikeButton
+            key={`begeni-${video.id}`}
+            videoId={video.id}
+            initialCount={video.likeCount}
+            initialLiked={video.likedByMe}
+          />
+          <SaveToPlaylist key={`kaydet-${video.id}`} videoId={video.id} />
+        </div>
       </div>
 
       <div className="watch-description">

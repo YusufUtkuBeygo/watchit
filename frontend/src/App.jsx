@@ -10,6 +10,8 @@ import ChannelPage from './routes/ChannelPage';
 import SearchPage from './routes/SearchPage';
 import HistoryPage from './routes/HistoryPage';
 import SubscriptionsPage from './routes/SubscriptionsPage';
+import PlaylistsPage from './routes/PlaylistsPage';
+import PlaylistPage from './routes/PlaylistPage';
 
 //Geniş ekran mı? (CSS'teki 1000px sınırıyla aynı)
 const isWideScreen = () => window.matchMedia('(min-width: 1001px)').matches;
@@ -38,6 +40,8 @@ function App() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/subscriptions" element={<SubscriptionsPage />} />
+            <Route path="/playlists" element={<PlaylistsPage />} />
+            <Route path="/playlist/:id" element={<PlaylistPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
