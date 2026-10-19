@@ -4,6 +4,8 @@ import com.yutkubeygo.watchit.dto.CommentRequestDto;
 import com.yutkubeygo.watchit.dto.CommentResponseDto;
 import com.yutkubeygo.watchit.entity.Comment;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapping;
 
 import java.util.List;
@@ -16,6 +18,8 @@ public interface CommentMapper {
     @Mapping(source = "user.username", target="username")
     CommentResponseDto toDto(Comment comment);
     List<CommentResponseDto> toDtoList(List<Comment> comments);
+    //Request DTO'sunda olmayan alanlar (id, ilişkiler, tarihler) serviste ya da veritabanında dolar
+    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
     Comment toEntity(CommentRequestDto commentRequestDto);
 
 }

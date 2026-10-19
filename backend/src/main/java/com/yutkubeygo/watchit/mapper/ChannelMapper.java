@@ -3,6 +3,8 @@ import com.yutkubeygo.watchit.dto.ChannelRequestDto;
 import com.yutkubeygo.watchit.dto.ChannelResponseDto;
 import com.yutkubeygo.watchit.entity.Channel;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapping;
 
 import java.util.List;
@@ -19,5 +21,7 @@ public interface ChannelMapper {
     //Gönderilecek nesne listesini dto listesine çevirir
     List<ChannelResponseDto> toDtoList(List<Channel> channels);
     //Json dosyasından gelen bilgieri istenilen dto nesnesindeki kısıtlamaları uygularyak dto obj. oluşturur
+    //Request DTO'sunda olmayan alanlar (id, ilişkiler, tarihler) serviste ya da veritabanında dolar
+    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
     Channel toEntity(ChannelRequestDto dto);
 }

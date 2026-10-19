@@ -4,6 +4,8 @@ import com.yutkubeygo.watchit.dto.SubscriptionRequestDto;
 import com.yutkubeygo.watchit.dto.SubscriptionResponseDto;
 import com.yutkubeygo.watchit.entity.Subscription;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapping;
 
 import java.util.List;
@@ -15,6 +17,8 @@ public interface SubscriptionMapper {
     @Mapping(source = "channel.id", target = "channelId")
     public SubscriptionResponseDto toDto(Subscription subscription);
     public List<SubscriptionResponseDto> toDtoList(List<Subscription> subscriptions);
+    //Request DTO'sunda olmayan alanlar (id, ilişkiler, tarihler) serviste ya da veritabanında dolar
+    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
     public Subscription toEntity(SubscriptionRequestDto subscriptionRequestDto);
 
 
