@@ -15,6 +15,8 @@ public interface VideoMapper {
     //İşlem sonucu return edilecek nesneyi RepsonseDto nesnesine dönüştürür
     @Mapping(source = "channel.id", target="channelId")
     @Mapping(source = "category.id", target="categoryId")
+    @Mapping(source = "channel.channelName", target="channelName")
+    @Mapping(source = "channel.profilePictureUrl", target="channelProfilePictureUrl")
     VideoResponseDto toDto(Video video);
     //Liste halinde isteklerin returnleri için ResponseDto nesnelerinden oluşan bir liste return eder
     List<VideoResponseDto> toDtoList(List<Video>  videoResponseDtoList);

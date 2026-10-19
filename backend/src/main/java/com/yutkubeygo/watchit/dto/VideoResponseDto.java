@@ -18,6 +18,9 @@ public class VideoResponseDto {
     private Long likeCount;
 
     private Long channelId;
+    //Kart ve listelerde kanal adını göstermek için (ayrı istek atmadan)
+    private String channelName;
+    private String channelProfilePictureUrl;
     private Long categoryId;
     private boolean likedByMe;
 }
