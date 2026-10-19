@@ -5,6 +5,7 @@ import { getChannelById } from '../services/channelService';
 import CommentSection from '../components/CommentSection';
 import LikeButton from '../components/LikeButton';
 import SubscribeButton from '../components/SubscribeButton';
+import VideoPlayer from '../components/VideoPlayer';
 import './WatchPage.css';
 
 function WatchPage() {
@@ -74,7 +75,7 @@ function WatchPage() {
           <div className="watch-player-empty">Video oynatılamadı (dosyaya ulaşılamıyor)</div>
         ) : (
           //key: başka videoya geçince oynatıcı baştan kurulur
-          <video key={video.id} src={video.videoUrl} controls autoPlay onError={() => setPlayError(true)} />
+          <VideoPlayer key={video.id} video={video} onError={() => setPlayError(true)} />
         )}
       </div>
 
