@@ -1,16 +1,28 @@
-# React + Vite
+# Watchit — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + Vite. Stil düz CSS dosyalarıyla. Projenin genel tanıtımı ve kurulumu için kök dizindeki `README.md`'ye bak.
 
-Currently, two official plugins are available:
+## Çalıştırma
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+Geliştirme sunucusu `http://localhost:5173` adresinde açılır. `/api` ile başlayan istekler `vite.config.js`'teki proxy ile backend'e (`http://localhost:8080`) gider; backend'in ayrıca çalışıyor olması gerekir.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Komutlar
 
-## Expanding the ESLint configuration
+| Komut | Ne yapar |
+|---|---|
+| `npm run dev` | Geliştirme sunucusunu açar (değişiklikler anında yansır) |
+| `npm run build` | Yayına hazır dosyaları `dist/` klasörüne üretir |
+| `npm run lint` | ESLint ile kod kontrolü |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Klasörler
+
+- `src/routes/` — sayfalar (adrese göre çizilenler)
+- `src/components/` — sayfaların kullandığı parçalar
+- `src/services/` — backend istekleri (hepsi ortak `api.js` nesnesinden geçer, token'ı o ekler)
+- `src/context/` — giriş yapmış kullanıcı bilgisi (`useAuth()`)
+- `src/utils/` — süre ve tarih biçimlendirme gibi küçük yardımcılar
