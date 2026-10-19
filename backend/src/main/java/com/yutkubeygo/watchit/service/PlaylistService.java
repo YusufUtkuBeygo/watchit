@@ -62,7 +62,8 @@ public class PlaylistService {
         if(playlist==null)
             return null;
 
-        if(!Boolean.TRUE.equals(playlist.getIsPublic()) && !userId.equals(playlist.getOwner().getId()))
+        //GiriÅŸ yoksa userId null: equals'Ä± sahibin id'si Ã¼zerinden Ã§aÄŸÄ±rÄ±yoruz (null.equals patlardÄ±)
+        if(!Boolean.TRUE.equals(playlist.getIsPublic()) && !playlist.getOwner().getId().equals(userId))
             throw new ForbiddenException();
 
         return playlistMapper.toDto(playlist);

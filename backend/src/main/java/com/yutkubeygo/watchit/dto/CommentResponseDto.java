@@ -15,7 +15,6 @@ public class CommentResponseDto {
         private Long userId;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
-        private Long likeCount;
         private Long parentCommentId;
         private boolean edited;
         private String username;

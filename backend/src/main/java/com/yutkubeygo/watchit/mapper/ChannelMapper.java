@@ -3,6 +3,7 @@ import com.yutkubeygo.watchit.dto.ChannelRequestDto;
 import com.yutkubeygo.watchit.dto.ChannelResponseDto;
 import com.yutkubeygo.watchit.entity.Channel;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -10,6 +11,10 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ChannelMapper {
     //Gönderilecek nesneyi dto'ya çeviri
+    //Sayılar ve "abone miyim" tabloda yok, servis sayıp doldurur
+    @Mapping(target = "subscriberCount", ignore = true)
+    @Mapping(target = "videoCount", ignore = true)
+    @Mapping(target = "subscribedByMe", ignore = true)
     ChannelResponseDto toDto(Channel channel);
     //Gönderilecek nesne listesini dto listesine çevirir
     List<ChannelResponseDto> toDtoList(List<Channel> channels);

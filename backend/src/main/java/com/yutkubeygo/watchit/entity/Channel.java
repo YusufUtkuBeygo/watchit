@@ -28,12 +28,7 @@ public class Channel {
     @Column(length = 5000)
     private String description;
 
-    //Abone,görüntülenme ve yüklenen video verilerini tutmak için tanımlandı
-    private Long subscriberCount = 0L;
-
-    private Long videoCount = 0L;
-
-    private Long totalViews = 0L;
+    //Abone ve video sayısı tabloda tutulmaz, istekte sayılır (V7: eski sayaç sütunları hiç güncellenmiyordu)
 
     //Burada profil ve banner görsellerinin linklerini sakladık lünkler üzeriden depolamadan erişilebilir databaseye görsel yüklemeyi engelledik
 

@@ -2,3 +2,7 @@
 .vscode/
 .DS_Store
 *.log
+
+# Claude ile çalışma notları ve yerel ayarlar (kişisel, repoya girmez)
+CLAUDE.md
+.claude/
