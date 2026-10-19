@@ -72,7 +72,7 @@ export default function ChannelCreateForm({ onCreated }) {
       {errorMessage && <p className="upload-error">{errorMessage}</p>}
 
       <button type="submit" className="upload-submit" disabled={isSubmitting || !channelName.trim()}>
-        {isSubmitting ? 'Oluşturuluyor...' : 'Kanalı oluştur'}
+        {isSubmitting ? 'Oluşturuluyor…' : 'Kanalı oluştur'}
       </button>
     </form>
   );

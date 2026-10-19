@@ -21,3 +21,10 @@ export async function deleteComment(id)
 {
   await api.delete(`/comments/${id}`);
 }
+
+//Yorum metnini değiştirir (yalnız yazarı; başkasınınsa 403). Backend videoId'yi de ister ama değiştirmez
+export async function updateComment(id, content, videoId)
+{
+  const response = await api.put(`/comments/${id}`, { content, videoId });
+  return response.data;
+}

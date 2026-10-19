@@ -13,4 +13,10 @@ public interface VideoRepository extends JpaRepository<Video,Long> {
     //Kanalın videoları, en yeni en üstte (video.channel.id = ?)
     List<Video> findByChannelIdOrderByCreatedAtDesc(Long channelId);
 
+    //Kategorinin videoları, en yeni en üstte (video.category.id = ?)
+    List<Video> findByCategoryIdOrderByCreatedAtDesc(Long categoryId);
+
+    //Bütün videolar, en yeni en üstte
+    List<Video> findAllByOrderByCreatedAtDesc();
+
 }

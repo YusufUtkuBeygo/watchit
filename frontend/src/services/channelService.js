@@ -36,3 +36,24 @@ export async function unsubscribe(channelId)
 {
   await api.delete('/subscriptions', { params: { channelId } });
 }
+
+//Kanal bilgilerini günceller (yalnız sahibi; başkasınınsa 403)
+//channelData: { channelName, description, profilePictureUrl, bannerImageUrl } -> ChannelRequestDto
+export async function updateChannel(id, channelData)
+{
+  const response = await api.put(`/channels/${id}`, channelData);
+  return response.data;
+}
+
+//Giriş yapanın abone olduğu kanallar (tam kanal bilgisiyle)
+//Backend yalnız abonelik kayıtlarını ({ id, channelId }) verir, kanal bilgileri ayrı ayrı istenir
+export async function getMySubscribedChannels()
+{
+  const response = await api.get('/subscriptions');
+  const results = await Promise.allSettled(response.data.map((sub) => getChannelById(sub.channelId)));
+  //Bu arada silinmiş kanallar listeden düşer
+  return results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+}
+
+//Abonelik değişince (abone ol / çık) sol menü gibi yerlerin listeyi yenilemesi için haber verilir
+export const SUBSCRIPTIONS_CHANGED = 'watchit:subscriptions-changed';

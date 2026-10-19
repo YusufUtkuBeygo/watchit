@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { getVideoById } from '../services/videoService';
-import { getChannelById } from '../services/channelService';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Pencil, Trash2 } from 'lucide-react';
+import { getVideoById, deleteVideoById } from '../services/videoService';
+import { getChannelById, getMyChannel } from '../services/channelService';
+import { useAuth } from '../context/AuthContext';
+import VideoEditModal from '../components/VideoEditModal';
 import CommentSection from '../components/CommentSection';
 import LikeButton from '../components/LikeButton';
 import SubscribeButton from '../components/SubscribeButton';
+import VideoPlayer from '../components/VideoPlayer';
+import SaveToPlaylist from '../components/SaveToPlaylist';
 import './WatchPage.css';
 
 function WatchPage() {
@@ -17,6 +22,20 @@ function WatchPage() {
   const [status, setStatus] = useState('loading');
   //Kayıt var ama video dosyası açılamadıysa true
   const [playError, setPlayError] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  //Giriş yapanın kanalı (video onunsa düzenle/sil gösterilir)
+  const [myChannelId, setMyChannelId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+    const request = user ? getMyChannel() : Promise.resolve(null);
+    request
+      .then((channel) => { if (!ignore) setMyChannelId(channel ? channel.id : null); })
+      .catch(() => { if (!ignore) setMyChannelId(null); });
+    return () => { ignore = true; };
+  }, [user]);
 
   useEffect(() => {
     //Kullanıcı istek bitmeden başka videoya geçerse eski cevabı yok say
@@ -52,7 +71,7 @@ function WatchPage() {
   }, [id]);
 
   if (status === 'loading') {
-    return <p className="watch-message">Yükleniyor...</p>;
+    return <p className="watch-message">Yükleniyor…</p>;
   }
 
   if (status === 'notFound' || status === 'error') {
@@ -65,6 +84,19 @@ function WatchPage() {
     );
   }
 
+  const isOwner = myChannelId != null && myChannelId === video.channelId;
+
+  const handleDelete = async () => {
+    if (!window.confirm(`“${video.title}” silinsin mi? Yorumları ve beğenileri de silinir, geri alınamaz.`)) return;
+    try {
+      await deleteVideoById(video.id);
+      navigate(`/channel/${video.channelId}`);
+    } catch (error) {
+      console.error('Video silinemedi:', error);
+      alert('Video silinemedi.');
+    }
+  };
+
   return (
     <div className="watch-page">
       <div className="watch-player">
@@ -74,7 +106,7 @@ function WatchPage() {
           <div className="watch-player-empty">Video oynatılamadı (dosyaya ulaşılamıyor)</div>
         ) : (
           //key: başka videoya geçince oynatıcı baştan kurulur
-          <video key={video.id} src={video.videoUrl} controls autoPlay onError={() => setPlayError(true)} />
+          <VideoPlayer key={video.id} video={video} onError={() => setPlayError(true)} />
         )}
       </div>
 
@@ -99,12 +131,21 @@ function WatchPage() {
         </div>
         {/* Abone olunca sayfadaki kanal bilgisi (abone sayısı) güncellenir */}
         {channel && <SubscribeButton key={`kanal-${channel.id}`} channel={channel} onChannelChange={setChannel} />}
-        <LikeButton
-          key={`begeni-${video.id}`}
-          videoId={video.id}
-          initialCount={video.likeCount}
-          initialLiked={video.likedByMe}
-        />
+        <div className="watch-actions">
+          <LikeButton
+            key={`begeni-${video.id}`}
+            videoId={video.id}
+            initialCount={video.likeCount}
+            initialLiked={video.likedByMe}
+          />
+          <SaveToPlaylist key={`kaydet-${video.id}`} videoId={video.id} />
+          {isOwner && (
+            <>
+              <button className="btn" onClick={() => setIsEditing(true)}><Pencil size={16} /> Düzenle</button>
+              <button className="btn btn-ghost" onClick={handleDelete}><Trash2 size={16} /> Sil</button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="watch-description">
@@ -116,6 +157,18 @@ function WatchPage() {
 
       {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
       <CommentSection key={video.id} videoId={video.id} />
+
+      {isEditing && (
+        <VideoEditModal
+          video={video}
+          onClose={() => setIsEditing(false)}
+          //Kaydedilen cevapta beğeni bilgisi yok (sayılmaz); ekrandakiler korunur
+          onSaved={(saved) => {
+            setVideo((old) => ({ ...saved, likeCount: old.likeCount, likedByMe: old.likedByMe }));
+            setIsEditing(false);
+          }}
+        />
+      )}
     </div>
   );
 }

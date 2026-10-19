@@ -60,7 +60,7 @@ public class VideoService {
     //VideoMapperdaki list methoduna dikkat et hata cikarsa return
     public List<VideoResponseDto> getAllVideos()
     {
-        List<Video> videos=videoRepository.findAll();
+        List<Video> videos=videoRepository.findAllByOrderByCreatedAtDesc();
         return videoMapper.toDtoList(videos);
     }
 
@@ -71,6 +71,16 @@ public class VideoService {
             return null;
 
         List<Video> videos=videoRepository.findByChannelIdOrderByCreatedAtDesc(channelId);
+        return videoMapper.toDtoList(videos);
+    }
+
+    //Kategorinin videoları; kategori yoksa null (controller 404 döner)
+    public List<VideoResponseDto> getVideosByCategoryId(Long categoryId)
+    {
+        if(!categoryRepository.existsById(categoryId))
+            return null;
+
+        List<Video> videos=videoRepository.findByCategoryIdOrderByCreatedAtDesc(categoryId);
         return videoMapper.toDtoList(videos);
     }
 

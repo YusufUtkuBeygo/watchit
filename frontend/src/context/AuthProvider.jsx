@@ -24,13 +24,16 @@ export default function AuthProvider({ children }) {
     setUser(newUser);
   };
 
+  //Hesap bilgileri değişince (hesap sayfası) yeni kullanıcı bilgisi buraya yazılır
+  const updateUser = (newUser) => setUser(newUser);
+
   const signOut = () => {
     logout();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, signUp, signOut, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

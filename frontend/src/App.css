@@ -17,3 +17,21 @@
   background-color: var(--bg-color);
   padding: 0 24px;
 }
+
+/* Sol menü açıkken içerik onun genişliği kadar sağdan başlar */
+.content-area.with-sidebar {
+  margin-left: var(--sidebar-width);
+}
+
+/* Dar ekranda menü içeriğin üstüne açılır, içerik kaymaz */
+@media (max-width: 1000px) {
+  .content-area.with-sidebar {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .content-area {
+    padding: 0 12px;
+  }
+}

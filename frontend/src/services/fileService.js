@@ -1,12 +1,15 @@
 import axios from 'axios';
 import api from './api';
 
-//Adreste sorun çıkaran karakterleri (boşluk, ğ, ş, ?, #...) '-' yapar ve adı kısaltır.
+//Türkçe harflerin adreste sorun çıkarmayan karşılıkları ("çok" → "cok", silinip "ok" olmasın)
+const TURKISH_LETTERS = { ç: 'c', Ç: 'C', ğ: 'g', Ğ: 'G', ı: 'i', İ: 'I', ö: 'o', Ö: 'O', ş: 's', Ş: 'S', ü: 'u', Ü: 'U' };
+
+//Adreste sorun çıkaran karakterleri (boşluk, ?, #...) '-' yapar ve adı kısaltır.
 //Backend adresi "UUID_ad" diye kurar, veritabanı sütunu 255 karakter: uzun ad kaydı patlatır.
 function safeFileName(name)
 {
   const dot = name.lastIndexOf('.');
-  const base = dot > 0 ? name.slice(0, dot) : name;
+  const base = (dot > 0 ? name.slice(0, dot) : name).replace(/[çÇğĞıİöÖşŞüÜ]/g, (letter) => TURKISH_LETTERS[letter]);
   const ext = dot > 0 ? name.slice(dot).toLowerCase().replace(/[^a-z0-9.]/g, '') : '';
   const cleanBase = base.replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
   return (cleanBase || 'dosya') + ext;

@@ -1,0 +1,62 @@
+.save-playlist {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.save-message {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.save-box {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 120;
+  width: min(300px, calc(100vw - 24px));
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: #282828;
+  border-radius: 12px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+}
+
+.save-box h3 {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.save-box ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.save-item {
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.save-title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.save-empty {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.save-new {
+  display: flex;
+  gap: 4px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}

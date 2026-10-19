@@ -133,7 +133,7 @@ export default function UploadModal({ onClose }) {
       }
 
       //3) Dosya adresleriyle video kaydı (kanal token'dan bulunur)
-      setStatusText('Kaydediliyor...');
+      setStatusText('Kaydediliyor…');
       const video = await createVideo({
         title: title.trim(),
         description: description.trim(),
@@ -176,7 +176,7 @@ export default function UploadModal({ onClose }) {
 
         <div className="upload-content">
 
-          {step === 'loading' && <p className="upload-hint">Yükleniyor...</p>}
+          {step === 'loading' && <p className="upload-hint">Yükleniyor…</p>}
 
           {step === 'error' && <p className="upload-error">{errorMessage}</p>}
 
@@ -258,7 +258,7 @@ export default function UploadModal({ onClose }) {
                   required
                   disabled={isSubmitting}
                 >
-                  <option value="">Seç...</option>
+                  <option value="">Seç…</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>{category.name}</option>
                   ))}

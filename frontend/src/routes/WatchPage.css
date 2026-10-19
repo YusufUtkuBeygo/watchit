@@ -101,3 +101,16 @@
 .watch-channel-link:hover {
   color: var(--text-primary);
 }
+
+/* Beğen ve Kaydet düğmeleri: satırın sağında, dar ekranda alta iner */
+.watch-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.watch-channel {
+  flex-wrap: wrap;
+}

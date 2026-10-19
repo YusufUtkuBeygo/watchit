@@ -1,58 +1,22 @@
 import { useState, useEffect } from 'react';
 import { getAllCategories } from '../services/categoryService';
+import './Categories.css';
 
+//Kategori çipleri: "Tümü" + backend'deki kategoriler. Seçim HomePage'de (adreste) tutulur
 function Categories({ selectedCategory, onSelectCategory }) {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    async function uploadCategories() {
-      try {
-        const data = await getAllCategories();
-        setCategories(data);
-      } catch (error) {
-        console.error("Kategoriler getirilemedi:", error);
-      }
-    }
-
-    uploadCategories();
+    getAllCategories()
+      .then(setCategories)
+      .catch((error) => console.error('Kategoriler getirilemedi:', error));
   }, []);
 
   return (
-    <div className="categories-container" style={{
-      display: 'flex',
-      overflowX: 'auto',
-      padding: '12px 24px',
-      gap: '12px',
-      scrollbarWidth: 'none',
-      msOverflowStyle: 'none',
-    }}>
-      <style>{`
-        .categories-container::-webkit-scrollbar {
-          display: none;
-        }
-        .category-chip {
-          padding: 6px 12px;
-          border-radius: 8px;
-          background-color: var(--bg-secondary, #272727);
-          color: var(--text-primary, #fff);
-          white-space: nowrap;
-          cursor: pointer;
-          border: none;
-          font-size: 14px;
-          font-weight: 500;
-          transition: background-color 0.2s;
-        }
-        .category-chip:hover {
-          background-color: var(--bg-secondary-hover, #3f3f3f);
-        }
-        .category-chip.active {
-          background-color: var(--text-primary, #fff);
-          color: var(--bg-primary, #0f0f0f);
-        }
-      `}</style>
-
+    <div className="categories-container" role="toolbar" aria-label="Kategoriler">
       <button
         className={`category-chip ${selectedCategory === null ? 'active' : ''}`}
+        aria-pressed={selectedCategory === null}
         onClick={() => onSelectCategory(null)}
       >
         Tümü
@@ -62,6 +26,7 @@ function Categories({ selectedCategory, onSelectCategory }) {
         <button
           key={cat.id}
           className={`category-chip ${selectedCategory === cat.id ? 'active' : ''}`}
+          aria-pressed={selectedCategory === cat.id}
           onClick={() => onSelectCategory(cat.id)}
         >
           {cat.name}
