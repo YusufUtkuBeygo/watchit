@@ -1,76 +1,49 @@
 import { Link } from 'react-router-dom';
+import { formatDuration, timeAgo, initialOf } from '../utils/format';
+import './VideoCard.css';
 
+//Video kartı: kapak + süre, kanal avatarı, başlık, kanal adı, tarih
+//Kart tek bir link değil: içinde kanal linki de var, link içinde link olamaz
 function VideoCard({ video }) {
-  // Eğer video verisi gelmezse boş dön (patlamayı önler)
+  //Video verisi gelmezse boş dön (patlamayı önler)
   if (!video) return null;
 
+  const watchUrl = `/watch/${video.id}`;
+  const channelUrl = `/channel/${video.channelId}`;
+
   return (
-    //Karta tıklayınca o videonun izleme sayfasına gider
-    <Link to={`/watch/${video.id}`} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      
-      {/* 1. Küçük Resim (Thumbnail) */}
-      <div style={{ 
-        width: '100%', 
-        aspectRatio: '16/9', 
-        backgroundColor: '#333', 
-        borderRadius: '12px', 
-        overflow: 'hidden',
-        position: 'relative'
-      }}>
+    <article className="video-card">
+      <Link to={watchUrl} className="thumbnail-container" aria-label={video.title}>
         {video.thumbnailUrl ? (
-          <img 
-            src={video.thumbnailUrl} 
-            alt={video.title} 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-          />
+          <img className="thumbnail" src={video.thumbnailUrl} alt="" loading="lazy" />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#777' }}>
-            Resim Yok
-          </div>
+          <div className="thumbnail thumbnail-empty">Kapak yok</div>
         )}
-        
-        {/* Süre (Saniye olarak geldiği için ileride dakikaya çevirebilirsin, şimdilik sabit) */}
-        {video.durationInSeconds && (
-          <span style={{
-            position: 'absolute', bottom: '8px', right: '8px', 
-            backgroundColor: 'rgba(0,0,0,0.8)', color: '#fff', 
-            padding: '2px 6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold'
-          }}>
-            {Math.floor(video.durationInSeconds / 60)}:{(video.durationInSeconds % 60).toString().padStart(2, '0')}
-          </span>
+        {video.durationInSeconds > 0 && (
+          <span className="duration">{formatDuration(video.durationInSeconds)}</span>
         )}
-      </div>
+      </Link>
 
-      {/* 2. Video Bilgileri */}
-      <div style={{ display: 'flex', gap: '12px', padding: '0 5px' }}>
-        
-        {/* Kanal Avatarı (Şimdilik yuvarlak bir yer tutucu) */}
-        <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#555', flexShrink: 0 }}></div>
+      <div className="video-info">
+        <Link to={channelUrl} className="vc-avatar" aria-label={video.channelName || 'Kanal'}>
+          {video.channelProfilePictureUrl ? (
+            <img src={video.channelProfilePictureUrl} alt="" loading="lazy" />
+          ) : (
+            <span>{initialOf(video.channelName)}</span>
+          )}
+        </Link>
 
-        {/* Başlık ve Detaylar */}
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          
-          <h4 style={{ 
-            margin: 0, fontSize: '16px', color: '#fff', 
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' 
-          }}>
+        <div className="video-details">
+          <Link to={watchUrl} className="video-title" title={video.title}>
             {video.title}
-          </h4>
-          
-          {/* Kanal Adı: ManyToOne ilişkisi olduğu için "video.channel" bir objedir. 
-              Soru işareti (?) Optional Chaining'dir; kanal yoksa kod patlamaz. */}
-          <span style={{ fontSize: '14px', color: '#aaa', marginTop: '4px' }}>
-            {video.channel?.name || 'Bilinmeyen Kanal'}
-          </span>
-          
-          {/* Tarih: Backend'den gelen LocalDateTime formatını okunabilir TR tarihine çeviriyoruz */}
-          <span style={{ fontSize: '14px', color: '#aaa' }}>
-            10 B görüntülenme • {video.createdAt ? new Date(video.createdAt).toLocaleDateString('tr-TR') : 'Yeni'}
-          </span>
-          
+          </Link>
+          <Link to={channelUrl} className="vc-channel">
+            {video.channelName || 'Bilinmeyen kanal'}
+          </Link>
+          {video.createdAt && <span className="video-metadata">{timeAgo(video.createdAt)}</span>}
         </div>
       </div>
-    </Link>
+    </article>
   );
 }
 

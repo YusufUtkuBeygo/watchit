@@ -59,3 +59,170 @@ ul {
 .icon-btn:hover {
   background-color: var(--hover-color);
 }
+
+/* ---- Ortak sayfa ve form parçaları (bütün sayfalar kullanır) ---- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 0;
+  max-width: 1100px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-message {
+  padding: 48px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.page-message h2 {
+  color: var(--text-primary);
+}
+
+.text-link {
+  color: #3ea6ff;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 18px;
+  background-color: var(--pill-bg);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.btn:hover {
+  background-color: var(--border-color);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn-primary {
+  background-color: #3ea6ff;
+  color: #0f0f0f;
+}
+
+.btn-primary:hover {
+  background-color: #65b8ff;
+}
+
+.btn-danger {
+  background-color: #c62828;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #e53935;
+}
+
+.btn-ghost {
+  background-color: transparent;
+}
+
+.btn-ghost:hover {
+  background-color: var(--hover-color);
+}
+
+.btn:focus-visible,
+.icon-btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid #3ea6ff;
+  outline-offset: 2px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  background-color: #121212;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: #3ea6ff;
+}
+
+textarea.input {
+  resize: vertical;
+}
+
+.form-error {
+  font-size: 14px;
+  color: #ff6b6b;
+}
+
+.form-success {
+  font-size: 14px;
+  color: #6bd38a;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card {
+  background-color: #1a1a1a;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+}
