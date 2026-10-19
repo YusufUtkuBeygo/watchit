@@ -35,6 +35,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/channels/me").authenticated()
                         .requestMatchers(HttpMethod.GET,
                                 "/videos/**", "/channels/**", "/categories/**", "/comments/**").permitAll()
+                        //Herkese aÃ§Ä±k oynatma listeleri giriÅŸsiz de okunur (karar 19 Ekim).
+                        //Gizli liste: servis sahibi kontrol eder, giriÅŸsiz istekte userId null olduÄŸu iÃ§in 403 dÃ¶ner
+                        .requestMatchers(HttpMethod.GET, "/playlists/**", "/playlistvideos/**").permitAll()
+                        //API dokümanı (Swagger) herkese açık; uçların kendisi yine kendi kurallarına tabi
+                        .requestMatchers(HttpMethod.GET, "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         //Kategori ekleme/değiştirme/silme kimseye açık değil (rol sistemi yok, kategoriler veritabanından yönetilir)
                         //Okuma üstteki GET kuralına uyduğu için buraya hiç gelmez
                         .requestMatchers("/categories/**").denyAll()

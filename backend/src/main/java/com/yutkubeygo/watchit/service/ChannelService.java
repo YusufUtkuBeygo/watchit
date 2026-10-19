@@ -11,6 +11,7 @@ import com.yutkubeygo.watchit.mapper.ChannelMapper;
 import com.yutkubeygo.watchit.repository.ChannelRepository;
 import com.yutkubeygo.watchit.repository.SubscriptionRepository;
 import com.yutkubeygo.watchit.repository.UserRepository;
+import com.yutkubeygo.watchit.repository.VideoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,8 +25,10 @@ public class ChannelService {
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final FileService fileService;
+    private final VideoRepository videoRepository;
 
-    public ChannelService(ChannelMapper channelMapper, ChannelRepository channelRepository, UserRepository userRepository, SubscriptionRepository subscriptionRepository, FileService fileService) {
+    public ChannelService(ChannelMapper channelMapper, ChannelRepository channelRepository, UserRepository userRepository, SubscriptionRepository subscriptionRepository, FileService fileService, VideoRepository videoRepository) {
+        this.videoRepository = videoRepository;
         this.channelMapper = channelMapper;
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
@@ -71,9 +74,7 @@ public class ChannelService {
         if(channel==null)
             return null;
         //Sonra bulduğumuz/istenilen bu kanal nesnesini dto nesnesine çevirip return ediyoruz
-        ChannelResponseDto dto=channelMapper.toDto(channel);
-        Long subscriberCount = subscriptionRepository.countByChannelId(id);
-        dto.setSubscriberCount(subscriberCount);
+        ChannelResponseDto dto=toDtoWithCounts(channel);
         if(userId!=null)
         {
             Optional<Subscription> mySubscription = subscriptionRepository.findBySubscriberIdAndChannelId(userId,id);
@@ -90,7 +91,16 @@ public class ChannelService {
         Channel channel=channelRepository.findByOwnerId(userId).orElse(null);
         if(channel==null)
             return null;
-        return channelMapper.toDto(channel);
+        return toDtoWithCounts(channel);
+    }
+
+    //Kanalı dto'ya çevirir, abone ve video sayısını sayarak doldurur (tabloda sayaç sütunu yok, V7)
+    private ChannelResponseDto toDtoWithCounts(Channel channel)
+    {
+        ChannelResponseDto dto=channelMapper.toDto(channel);
+        dto.setSubscriberCount(subscriptionRepository.countByChannelId(channel.getId()));
+        dto.setVideoCount(videoRepository.countByChannelId(channel.getId()));
+        return dto;
     }
 
     //Kanal başkasınınsa ForbiddenException fırlatır (403)

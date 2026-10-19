@@ -35,7 +35,7 @@ public class ChannelController {
     }
 
     @GetMapping
-    public List<ChannelResponseDto> getAllChanneles()
+    public List<ChannelResponseDto> getAllChannels()
     {
         return channelService.getAllChannels();
     }

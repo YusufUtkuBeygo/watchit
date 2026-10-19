@@ -48,9 +48,6 @@ public class Comment {
     private LocalDateTime updatedAt;
 
 
-    //Yoruma gelen beğeni sayısını tutmak için eklendi
-    private Long likeCount=0L;
-
 
     //Yanıtlı yorumlar tablo kendi içinde bağlantı kurdu
     @ManyToOne

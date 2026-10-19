@@ -17,7 +17,6 @@ public class ChannelResponseDto {
 
     private Long subscriberCount;
     private Long videoCount;
-    private Long totalViews;
 
     private String profilePictureUrl;
     private String bannerImageUrl;

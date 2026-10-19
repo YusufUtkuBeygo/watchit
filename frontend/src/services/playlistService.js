@@ -43,7 +43,7 @@ export async function deletePlaylist(id)
 }
 
 //Görebildiğim bütün liste-video kayıtları (açık listeler + benimkiler)
-//Backend'de "listeye göre" sorgu yok; tek listeninkiler tarayıcıda süzülür
+//Liste kartları ve "Kaydet" kutusu birden çok listeye aynı anda baktığı için toplu liste kullanır
 export async function getVisiblePlaylistVideos()
 {
   const response = await api.get('/playlistvideos');
@@ -57,10 +57,11 @@ export function sortEntries(entries)
 }
 
 //Listenin kayıtları, sırasıyla ({ id, playlistId, videoId, orderIndex })
+//Liste yoksa 404, gizliyse ve benim değilse 403
 export async function getPlaylistEntries(playlistId)
 {
-  const all = await getVisiblePlaylistVideos();
-  return sortEntries(all.filter((e) => e.playlistId === playlistId));
+  const response = await api.get('/playlistvideos', { params: { playlistId } });
+  return response.data;
 }
 
 //Listenin kayıtları video bilgileriyle; silinmiş videolar düşer

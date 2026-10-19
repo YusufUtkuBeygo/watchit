@@ -10,4 +10,7 @@ import java.util.List;
 public interface PlaylistVideoRepository extends JpaRepository<PlaylistVideo,Long> {
     List<PlaylistVideo> findByPlaylistIsPublicTrueOrPlaylistOwnerId(Long ownerId);
 
+    //Tek listenin videoları, liste sırasıyla (sıra eşitse eklenme sırası)
+    List<PlaylistVideo> findByPlaylistIdOrderByOrderIndexAscIdAsc(Long playlistId);
+
 }

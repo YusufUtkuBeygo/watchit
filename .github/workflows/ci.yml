@@ -1,0 +1,75 @@
+# Sürekli entegrasyon (CI): her push'ta ve PR'da GitHub kendi makinesinde
+# backend testlerini ve frontend lint/build'ini çalıştırır. Kırmızı çıkarsa PR'da görünür.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend (derleme + test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    # Testler uygulamayı gerçekten ayağa kaldırır (Flyway V1..son sürüm boş veritabanına uygulanır).
+    # Bu yüzden CI'a özel, boş bir PostgreSQL açılır. Şifresi yalnız bu geçici makine için, gerçek değil.
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: watchit
+          POSTGRES_PASSWORD: ci-sifresi
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # application.properties'teki ${...} değişkenleri. Hepsi CI'a özel sahte değerler.
+    # (MinIO testte kullanılmıyor: bağlantı yalnız dosya yüklenirken açılır.)
+    env:
+      DB_PASSWORD: ci-sifresi
+      MINIO_SECRET_KEY: ci-minio-sahte
+      JWT_SECRET: ci-icin-sahte-jwt-anahtari-en-az-64-bayt-olmali-hs512-bunu-ister-0123456789abcdef
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # gradlew Windows'tan "çalıştırılabilir" işareti olmadan commit'lendi
+      - run: chmod +x gradlew
+
+      - run: ./gradlew test
+
+  frontend:
+    name: Frontend (lint + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # npm ci: package-lock.json'daki sürümleri birebir kurar (npm install'dan farkı: kilidi değiştirmez)
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
