@@ -3,6 +3,7 @@ package com.yutkubeygo.watchit.controller;
 import com.yutkubeygo.watchit.dto.VideoRequestDto;
 import com.yutkubeygo.watchit.dto.VideoResponseDto;
 import com.yutkubeygo.watchit.service.VideoService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,18 @@ public class VideoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(video);
+    }
+
+
+    @PostMapping("/{id}/view")
+    public ResponseEntity<Void> recordView(@PathVariable Long id, @AuthenticationPrincipal Long userId, HttpServletRequest request)
+    {
+        String ip = request.getRemoteAddr();
+        if(videoService.recordView(id,userId,ip))
+            return ResponseEntity.noContent().build();
+        else
+            return ResponseEntity.notFound().build();
+
     }
 
     //db'den eleman getirilecek/get edilecek
