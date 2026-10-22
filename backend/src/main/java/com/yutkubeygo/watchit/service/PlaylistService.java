@@ -62,7 +62,7 @@ public class PlaylistService {
         if(playlist==null)
             return null;
 
-        //GiriÅŸ yoksa userId null: equals'Ä± sahibin id'si Ã¼zerinden Ã§aÄŸÄ±rÄ±yoruz (null.equals patlardÄ±)
+        //Giriş yoksa userId null: equals'ı sahibin id'si üzerinden çağırıyoruz (null.equals patlardı)
         if(!Boolean.TRUE.equals(playlist.getIsPublic()) && !playlist.getOwner().getId().equals(userId))
             throw new ForbiddenException();
 
