@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
-import { formatDuration, timeAgo } from '../utils/format';
+import { formatDuration, formatViews, timeAgo } from '../utils/format';
 import Avatar from './Avatar';
 import './VideoCard.css';
 
-//Video kartı: kapak + süre, kanal avatarı, başlık, kanal adı, tarih
+//Video kartı: kapak + süre, kanal avatarı, başlık, kanal adı, görüntülenme + tarih
 //Kart tek bir link değil: içinde kanal linki de var, link içinde link olamaz
 function VideoCard({ video }) {
   //Video verisi gelmezse boş dön (patlamayı önler)
@@ -37,7 +37,10 @@ function VideoCard({ video }) {
           <Link to={channelUrl} className="vc-channel">
             {video.channelName || 'Bilinmeyen kanal'}
           </Link>
-          {video.createdAt && <span className="video-metadata">{timeAgo(video.createdAt)}</span>}
+          <span className="video-metadata">
+            {formatViews(video.viewCount)}
+            {video.createdAt && ` • ${timeAgo(video.createdAt)}`}
+          </span>
         </div>
       </div>
     </article>
