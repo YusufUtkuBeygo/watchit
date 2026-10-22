@@ -27,14 +27,16 @@ public class VideoService {
     private final VideoRepository videoRepository;
     private final VideoLikeRepository videoLikeRepository;
     private final FileService fileService;
+    private final ViewLimiterService viewLimiterService;
 
-    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService) {
+    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService) {
         this.videoMapper = videoMapper;
         this.channelRepository = channelRepository;
         this.categoryRepository = categoryRepository;
         this.videoRepository = videoRepository;
         this.videoLikeRepository = videoLikeRepository;
         this.fileService = fileService;
+        this.viewLimiterService = viewLimiterService;
     }
 
     public VideoResponseDto getVideo(Long id,Long userId)
@@ -172,4 +174,22 @@ public class VideoService {
         if(!fileService.isOwnFileUrl(videoRequestDto.getVideoUrl()) || !fileService.isOwnFileUrl(videoRequestDto.getThumbnailUrl()))
             throw new BadRequestException();
     }
+
+    public boolean recordView(Long videoId, Long userId, String ip)
+    {
+        Video video =videoRepository.findById(videoId).orElse(null);
+        if(video==null)
+            return false;
+
+        String viewer = (userId==null) ? "ip:"+ip:"userId:"+userId;
+
+        if(viewLimiterService.tryCount(viewer,videoId,video.getDurationInSeconds()))
+        {
+            videoRepository.incrementViewCount(videoId);
+        }
+
+        return true;
+
+    }
+
 }

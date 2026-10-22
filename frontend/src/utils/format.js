@@ -32,3 +32,12 @@ export function timeAgo(dateText) {
 export function initialOf(name) {
   return (name || '?').trim().charAt(0).toLocaleUpperCase('tr-TR') || '?';
 }
+
+//Görüntülenme sayısını kısaltır: 950 → "950", 1234 → "1,2 B", 3400000 → "3,4 Mn" (YouTube'daki gibi)
+//Bölünmeyen boşluk: sayı ile "görüntülenme" ayrı satırlara düşmesin
+const NBSP = String.fromCharCode(160);
+
+export function formatViews(count) {
+  const n = count ?? 0;
+  return `${new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 1 }).format(n)}${NBSP}görüntülenme`;
+}

@@ -10,6 +10,7 @@ import LikeButton from '../components/LikeButton';
 import SubscribeButton from '../components/SubscribeButton';
 import VideoPlayer from '../components/VideoPlayer';
 import SaveToPlaylist from '../components/SaveToPlaylist';
+import { formatViews } from '../utils/format';
 import './WatchPage.css';
 
 function WatchPage() {
@@ -149,9 +150,10 @@ function WatchPage() {
       </div>
 
       <div className="watch-description">
-        {video.createdAt && (
-          <div className="watch-date">{new Date(video.createdAt).toLocaleDateString('tr-TR')}</div>
-        )}
+        <div className="watch-date">
+          {formatViews(video.viewCount)}
+          {video.createdAt && ` • ${new Date(video.createdAt).toLocaleDateString('tr-TR')}`}
+        </div>
         <p>{video.description || 'Açıklama yok.'}</p>
       </div>
 

@@ -21,9 +21,10 @@ public class Video {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
-
-    // Video entity'sine ait temel alanlar
+    @Column(updatable = false, nullable = false)
+    private Long viewCount=0L;
     private String title;
+    // Video entity'sine ait temel alanlar
     @Column(length = 5000)
     private String description;
     private String thumbnailUrl;

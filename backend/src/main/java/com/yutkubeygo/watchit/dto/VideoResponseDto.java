@@ -16,6 +16,7 @@ public class VideoResponseDto {
     private Integer durationInSeconds;
     private LocalDateTime createdAt;
     private Long likeCount;
+    private Long viewCount;
 
     private Long channelId;
     //Kart ve listelerde kanal adını göstermek için (ayrı istek atmadan)

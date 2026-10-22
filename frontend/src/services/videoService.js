@@ -55,3 +55,10 @@ export async function updateVideo(id, videoData)
   const response = await api.put(`/videos/${id}`, videoData);
   return response.data;
 }
+
+//Görüntülenme bildirir (oynatıcı eşik dolunca bir kez çağırır). Girişsiz de çalışır.
+//Backend sayıp saymadığını söylemez: bekleme süresi / günlük tavan yüzünden sayılmasa da 204 döner
+export async function recordView(id)
+{
+  await api.post(`/videos/${id}/view`);
+}
