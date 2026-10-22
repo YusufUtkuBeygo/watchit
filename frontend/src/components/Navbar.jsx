@@ -6,6 +6,7 @@ import LoginModal from './LoginModal';
 import NotificationBell from './NotificationBell';
 import { useAuth } from '../context/AuthContext';
 import { getMyChannel } from '../services/channelService';
+import { MAX_SEARCH_LENGTH } from '../services/videoService';
 import { initialOf } from '../utils/format';
 import './Navbar.css';
 
@@ -54,6 +55,7 @@ const Navbar = ({ onMenuClick }) => {
           <div className="search-input-container">
             <input
               type="search"
+              maxLength={MAX_SEARCH_LENGTH}
               name="q"
               placeholder="Ara…"
               aria-label="Video ara"

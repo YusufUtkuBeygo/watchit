@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { searchVideos } from '../services/videoService';
+import { MAX_SEARCH_LENGTH, searchVideos } from '../services/videoService';
 import VideoCard from '../components/VideoCard';
 import '../components/VideoGrid.css';
 
@@ -13,8 +13,11 @@ function SearchPage() {
   //Kelime değişince eski sonuç kendiliğinden "yükleniyor" sayılır (ayrı state gerekmez)
   const [result, setResult] = useState({ query: null, videos: [], failed: false });
 
+  //Adrese elle uzun metin yazılırsa backend'e hiç gitmeden uyarılır (backend de 400 verir)
+  const tooLong = query.length > MAX_SEARCH_LENGTH;
+
   useEffect(() => {
-    if (!query) return;
+    if (!query || tooLong) return;
     let ignore = false;
 
     searchVideos(query)
@@ -25,13 +28,20 @@ function SearchPage() {
       });
 
     return () => { ignore = true; };
-  }, [query]);
+  }, [query, tooLong]);
 
   const status = result.query !== query ? 'loading' : result.failed ? 'error' : 'ready';
   const videos = result.videos;
 
   if (!query) {
     return <div className="page-message"><h2>Aramak için üstteki kutuya bir şey yaz.</h2></div>;
+  }
+  if (tooLong) {
+    return (
+      <div className="page-message">
+        <h2>Arama en fazla {MAX_SEARCH_LENGTH} karakter olabilir. Daha kısa bir şey yazıp tekrar dene.</h2>
+      </div>
+    );
   }
 
   return (

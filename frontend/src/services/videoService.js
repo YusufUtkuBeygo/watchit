@@ -38,14 +38,14 @@ export async function deleteVideoById(id)
   await api.delete(`/videos/${id}`);
 }
 
-//Başlığa göre arama.
-//ŞİMDİLİK tarayıcıda süzüyor (bütün videoları çekip başlıkta arıyor).
-//Backend'e arama sorgusu yazılınca (ör. GET /videos?search=...) yalnız bu fonksiyonun içi değişecek.
+//Başlığa göre arama: GET /videos?search=... (veritabanında; Türkçe harf ve büyük/küçük harf fark etmez)
+//Boş arama boş liste, 100 karakterden uzunu backend 400 ile reddeder (çağıran yakalar)
+export const MAX_SEARCH_LENGTH = 100;
+
 export async function searchVideos(text)
 {
-  const needle = text.trim().toLocaleLowerCase('tr-TR');
-  const videos = await getAllVideos();
-  return videos.filter((video) => (video.title || '').toLocaleLowerCase('tr-TR').includes(needle));
+  const response = await api.get('/videos', { params: { search: text } });
+  return response.data;
 }
 
 //Videonun başlık, açıklama, kategori, kapak bilgilerini günceller (yalnız sahibi; başkasınınsa 403)
