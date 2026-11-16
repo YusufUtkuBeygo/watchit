@@ -34,11 +34,12 @@ The backend follows a layered structure: `controller` → `service` → `reposit
 
 ## Features
 
-- **Accounts:** register, login with JWT, `GET/PUT/DELETE /users/me`
+- **Accounts:** register, login with JWT, profile and password change, account deletion
 - **Channels:** one channel per user, channel page
 - **Videos:** upload with thumbnail, categories, watch page, view counter
 - **Search:** find videos by title, case- and accent-insensitive (`GET /videos?search=`)
-- **Social:** comments, video and comment likes (`likeCount`, `likedByMe`), subscriptions, notifications
+- **Social:** comments, video and comment likes (`likeCount`, `likedByMe`), subscriptions
+- **Notifications:** new subscriber, comment, reply, like and new video from a subscribed channel
 - **Playlists:** public and private playlists
 - **Watch history**
 
@@ -52,6 +53,8 @@ The backend follows a layered structure: `controller` → `service` → `reposit
 - **Secrets stay out of the repo.** Passwords and keys are read from environment variables and git-ignored local files; example files are provided.
 - **Fair view counting.** The player reports a view only after 30 seconds (or half of a short video). The backend then counts at most one view per viewer per video every half video length, with a daily cap of 20, so refreshing the page cannot inflate the number.
 - **Search that understands Turkish.** Titles are matched with PostgreSQL `lower(unaccent(...))`, so "istanbul" finds "İstanbul". The built-in case-insensitive query uses `upper()` and missed these on an `en_US` database. `%`, `_` and `\` in the query are escaped, and queries longer than 100 characters are rejected with `400`.
+- **Notifications are written in the same transaction.** Subscribing, commenting, liking and uploading create the notification inside one `@Transactional` method, so a failure rolls back both; a test proves the rollback. Users never get notified about their own actions.
+- **Sensitive changes need the current password.** Changing the password or the email requires the current password, and wrong attempts share the login limit (5 per 15 minutes), so a stolen token cannot take over the account.
 - **Every push is checked.** GitHub Actions builds and tests the backend against a temporary PostgreSQL database and runs lint and build for the frontend on every push and pull request.
 - **Git workflow:** every feature is developed on its own branch and merged through a pull request (over 30 so far).
 
@@ -102,7 +105,7 @@ Open `http://localhost:5173`.
 
 | Resource | Endpoints |
 |---|---|
-| Users | `POST /users` · `POST /users/login` · `GET/PUT/DELETE /users/me` · `GET /users/{id}` |
+| Users | `POST /users` · `POST /users/login` · `GET/PUT/DELETE /users/me` · `PUT /users/me/password` · `GET /users/{id}` |
 | Channels | `/channels` CRUD · `GET /channels/me` |
 | Videos | `/videos` CRUD · `GET /videos?search=` / `?channelId=` / `?categoryId=` · `POST /videos/{id}/view` |
 | Files | `POST /api/files/upload-url` (presigned URL) |
@@ -117,6 +120,8 @@ Open `http://localhost:5173`.
 - [x] Registration, channel page and the main frontend screens
 - [x] CI pipeline and first tests (view counter: service, limiter and endpoint security)
 - [x] Server-side, accent-insensitive search (with unit tests and PostgreSQL query tests)
+- [x] Notifications for subscriptions, comments, likes and new videos
+- [ ] Ask questions about a video (transcript with Whisper, retrieval with pgvector, answers with Gemini)
 - [ ] Wider test coverage
 - [ ] Deployment
 
