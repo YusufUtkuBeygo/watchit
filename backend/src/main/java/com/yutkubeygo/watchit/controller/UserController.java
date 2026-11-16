@@ -2,9 +2,11 @@ package com.yutkubeygo.watchit.controller;
 
 import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.LoginResponseDto;
+import com.yutkubeygo.watchit.dto.PasswordChangeRequestDto;
 import com.yutkubeygo.watchit.dto.PublicUserResponseDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
+import com.yutkubeygo.watchit.dto.UserUpdateRequestDto;
 import com.yutkubeygo.watchit.service.LoginAttemptService;
 import com.yutkubeygo.watchit.service.UserService;
 import jakarta.validation.Valid;
@@ -65,8 +67,9 @@ public class UserController {
 
 
 
+    //Ad ve e-posta; e-posta değişiyorsa currentPassword gerekir (yanlışsa 403)
     @PutMapping("/me")
-    public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody UserRequestDto newUser, @AuthenticationPrincipal Long userId)
+    public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody UserUpdateRequestDto newUser, @AuthenticationPrincipal Long userId)
     {
         UserResponseDto updatedUser = userService.updateUser(userId,newUser);
 
@@ -74,6 +77,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();//404
 
         return ResponseEntity.ok(updatedUser);//200 OK+Güncel veri
+    }
+
+    //Şifre değiştirme: şu anki şifre yanlışsa 403, çok yanlış denemede 429, başarılıysa gövdesiz 204
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody PasswordChangeRequestDto request, @AuthenticationPrincipal Long userId)
+    {
+        if(!userService.changePassword(userId, request))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @DeleteMapping("/me")

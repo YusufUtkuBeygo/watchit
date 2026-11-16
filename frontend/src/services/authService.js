@@ -37,12 +37,18 @@ export async function getCurrentUser() {
   }
 }
 
-//Hesap bilgilerini günceller (PUT /users/me). Backend şifreyi de ister (yeni ya da aynı şifre)
-//409: e-posta ya da kullanıcı adı başkasında, 400: alan hataları
+//Kullanıcı adı ve e-postayı günceller (PUT /users/me). E-posta değişiyorsa currentPassword gerekir.
+//403: şifre yanlış, 429: çok fazla yanlış deneme, 409: e-posta ya da kullanıcı adı başkasında, 400: alan hataları
 export async function updateMe(userData)
 {
   const response = await api.put('/users/me', userData);
   return response.data;
+}
+
+//Şifreyi değiştirir (PUT /users/me/password). 403: şu anki şifre yanlış, 429: çok fazla yanlış deneme
+export async function changePassword(currentPassword, newPassword)
+{
+  await api.put('/users/me/password', { currentPassword, newPassword });
 }
 
 //Hesabı ve ona bağlı her şeyi (kanal, videolar, yorumlar...) siler, sonra token'ı siler

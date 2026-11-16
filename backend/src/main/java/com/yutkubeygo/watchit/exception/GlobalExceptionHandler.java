@@ -52,6 +52,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    //Çok fazla yanlış şifre denemesi: süre dolana kadar gövdesiz 429
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<Void> handleTooManyRequests()
+    {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String,String>> handleValidation(MethodArgumentNotValidException ex)

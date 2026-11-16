@@ -1,9 +1,13 @@
 package com.yutkubeygo.watchit.service;
 import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.LoginResponseDto;
+import com.yutkubeygo.watchit.dto.PasswordChangeRequestDto;
 import com.yutkubeygo.watchit.dto.PublicUserResponseDto;
 import com.yutkubeygo.watchit.dto.UserRequestDto;
 import com.yutkubeygo.watchit.dto.UserResponseDto;
+import com.yutkubeygo.watchit.dto.UserUpdateRequestDto;
+import com.yutkubeygo.watchit.exception.ForbiddenException;
+import com.yutkubeygo.watchit.exception.TooManyRequestsException;
 import com.yutkubeygo.watchit.mapper.UserMapper;
 import  com.yutkubeygo.watchit.repository.UserRepository;
 import  com.yutkubeygo.watchit.entity.User;
@@ -25,6 +29,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     private final JwtService jwtService;
+
+    private final LoginAttemptService loginAttemptService;
 
 //    public UserService(UserRepository userRepository, UserMapper userMapper) {
 //        this.userRepository = userRepository;
@@ -87,22 +93,55 @@ public class UserService {
 
     }
 
-    public UserResponseDto updateUser(Long id,UserRequestDto newUser)
+    //Yalnız ad ve e-posta değişir. E-posta değişiyorsa şu anki şifre doğru olmalı (yanlışsa 403, çok denemede 429).
+    //Kullanıcı adı ya da e-posta başkasındaysa veritabanının benzersizlik kuralı 409 verir.
+    public UserResponseDto updateUser(Long id, UserUpdateRequestDto newUser)
     {
         User user=userRepository.findById(id).orElse(null);
 
         if(user==null)
             return null;
 
+        String newEmail = normalizeEmail(newUser.getEmail());
+        if(!newEmail.equals(user.getEmail()))
+            checkCurrentPassword(user, newUser.getCurrentPassword());
 
         user.setUsername(newUser.getUsername().trim());
-        user.setEmail(normalizeEmail(newUser.getEmail()));
-        //şifre hashleniyor
-        user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        user.setEmail(newEmail);
 
         User savedUser=userRepository.save(user);
 
         return userMapper.toDto(savedUser);
+    }
+
+    //Şifre değiştirme: şu anki şifre doğru olmalı. Kullanıcı yoksa false (404).
+    public boolean changePassword(Long id, PasswordChangeRequestDto request)
+    {
+        User user=userRepository.findById(id).orElse(null);
+
+        if(user==null)
+            return false;
+
+        checkCurrentPassword(user, request.getCurrentPassword());
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        return true;
+    }
+
+    //Şu anki şifreyi doğrular. Girişteki sayaç kullanılır: token'ı çalan biri burada şifre tahmini de yapamasın.
+    private void checkCurrentPassword(User user, String currentPassword)
+    {
+        if(loginAttemptService.isBlocked(user.getEmail()))
+            throw new TooManyRequestsException();
+
+        if(currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPassword()))
+        {
+            loginAttemptService.recordFailure(user.getEmail());
+            throw new ForbiddenException();
+        }
+
+        loginAttemptService.recordSuccess(user.getEmail());
     }
 
     public boolean deleteUserById(Long id)
