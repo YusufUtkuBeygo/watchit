@@ -40,7 +40,7 @@ The backend follows a layered structure: `controller` → `service` → `reposit
 - **Videos:** upload with thumbnail, categories, watch page, view counter
 - **Search:** find videos by title, case- and accent-insensitive (`GET /videos?search=`)
 - **Social:** comments, video and comment likes (`likeCount`, `likedByMe`), subscriptions
-- **Ask the video:** ask a question about a video in any language; the answer is grounded only in what is said in the video and links to the minute (`POST /videos/{id}/questions`)
+- **Ask the video:** a panel on the watch page; ask a question in any language and get an answer grounded only in what is said in the video, with clickable minutes that jump the player there. Questions about a moment ("what happens at the start / at 03:20?") pick chunks by time, "what is this video about?" uses a summary written once per video.
 - **Notifications:** new subscriber, comment, reply, like and new video from a subscribed channel
 - **Playlists:** public and private playlists
 - **Watch history**
@@ -125,7 +125,7 @@ Open `http://localhost:5173`.
 - [x] Server-side, accent-insensitive search (with unit tests and PostgreSQL query tests)
 - [x] Notifications for subscriptions, comments, likes and new videos
 - [x] Ask questions about a video (backend: Whisper transcript, pgvector retrieval, Gemini answers)
-- [ ] "Ask the video" panel on the watch page
+- [x] "Ask the video" panel on the watch page (time and summary questions, clickable minutes)
 - [ ] Wider test coverage
 - [ ] Deployment
 
