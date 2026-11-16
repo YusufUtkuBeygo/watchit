@@ -59,6 +59,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
+    //Dış servis (Gemini) şu an cevap veremiyor: gövdesiz 503
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<Void> handleServiceUnavailable()
+    {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+    }
+
     //Çok fazla yanlış şifre denemesi: süre dolana kadar gövdesiz 429
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<Void> handleTooManyRequests()
