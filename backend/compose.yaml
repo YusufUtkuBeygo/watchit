@@ -15,7 +15,7 @@ services:
 
   # 2. MINIO BULUT DEPOLAMA (Resimler için)
   watchit_storage:
-    image: minio/minio
+    image: cgr.dev/chainguard/minio:latest
     container_name: minio_depo
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
