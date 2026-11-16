@@ -17,6 +17,13 @@ repositories {
 	mavenCentral()
 }
 
+//Spring AI modüllerinin birbiriyle uyumlu sürümleri (2.0.x, Spring Boot 4.0/4.1 içindir)
+dependencyManagement {
+	imports {
+		mavenBom 'org.springframework.ai:spring-ai-bom:2.0.2'
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-flyway'
@@ -24,6 +31,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'io.minio:minio:8.5.7'
+	//Yapay zekâ: Gemini (embedding + sohbet modeli) ve pgvector (vektör araması)
+	implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
+	implementation 'org.springframework.ai:spring-ai-starter-model-google-genai-embedding'
+	implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
 	//API dokümanı: /swagger-ui.html (3.1.x Spring Boot 4.1 içindir)
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1'
 	implementation 'org.flywaydb:flyway-database-postgresql'

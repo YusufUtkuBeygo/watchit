@@ -2,7 +2,7 @@
 services:
   # 1. POSTGRES VERİTABANI
   watchit_db:
-    image: postgres:15
+    image: pgvector/pgvector:0.8.7-pg15-trixie # PostgreSQL 15 + pgvector eklentisi (vektör araması)
     container_name: postgres_veritabani
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
