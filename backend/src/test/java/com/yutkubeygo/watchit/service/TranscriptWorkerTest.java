@@ -21,7 +21,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -36,6 +38,7 @@ class TranscriptWorkerTest {
     @Mock private VideoTranscriptRepository transcriptRepository;
     @Mock private TranscriptSegmentRepository segmentRepository;
     @Mock private TranscriptionClient transcriptionClient;
+    @Mock private TranscriptIndexer indexer;
 
     private TranscriptWorker worker;
     private VideoTranscript transcript;
@@ -45,7 +48,7 @@ class TranscriptWorkerTest {
     {
         //Gerçek TransactionTemplate, sahte transaction yöneticisiyle: içindeki kod normal çalışır
         TransactionTemplate transactionTemplate = new TransactionTemplate(mock(PlatformTransactionManager.class));
-        worker = new TranscriptWorker(transcriptRepository, segmentRepository, transcriptionClient, transactionTemplate);
+        worker = new TranscriptWorker(transcriptRepository, segmentRepository, transcriptionClient, transactionTemplate, indexer);
 
         Video video = new Video();
         video.setId(7L);
@@ -70,6 +73,7 @@ class TranscriptWorkerTest {
         assertThat(transcript.getStatus()).isEqualTo(TranscriptStatus.READY);
         assertThat(transcript.getLanguage()).isEqualTo("en");
         verify(segmentRepository).deleteByVideoId(7L);
+        verify(indexer).index(eq(7L), anyList());
         ArgumentCaptor<TranscriptSegment> captor = ArgumentCaptor.forClass(TranscriptSegment.class);
         verify(segmentRepository, times(2)).save(captor.capture());
         assertThat(captor.getAllValues()).extracting(TranscriptSegment::getText).containsExactly("Hello.", "Welcome to the video.");
@@ -86,6 +90,22 @@ class TranscriptWorkerTest {
         assertThat(transcript.getStatus()).isEqualTo(TranscriptStatus.FAILED);
         assertThat(transcript.getErrorMessage()).contains("Whisper servisine bağlanılamadı");
         verify(segmentRepository, never()).save(any());
+    }
+
+    @Test
+    void embeddingFailureMarksFailed()
+    {
+        when(transcriptRepository.findByVideoId(7L)).thenReturn(Optional.of(transcript));
+        when(transcriptionClient.transcribe(anyString())).thenReturn(
+                new TranscriptionResult("en", List.of(new TranscriptionResult.Segment(0.0, 4.5, "Hello."))));
+        when(indexer.index(eq(7L), anyList()))
+                .thenThrow(new RuntimeException("API key not valid"));
+
+        worker.process(7L);
+
+        assertThat(transcript.getStatus()).isEqualTo(TranscriptStatus.FAILED);
+        assertThat(transcript.getErrorMessage()).contains("vektöre çevrilemedi").contains("API key not valid");
+        assertThat(transcript.getLanguage()).isEqualTo("en");   //cümleler yine de kaydedildi
     }
 
     @Test
