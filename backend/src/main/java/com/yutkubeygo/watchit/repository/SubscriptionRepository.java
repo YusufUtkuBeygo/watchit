@@ -12,6 +12,8 @@ public interface SubscriptionRepository extends JpaRepository<Subscription,Long>
 
     List <Subscription> findBySubscriberId(Long userId);
     long countByChannelId(Long channelId);
+    //Yeni video bildirimi için kanalın bütün aboneleri
+    List<Subscription> findByChannelId(Long channelId);
     Optional<Subscription> findBySubscriberIdAndChannelId(Long subscriberId, Long channelId);
 
 }

@@ -5,12 +5,14 @@ import com.yutkubeygo.watchit.dto.VideoLikeResponseDto;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
 import com.yutkubeygo.watchit.entity.VideoLike;
+import com.yutkubeygo.watchit.enums.NotificationType;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.VideoLikeMapper;
 import com.yutkubeygo.watchit.repository.UserRepository;
 import com.yutkubeygo.watchit.repository.VideoLikeRepository;
 import com.yutkubeygo.watchit.repository.VideoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,14 +23,19 @@ public class VideoLikeService {
     private final VideoRepository videoRepository;
     private final VideoLikeMapper videoLikeMapper;
     private final VideoLikeRepository videoLikeRepository;
+    private final NotificationService notificationService;
 
-    public VideoLikeService(UserRepository userRepository, VideoRepository videoRepository, VideoLikeMapper videoLikeMapper, VideoLikeRepository videoLikeRepository) {
+    public VideoLikeService(UserRepository userRepository, VideoRepository videoRepository, VideoLikeMapper videoLikeMapper, VideoLikeRepository videoLikeRepository, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.videoRepository = videoRepository;
         this.videoLikeMapper = videoLikeMapper;
         this.videoLikeRepository = videoLikeRepository;
+        this.notificationService = notificationService;
     }
 
+    //Beğeni ve video sahibine giden bildirim tek transaction'da yazılır
+    //(çift beğeni 409 alırsa bildirim de yazılmaz)
+    @Transactional
     public VideoLikeResponseDto createVideoLike(VideoLikeRequestDto videoLikeRequestDto,Long userId)
     {
         User user = userRepository.findById(userId).orElse(null);
@@ -44,7 +51,12 @@ public class VideoLikeService {
         videoLike.setUser(user);
         videoLike.setVideo(video);
 
-        return videoLikeMapper.toDto(videoLikeRepository.save(videoLike));
+        VideoLike saved = videoLikeRepository.save(videoLike);
+
+        notificationService.notify(user, video.getChannel().getOwner(), NotificationType.LIKE,
+                "Videon beğenildi", user.getUsername() + " \"" + video.getTitle() + "\" videonu beğendi.");
+
+        return videoLikeMapper.toDto(saved);
     }
 
     //Beğeni yoksa null (404), başkasınınsa ForbiddenException (403)
