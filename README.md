@@ -40,6 +40,7 @@ The backend follows a layered structure: `controller` → `service` → `reposit
 - **Videos:** upload with thumbnail, categories, watch page, view counter
 - **Search:** find videos by title, case- and accent-insensitive (`GET /videos?search=`)
 - **Social:** comments, video and comment likes (`likeCount`, `likedByMe`), subscriptions
+- **Ask the video:** ask a question about a video in any language; the answer is grounded only in what is said in the video and links to the minute (`POST /videos/{id}/questions`)
 - **Notifications:** new subscriber, comment, reply, like and new video from a subscribed channel
 - **Playlists:** public and private playlists
 - **Watch history**
@@ -56,6 +57,7 @@ The backend follows a layered structure: `controller` → `service` → `reposit
 - **Search that understands Turkish.** Titles are matched with PostgreSQL `lower(unaccent(...))`, so "istanbul" finds "İstanbul". The built-in case-insensitive query uses `upper()` and missed these on an `en_US` database. `%`, `_` and `\` in the query are escaped, and queries longer than 100 characters are rejected with `400`.
 - **Notifications are written in the same transaction.** Subscribing, commenting, liking and uploading create the notification inside one `@Transactional` method, so a failure rolls back both; a test proves the rollback. Users never get notified about their own actions.
 - **Sensitive changes need the current password.** Changing the password or the email requires the current password, and wrong attempts share the login limit (5 per 15 minutes), so a stolen token cannot take over the account.
+- **Answers come from the video, not from the model's memory (RAG).** On upload, a local Whisper container turns speech into timestamped text in the background. The text is split into 30-60 second overlapping chunks and each chunk is stored as a 768-dimension Gemini embedding in PostgreSQL (pgvector). A question is embedded the same way, the closest chunks of that video are retrieved, and Gemini answers only from them, citing minutes. If no chunk passes a similarity threshold, Gemini is not called at all and the API answers "not found"; the transcript is treated as data, so instructions inside it are ignored.
 - **Every push is checked.** GitHub Actions builds and tests the backend against a temporary PostgreSQL database and runs lint and build for the frontend on every push and pull request.
 - **Git workflow:** every feature is developed on its own branch and merged through a pull request (over 30 so far).
 
@@ -108,7 +110,7 @@ Open `http://localhost:5173`.
 |---|---|
 | Users | `POST /users` · `POST /users/login` · `GET/PUT/DELETE /users/me` · `PUT /users/me/password` · `GET /users/{id}` |
 | Channels | `/channels` CRUD · `GET /channels/me` |
-| Videos | `/videos` CRUD · `GET /videos?search=` / `?channelId=` / `?categoryId=` · `POST /videos/{id}/view` |
+| Videos | `GET/POST /videos/{id}/transcript` · `POST /videos/{id}/questions` · `/videos` CRUD · `GET /videos?search=` / `?channelId=` / `?categoryId=` · `POST /videos/{id}/view` |
 | Files | `POST /api/files/upload-url` (presigned URL) |
 | Comments | `/comments` CRUD · `/commentLikes` |
 | Likes | `/videoLikes` |
@@ -122,7 +124,8 @@ Open `http://localhost:5173`.
 - [x] CI pipeline and first tests (view counter: service, limiter and endpoint security)
 - [x] Server-side, accent-insensitive search (with unit tests and PostgreSQL query tests)
 - [x] Notifications for subscriptions, comments, likes and new videos
-- [ ] Ask questions about a video (transcript with Whisper, retrieval with pgvector, answers with Gemini)
+- [x] Ask questions about a video (backend: Whisper transcript, pgvector retrieval, Gemini answers)
+- [ ] "Ask the video" panel on the watch page
 - [ ] Wider test coverage
 - [ ] Deployment
 
