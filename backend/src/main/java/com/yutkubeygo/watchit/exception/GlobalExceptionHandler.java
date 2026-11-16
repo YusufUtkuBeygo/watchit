@@ -52,6 +52,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    //İstek kaydın şu anki durumuyla çakışıyor (ör. transkript zaten işleniyor): gövdesiz 409
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Void> handleConflict()
+    {
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
     //Çok fazla yanlış şifre denemesi: süre dolana kadar gövdesiz 429
     @ExceptionHandler(TooManyRequestsException.class)
     public ResponseEntity<Void> handleTooManyRequests()

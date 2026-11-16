@@ -26,8 +26,34 @@ services:
     volumes:
       - minio_kasa:/data
     command: server /data --console-address ":9001"
+    # Konteynerler arası ad: MinIO alt çizgili sunucu adını (watchit_storage) geçersiz sayıp 400 döndürüyor
+    networks:
+      default:
+        aliases:
+          - minio
+
+  # 3. WHISPER (videodaki konuşmayı zaman damgalı yazıya çevirir)
+  # Spring video adresini gönderir; servis videoyu MinIO'dan indirip yazıya çevirir.
+  # İlk istekte model (~1,5 GB) internetten iner, whisper_modeller kasasında saklanır.
+  watchit_whisper:
+    build: ../whisper-servisi
+    container_name: whisper_servisi
+    environment:
+      WHISPER_MODEL: large-v3-turbo
+      WHISPER_DEVICE: cpu
+      WHISPER_COMPUTE_TYPE: int8
+      # Veritabanındaki adresler tarayıcıya göre (localhost); konteynerin içinden MinIO'ya servis adıyla gidilir
+      PUBLIC_FILE_URL: http://localhost:9000
+      INTERNAL_FILE_URL: http://minio:9000
+    ports:
+      - "9010:8000"
+    volumes:
+      - whisper_modeller:/modeller
+    depends_on:
+      - watchit_storage
 
 # Verilerin silinmemesi için oluşturduğumuz kalıcı kasalar (Hortumlar)
 volumes:
   postgres_kasa:
   minio_kasa:
+  whisper_modeller:

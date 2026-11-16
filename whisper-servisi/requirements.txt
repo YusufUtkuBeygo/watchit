@@ -1,0 +1,6 @@
+faster-whisper==1.2.1
+fastapi==0.163.1
+uvicorn==0.54.0
+requests==2.34.2
+# Ses dosyasını okuyan kütüphane. 17+ sürümler faster-whisper 1.2.1'in kullandığı bir parametreyi kaldırdı.
+av==16.0.1
