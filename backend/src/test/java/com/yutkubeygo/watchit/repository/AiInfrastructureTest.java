@@ -121,16 +121,31 @@ class AiInfrastructureTest {
     void pgvectorFindsNearestVector()
     {
         String insert = "INSERT INTO vector_store (content, metadata, embedding) VALUES (?, ?::json, ?::vector)";
-        jdbcTemplate.update(insert, "yemek parçası", "{\"videoId\": -1}", vector(0, 1));
-        jdbcTemplate.update(insert, "temizlik parçası", "{\"videoId\": -1}", vector(2, 3));
-        jdbcTemplate.update(insert, "araba parçası", "{\"videoId\": -1}", vector(4, 5));
+        String metadata = "{\"videoId\": " + video.getId() + "}";
+        jdbcTemplate.update(insert, "yemek parçası", metadata, vector(0, 1));
+        jdbcTemplate.update(insert, "temizlik parçası", metadata, vector(2, 3));
+        jdbcTemplate.update(insert, "araba parçası", metadata, vector(4, 5));
 
         //<=> : kosinüs uzaklığı (küçük = daha benzer). Soru vektörü "yemek" kutularına yakın.
         List<String> nearest = jdbcTemplate.queryForList(
-                "SELECT content FROM vector_store WHERE metadata->>'videoId' = '-1' ORDER BY embedding <=> ?::vector LIMIT 2",
-                String.class, vector(0, 1, 2));
+                "SELECT content FROM vector_store WHERE video_id = ? ORDER BY embedding <=> ?::vector LIMIT 2",
+                String.class, video.getId(), vector(0, 1, 2));
 
         assertThat(nearest).containsExactly("yemek parçası", "temizlik parçası");
+    }
+
+    @Test
+    void deletingVideoDeletesItsVectors()
+    {
+        //V12: video_id, metadata'daki videoId'den hesaplanır ve videoya ON DELETE CASCADE ile bağlıdır
+        jdbcTemplate.update("INSERT INTO vector_store (content, metadata, embedding) VALUES (?, ?::json, ?::vector)",
+                "parça", "{\"videoId\": " + video.getId() + ", \"start\": 0.0}", vector(0));
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM vector_store WHERE video_id = ?", Long.class, video.getId())).isOne();
+
+        entityManager.clear();
+        jdbcTemplate.update("DELETE FROM videos WHERE id = ?", video.getId());
+
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM vector_store WHERE video_id = ?", Long.class, video.getId())).isZero();
     }
 
     @Test

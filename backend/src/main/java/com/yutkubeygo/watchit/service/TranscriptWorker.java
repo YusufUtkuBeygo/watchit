@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 //Arka plan işçisi: transkripti çıkarır ve kaydeder. Ayrı sınıf olmasının sebebi: @Async yalnız
@@ -26,14 +27,17 @@ public class TranscriptWorker {
     private final TranscriptSegmentRepository segmentRepository;
     private final TranscriptionClient transcriptionClient;
     private final TransactionTemplate transactionTemplate;
+    private final TranscriptIndexer indexer;
 
     public TranscriptWorker(VideoTranscriptRepository transcriptRepository, TranscriptSegmentRepository segmentRepository,
-                            TranscriptionClient transcriptionClient, TransactionTemplate transactionTemplate)
+                            TranscriptionClient transcriptionClient, TransactionTemplate transactionTemplate,
+                            TranscriptIndexer indexer)
     {
         this.transcriptRepository = transcriptRepository;
         this.segmentRepository = segmentRepository;
         this.transcriptionClient = transcriptionClient;
         this.transactionTemplate = transactionTemplate;
+        this.indexer = indexer;
     }
 
     @Async("transcriptExecutor")
@@ -42,7 +46,8 @@ public class TranscriptWorker {
         process(videoId);
     }
 
-    //PENDING -> PROCESSING -> READY (cümleler kaydedildi) ya da FAILED (hata mesajıyla)
+    //PENDING -> PROCESSING -> READY (cümleler kaydedildi ve parçalar vektöre çevrildi: soru sorulabilir)
+    //ya da FAILED (hata mesajıyla)
     public void process(Long videoId)
     {
         VideoTranscript transcript = transcriptRepository.findByVideoId(videoId).orElse(null);
@@ -56,12 +61,13 @@ public class TranscriptWorker {
         transcriptRepository.save(transcript);
         log.info("Transkript başladı: video {}", videoId);
 
+        List<TranscriptSegment> saved = new ArrayList<>();
         try
         {
             TranscriptionResult result = transcriptionClient.transcribe(videoUrl);
             List<TranscriptionResult.Segment> segments = result.segments() == null ? List.of() : result.segments();
 
-            //Eski cümleleri silmek, yenilerini yazmak ve durumu READY yapmak tek transaction: yarım iş kalmaz
+            //Eski cümleleri silmek ve yenilerini yazmak tek transaction: yarım iş kalmaz
             transactionTemplate.executeWithoutResult(status -> {
                 segmentRepository.deleteByVideoId(videoId);
                 for(TranscriptionResult.Segment s : segments)
@@ -71,21 +77,39 @@ public class TranscriptWorker {
                     segment.setStartSeconds(s.start());
                     segment.setEndSeconds(s.end());
                     segment.setText(fit(s.text(), 2000));
-                    segmentRepository.save(segment);
+                    saved.add(segmentRepository.save(segment));
                 }
-                transcript.setStatus(TranscriptStatus.READY);
                 transcript.setLanguage(result.language());
                 transcriptRepository.save(transcript);
             });
-            log.info("Transkript hazır: video {}, {} cümle, dil {}", videoId, segments.size(), result.language());
+            log.info("Transkript çıkarıldı: video {}, {} cümle, dil {}", videoId, segments.size(), result.language());
         }
         catch(Exception e)
         {
-            log.warn("Transkript başarısız: video {}: {}", videoId, e.getMessage());
-            transcript.setStatus(TranscriptStatus.FAILED);
-            transcript.setErrorMessage(fit("Transkript çıkarılamadı: " + e.getMessage(), MAX_ERROR_LENGTH));
-            transcriptRepository.save(transcript);
+            fail(transcript, "Transkript çıkarılamadı: " + e.getMessage());
+            return;
         }
+
+        //Parçalara böl, Gemini ile vektöre çevir, vector_store'a yaz
+        try
+        {
+            int chunks = indexer.index(videoId, saved);
+            transcript.setStatus(TranscriptStatus.READY);
+            transcriptRepository.save(transcript);
+            log.info("Transkript hazır: video {}, {} parça vektöre çevrildi", videoId, chunks);
+        }
+        catch(Exception e)
+        {
+            fail(transcript, "Transkript çıkarıldı ama vektöre çevrilemedi (Gemini): " + e.getMessage());
+        }
+    }
+
+    private void fail(VideoTranscript transcript, String message)
+    {
+        log.warn("Transkript başarısız: video {}: {}", transcript.getVideo().getId(), message);
+        transcript.setStatus(TranscriptStatus.FAILED);
+        transcript.setErrorMessage(fit(message, MAX_ERROR_LENGTH));
+        transcriptRepository.save(transcript);
     }
 
     private static String fit(String text, int max)
