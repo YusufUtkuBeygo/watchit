@@ -1,51 +1,62 @@
 package com.yutkubeygo.watchit.service;
 
-import com.yutkubeygo.watchit.dto.NotificationRequestDto;
 import com.yutkubeygo.watchit.dto.NotificationResponseDto;
 import com.yutkubeygo.watchit.entity.Notification;
 import com.yutkubeygo.watchit.entity.User;
+import com.yutkubeygo.watchit.enums.NotificationType;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.NotificationMapper;
 import com.yutkubeygo.watchit.repository.NotificationRepository;
-import com.yutkubeygo.watchit.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 //Karar (18 Ekim): bildirimi kullanıcı değil sistem oluşturur (YouTube gibi: "biri videona yorum yaptı").
-//Bu yüzden POST ucu yok; createNotification ileride diğer servislerden (yorum, abonelik...) çağrılacak.
+//Bu yüzden POST ucu yok; bildirimleri notify/notifyAll ile diğer servisler (abonelik, yorum, beğeni, video) oluşturur.
 //Kullanıcı yalnız KENDİNE gelen bildirimleri görür, okundu işaretler ve siler.
 @Service
 public class NotificationService {
 
-    private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
 
-    public NotificationService(UserRepository userRepository, NotificationRepository notificationRepository, NotificationMapper notificationMapper) {
-        this.userRepository = userRepository;
+    private static final int MAX_LENGTH = 255;
+
+    public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper) {
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
     }
 
-    //Sistem içinden çağrılır (controller'dan değil): gönderen ve alıcı id'leri kodun kendisinden gelir
-    public NotificationResponseDto createNotification(NotificationRequestDto notificationRequestDto)
+    //Sistem içinden çağrılır (controller'dan değil): abonelik, yorum, beğeni ve video yükleme servisleri kullanır.
+    //Çağıran metot @Transactional olduğu için bildirim, asıl kayıtla aynı transaction'da yazılır:
+    //biri başarısız olursa ikisi de geri alınır.
+    //Kişi kendi işlemi için bildirim almaz (kendi videosuna yorum, kendi yorumuna beğeni...).
+    public void notify(User sender, User receiver, NotificationType type, String title, String message)
     {
-        User sender = userRepository.findById(notificationRequestDto.getSenderId()).orElse(null);
-        if(sender==null)
-            return null;
+        if(sender.getId().equals(receiver.getId()))
+            return;
 
-        User receiver = userRepository.findById(notificationRequestDto.getReceiverId()).orElse(null);
-        if(receiver==null)
-            return null;
+        notificationRepository.save(new Notification(fit(title), sender, receiver, fit(message), type));
+    }
 
-        Notification notification = notificationMapper.toEntity(notificationRequestDto);
+    //Aynı bildirimi birden çok alıcıya yazar (yeni videoda kanalın bütün abonelerine)
+    public void notifyAll(User sender, List<User> receivers, NotificationType type, String title, String message)
+    {
+        List<Notification> notifications = receivers.stream()
+                .filter(receiver -> !receiver.getId().equals(sender.getId()))
+                .map(receiver -> new Notification(fit(title), sender, receiver, fit(message), type))
+                .toList();
 
-        notification.setSender(sender);
-        notification.setReceiver(receiver);
+        notificationRepository.saveAll(notifications);
+    }
 
-        return notificationMapper.toDto(notificationRepository.save(notification));
+    //Sütunlar varchar(255): uzun video başlığı mesajı taşırırsa kısaltılır (yoksa veritabanı hatası olurdu)
+    private String fit(String text)
+    {
+        if(text.length() <= MAX_LENGTH)
+            return text;
 
+        return text.substring(0, MAX_LENGTH - 1) + "…";
     }
 
     //Yalnız bana gelenler: sorgu baştan alıcı id'siyle yapılır, kontrol gerekmez

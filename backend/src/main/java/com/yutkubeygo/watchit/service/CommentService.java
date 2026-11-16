@@ -5,12 +5,14 @@ import com.yutkubeygo.watchit.dto.CommentResponseDto;
 import com.yutkubeygo.watchit.entity.Comment;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
+import com.yutkubeygo.watchit.enums.NotificationType;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.CommentMapper;
 import com.yutkubeygo.watchit.repository.CommentRepository;
 import com.yutkubeygo.watchit.repository.UserRepository;
 import com.yutkubeygo.watchit.repository.VideoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,14 +23,19 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final UserRepository userRepository;
     private final VideoRepository videoRepository;
+    private final NotificationService notificationService;
 
-    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, UserRepository userRepository, VideoRepository videoRepository) {
+    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, UserRepository userRepository, VideoRepository videoRepository, NotificationService notificationService) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.userRepository = userRepository;
         this.videoRepository = videoRepository;
+        this.notificationService = notificationService;
     }
 
+    //Yorum ve bildirimi tek transaction'da yazılır.
+    //Cevapsa üst yorumun yazarına, değilse video sahibine bildirim gider.
+    @Transactional
     public CommentResponseDto createComment(Long userId,CommentRequestDto commentRequestDto)
     {
         //Gelen json dosyasina gore yeni bir nesne olusturduk
@@ -63,8 +70,17 @@ public class CommentService {
         comment.setUser(user);
         comment.setVideo(video);
 
+        Comment saved = commentRepository.save(comment);
+
+        if(saved.getParentComment()!=null)
+            notificationService.notify(user, saved.getParentComment().getUser(), NotificationType.COMMENT,
+                    "Yorumuna yanıt", user.getUsername() + " yorumuna yanıt verdi: " + saved.getContent());
+        else
+            notificationService.notify(user, video.getChannel().getOwner(), NotificationType.COMMENT,
+                    "Yeni yorum", user.getUsername() + " \"" + video.getTitle() + "\" videona yorum yaptı: " + saved.getContent());
+
         //Bu nesneyi kaydettikten sonra dto nesneine cevirip return ettik
-        return  commentMapper.toDto(commentRepository.save(comment));
+        return  commentMapper.toDto(saved);
     }
 
     public CommentResponseDto getCommentById(Long id)

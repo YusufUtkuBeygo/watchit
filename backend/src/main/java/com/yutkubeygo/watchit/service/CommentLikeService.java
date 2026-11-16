@@ -5,12 +5,14 @@ import com.yutkubeygo.watchit.dto.CommentLikeResponseDto;
 import com.yutkubeygo.watchit.entity.Comment;
 import com.yutkubeygo.watchit.entity.CommentLike;
 import com.yutkubeygo.watchit.entity.User;
+import com.yutkubeygo.watchit.enums.NotificationType;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.CommentLikeMapper;
 import com.yutkubeygo.watchit.repository.CommentLikeRepository;
 import com.yutkubeygo.watchit.repository.CommentRepository;
 import com.yutkubeygo.watchit.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,14 +24,18 @@ public class CommentLikeService {
     private final CommentRepository commentRepository;
     private final CommentLikeRepository commentLikeRepository;
     private final CommentLikeMapper commentLikeMapper;
+    private final NotificationService notificationService;
 
-    public CommentLikeService(UserRepository userRepository, CommentRepository commentRepository, CommentLikeRepository commentLikeRepository, CommentLikeMapper commentLikeMapper) {
+    public CommentLikeService(UserRepository userRepository, CommentRepository commentRepository, CommentLikeRepository commentLikeRepository, CommentLikeMapper commentLikeMapper, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.commentLikeRepository = commentLikeRepository;
         this.commentLikeMapper = commentLikeMapper;
+        this.notificationService = notificationService;
     }
 
+    //Beğeni ve yorum sahibine giden bildirim tek transaction'da yazılır
+    @Transactional
     public CommentLikeResponseDto createCommentLike(CommentLikeRequestDto commentLikeRequestDto,Long userId)
     {
         User user = userRepository.findById(userId).orElse(null);
@@ -44,7 +50,12 @@ public class CommentLikeService {
 
         commentLike.setComment(comment);
         commentLike.setUser(user);
-        return commentLikeMapper.toDto(commentLikeRepository.save(commentLike));
+        CommentLike saved = commentLikeRepository.save(commentLike);
+
+        notificationService.notify(user, comment.getUser(), NotificationType.LIKE,
+                "Yorumun beğenildi", user.getUsername() + " yorumunu beğendi: " + comment.getContent());
+
+        return commentLikeMapper.toDto(saved);
 
     }
 

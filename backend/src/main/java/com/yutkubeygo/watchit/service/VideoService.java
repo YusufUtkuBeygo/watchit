@@ -4,16 +4,21 @@ import com.yutkubeygo.watchit.dto.VideoRequestDto;
 import com.yutkubeygo.watchit.dto.VideoResponseDto;
 import com.yutkubeygo.watchit.entity.Category;
 import com.yutkubeygo.watchit.entity.Channel;
+import com.yutkubeygo.watchit.entity.Subscription;
+import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
 import com.yutkubeygo.watchit.entity.VideoLike;
+import com.yutkubeygo.watchit.enums.NotificationType;
 import com.yutkubeygo.watchit.exception.BadRequestException;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.mapper.VideoMapper;
 import com.yutkubeygo.watchit.repository.CategoryRepository;
 import com.yutkubeygo.watchit.repository.ChannelRepository;
+import com.yutkubeygo.watchit.repository.SubscriptionRepository;
 import com.yutkubeygo.watchit.repository.VideoLikeRepository;
 import com.yutkubeygo.watchit.repository.VideoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,8 +33,10 @@ public class VideoService {
     private final VideoLikeRepository videoLikeRepository;
     private final FileService fileService;
     private final ViewLimiterService viewLimiterService;
+    private final SubscriptionRepository subscriptionRepository;
+    private final NotificationService notificationService;
 
-    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService) {
+    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService, SubscriptionRepository subscriptionRepository, NotificationService notificationService) {
         this.videoMapper = videoMapper;
         this.channelRepository = channelRepository;
         this.categoryRepository = categoryRepository;
@@ -37,6 +44,8 @@ public class VideoService {
         this.videoLikeRepository = videoLikeRepository;
         this.fileService = fileService;
         this.viewLimiterService = viewLimiterService;
+        this.subscriptionRepository = subscriptionRepository;
+        this.notificationService = notificationService;
     }
 
     public VideoResponseDto getVideo(Long id,Long userId)
@@ -86,6 +95,8 @@ public class VideoService {
         return videoMapper.toDtoList(videos);
     }
 
+    //Video ve kanalın bütün abonelerine giden bildirimler tek transaction'da yazılır
+    @Transactional
     public VideoResponseDto createVideo(VideoRequestDto videoRequestDto,Long userId)
     {
         checkFileUrls(videoRequestDto);
@@ -112,6 +123,13 @@ public class VideoService {
         video.setCategory(category);
 
         Video savedVideo= videoRepository.save(video);
+
+        List<User> subscribers = subscriptionRepository.findByChannelId(channel.getId()).stream()
+                .map(Subscription::getSubscriber)
+                .toList();
+        notificationService.notifyAll(channel.getOwner(), subscribers, NotificationType.VIDEO_UPLOAD,
+                "Yeni video", channel.getChannelName() + " yeni bir video yükledi: " + savedVideo.getTitle());
+
         return videoMapper.toDto(savedVideo);
 
     }
