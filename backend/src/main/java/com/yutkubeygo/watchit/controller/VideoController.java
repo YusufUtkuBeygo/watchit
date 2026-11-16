@@ -51,10 +51,22 @@ public class VideoController {
     //db'den eleman getirilecek/get edilecek
     //GET /videos -> bütün videolar, GET /videos?channelId=3 -> yalnız o kanalın videoları,
     //GET /videos?categoryId=2 -> yalnız o kategorinin videoları
+    //GET /videos?search=kod -> başlığında "kod" geçen videolar (100 karakterden uzunsa 400)
     @GetMapping
     public ResponseEntity<List<VideoResponseDto>> getAllVideos(@RequestParam(required = false) Long channelId,
-                                                               @RequestParam(required = false) Long categoryId)
+                                                               @RequestParam(required = false) Long categoryId,
+                                                               @RequestParam(required = false) String search)
     {
+        if(search != null)
+        {
+            if(search.length()>100)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+            else
+                return ResponseEntity.ok(videoService.searchVideos(search));
+
+        }
+
         //İkisi de verilmediyse eskisi gibi hepsi
         if(channelId == null && categoryId == null)
             return ResponseEntity.ok(videoService.getAllVideos());
@@ -66,6 +78,8 @@ public class VideoController {
         //Servis null döndüyse kanal ya da kategori yoktur
         if(videos == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+
 
         return ResponseEntity.ok(videos);
     }

@@ -192,4 +192,21 @@ public class VideoService {
 
     }
 
+    //Başlıkta arama; metin boşsa veritabanına gitmeden boş liste
+    public List<VideoResponseDto> searchVideos(String searchText)
+    {
+        String textK=searchText.trim();
+        if(textK.isBlank())
+            return List.of();
+        List<Video> searchList = videoRepository.searchByTitle(escapeLike(textK));
+        return videoMapper.toDtoList(searchList);
+    }
+
+    //LIKE'ta % (her şey) ve _ (tek karakter) joker; kullanıcı yazdıysa düz karakter olarak aransın diye önüne \ konur.
+    //Önce \'in kendisi kaçırılır, yoksa sonradan eklenen \'ler de ikiye katlanırdı.
+    static String escapeLike(String text)
+    {
+        return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+
 }
