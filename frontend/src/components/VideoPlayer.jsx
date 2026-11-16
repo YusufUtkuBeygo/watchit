@@ -14,7 +14,8 @@ const MAX_PLAYBACK_RATE = 2;
 //İzleme sayfasındaki oynatıcı. Giriş yapılmışsa izleme geçmişine yazar:
 //oynatınca kayıt açılır, durdurunca / kapatınca / 30 sn'de bir saniye kaydedilir, bitince "izlendi" olur.
 //Daha önce yarıda bırakılmışsa kalınan yerden başlar.
-export default function VideoPlayer({ video, onError }) {
+//exposeRef: sayfa oynatıcıya erişebilsin diye ("Videoya sor"daki dakikaya tıklayınca oraya sarmak için)
+export default function VideoPlayer({ video, onError, exposeRef }) {
   const { user } = useAuth();
   const playerRef = useRef(null);
   //Bu açılışta en az bir kez oynatıldı mı (oynatılmayan video geçmişe yazılmaz)
@@ -22,6 +23,12 @@ export default function VideoPlayer({ video, onError }) {
 
   const isLoggedIn = Boolean(user);
   const videoId = video.id;
+
+  useEffect(() => {
+    if (!exposeRef) return;
+    exposeRef.current = playerRef.current;
+    return () => { exposeRef.current = null; };
+  }, [exposeRef]);
 
   //Kaldığı yerden devam: geçmişte yarım kalmış kayıt varsa oraya sar
   useEffect(() => {

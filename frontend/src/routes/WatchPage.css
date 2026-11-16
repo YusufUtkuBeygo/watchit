@@ -7,6 +7,8 @@
 }
 
 .watch-player {
+  /* Dakikaya tıklayınca buraya kaydırılır; üstteki sabit menünün altında kalmasın */
+  scroll-margin-top: calc(var(--navbar-height) + 12px);
   width: 100%;
   aspect-ratio: 16 / 9;
   background-color: #000;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Pencil, Trash2 } from 'lucide-react';
 import { getVideoById, deleteVideoById } from '../services/videoService';
@@ -10,6 +10,7 @@ import LikeButton from '../components/LikeButton';
 import SubscribeButton from '../components/SubscribeButton';
 import VideoPlayer from '../components/VideoPlayer';
 import SaveToPlaylist from '../components/SaveToPlaylist';
+import AskVideoPanel from '../components/AskVideoPanel';
 import { formatViews } from '../utils/format';
 import './WatchPage.css';
 
@@ -28,6 +29,9 @@ function WatchPage() {
   //Giriş yapanın kanalı (video onunsa düzenle/sil gösterilir)
   const [myChannelId, setMyChannelId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  //Oynatıcı ve kutusu: "Videoya sor"daki dakikaya tıklayınca video oraya sarılır ve görünür hâle kaydırılır
+  const playerRef = useRef(null);
+  const playerBoxRef = useRef(null);
 
   useEffect(() => {
     let ignore = false;
@@ -87,6 +91,15 @@ function WatchPage() {
 
   const isOwner = myChannelId != null && myChannelId === video.channelId;
 
+  const seekTo = (seconds) => {
+    const player = playerRef.current;
+    if (!player) return;
+    player.currentTime = seconds;
+    player.play().catch(() => {});
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    playerBoxRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  };
+
   const handleDelete = async () => {
     if (!window.confirm(`“${video.title}” silinsin mi? Yorumları ve beğenileri de silinir, geri alınamaz.`)) return;
     try {
@@ -100,14 +113,14 @@ function WatchPage() {
 
   return (
     <div className="watch-page">
-      <div className="watch-player">
+      <div className="watch-player" ref={playerBoxRef}>
         {!video.videoUrl ? (
           <div className="watch-player-empty">Bu videonun dosyası yok</div>
         ) : playError ? (
           <div className="watch-player-empty">Video oynatılamadı (dosyaya ulaşılamıyor)</div>
         ) : (
           //key: başka videoya geçince oynatıcı baştan kurulur
-          <VideoPlayer key={video.id} video={video} onError={() => setPlayError(true)} />
+          <VideoPlayer key={video.id} video={video} onError={() => setPlayError(true)} exposeRef={playerRef} />
         )}
       </div>
 
@@ -156,6 +169,9 @@ function WatchPage() {
         </div>
         <p>{video.description || 'Açıklama yok.'}</p>
       </div>
+
+      {/* key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
+      <AskVideoPanel key={`sor-${video.id}`} videoId={video.id} isOwner={isOwner} onSeek={seekTo} />
 
       {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
       <CommentSection key={video.id} videoId={video.id} />

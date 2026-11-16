@@ -4,6 +4,7 @@ import com.yutkubeygo.watchit.dto.QuestionResponseDto;
 import com.yutkubeygo.watchit.entity.Channel;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
+import com.yutkubeygo.watchit.service.QuestionIntent;
 import com.yutkubeygo.watchit.service.TranscriptRetriever;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -120,6 +121,24 @@ class TranscriptRetrieverTest {
         questionVector(vector(100, 101));
 
         assertThat(retriever.findRelevant(video.getId(), "Borsa bugün ne oldu?")).isEmpty();
+    }
+
+    private List<String> byTime(QuestionIntent intent)
+    {
+        return retriever.findByTime(video.getId(), intent).stream().map(QuestionResponseDto.Source::text).toList();
+    }
+
+    @Test
+    void timeQuestionsPickChunksByPosition()
+    {
+        assertThat(byTime(new QuestionIntent(QuestionIntent.Type.BEGINNING, null))).containsExactly("yemek parçası", "temizlik parçası");
+        assertThat(byTime(new QuestionIntent(QuestionIntent.Type.END, null))).containsExactly("temizlik parçası", "araba parçası");
+        assertThat(byTime(new QuestionIntent(QuestionIntent.Type.AT_TIME, 40.0))).containsExactly("yemek parçası", "temizlik parçası");
+        assertThat(byTime(new QuestionIntent(QuestionIntent.Type.AT_TIME, 90.0))).containsExactly("araba parçası");
+        //Video 115 saniye: 10. dakika yok
+        assertThat(byTime(new QuestionIntent(QuestionIntent.Type.AT_TIME, 600.0))).isEmpty();
+        //Zamana göre seçilen parçanın benzerlik puanı yok
+        assertThat(retriever.findByTime(video.getId(), new QuestionIntent(QuestionIntent.Type.BEGINNING, null)).getFirst().score()).isNull();
     }
 
     @Test

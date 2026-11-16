@@ -15,4 +15,7 @@ public interface VideoTranscriptRepository extends JpaRepository<VideoTranscript
 
     //Açılışta yarım kalmış işleri bulmak için
     List<VideoTranscript> findByStatusIn(Collection<TranscriptStatus> statuses);
+
+    //Hazır ama özeti olmayanlar (özellik eklenmeden önce hazırlananlar ya da özeti yazılamayanlar)
+    List<VideoTranscript> findByStatusAndSummaryIsNull(TranscriptStatus status);
 }
