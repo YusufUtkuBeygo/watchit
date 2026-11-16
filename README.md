@@ -16,7 +16,8 @@ Built as a personal full-stack project with a Spring Boot REST API and a React f
 | Frontend | React 19, Vite, React Router, Axios |
 | Testing | JUnit 5, Mockito, MockMvc |
 | API docs | Swagger UI (springdoc-openapi) with JWT authorization |
-| Infrastructure | Docker Compose (PostgreSQL + MinIO), GitHub Actions CI |
+| AI | Whisper (faster-whisper, local container), Spring AI, Gemini, pgvector |
+| Infrastructure | Docker Compose (PostgreSQL + pgvector, MinIO, Whisper), GitHub Actions CI |
 
 ## Architecture
 
@@ -70,7 +71,7 @@ cp .env.example .env            # fill in the database and MinIO credentials
 docker compose up -d
 ```
 
-PostgreSQL runs on `localhost:5433`, MinIO on `localhost:9000` (console: `localhost:9001`).
+PostgreSQL runs on `localhost:5433`, MinIO on `localhost:9000` (console: `localhost:9001`), the Whisper service on `localhost:9010`. The first transcript downloads the Whisper model (about 1.5 GB) once.
 
 ### 2. Run the backend
 

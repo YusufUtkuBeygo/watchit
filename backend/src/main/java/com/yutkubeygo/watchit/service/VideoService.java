@@ -35,8 +35,9 @@ public class VideoService {
     private final ViewLimiterService viewLimiterService;
     private final SubscriptionRepository subscriptionRepository;
     private final NotificationService notificationService;
+    private final TranscriptService transcriptService;
 
-    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService, SubscriptionRepository subscriptionRepository, NotificationService notificationService) {
+    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService, SubscriptionRepository subscriptionRepository, NotificationService notificationService, TranscriptService transcriptService) {
         this.videoMapper = videoMapper;
         this.channelRepository = channelRepository;
         this.categoryRepository = categoryRepository;
@@ -46,6 +47,7 @@ public class VideoService {
         this.viewLimiterService = viewLimiterService;
         this.subscriptionRepository = subscriptionRepository;
         this.notificationService = notificationService;
+        this.transcriptService = transcriptService;
     }
 
     public VideoResponseDto getVideo(Long id,Long userId)
@@ -130,6 +132,9 @@ public class VideoService {
         notificationService.notifyAll(channel.getOwner(), subscribers, NotificationType.VIDEO_UPLOAD,
                 "Yeni video", channel.getChannelName() + " yeni bir video yükledi: " + savedVideo.getTitle());
 
+        //Transkript arka planda çıkarılır (video kaydı commit edildikten sonra başlar)
+        transcriptService.start(savedVideo);
+
         return videoMapper.toDto(savedVideo);
 
     }
@@ -157,10 +162,15 @@ public class VideoService {
         video.setTitle(videoRequestDto.getTitle());
         video.setDescription((videoRequestDto.getDescription()));
         video.setThumbnailUrl(videoRequestDto.getThumbnailUrl());
+        boolean fileChanged = !java.util.Objects.equals(video.getVideoUrl(), videoRequestDto.getVideoUrl());
         video.setVideoUrl(videoRequestDto.getVideoUrl());
         video.setDurationInSeconds(videoRequestDto.getDurationInSeconds());
 
         Video savedVideo=videoRepository.save(video);
+
+        //Video dosyası değiştiyse eski transkript geçersiz: yeniden çıkarılır
+        if(fileChanged)
+            transcriptService.start(savedVideo);
 
         return videoMapper.toDto(savedVideo);
 
