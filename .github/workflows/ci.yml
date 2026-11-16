@@ -19,7 +19,7 @@ jobs:
     # Bu yüzden CI'a özel, boş bir PostgreSQL açılır. Şifresi yalnız bu geçici makine için, gerçek değil.
     services:
       postgres:
-        image: postgres:15
+        image: pgvector/pgvector:0.8.7-pg15-trixie
         env:
           POSTGRES_DB: watchit
           POSTGRES_PASSWORD: ci-sifresi
