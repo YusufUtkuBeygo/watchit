@@ -21,6 +21,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -126,6 +127,66 @@ class QuestionServiceTest {
 
         assertThat(result.found()).isFalse();
         assertThat(result.sources()).isEmpty();
+    }
+
+    @Test
+    void timeQuestionUsesTimeSelection()
+    {
+        when(retriever.findByTime(1L, new QuestionIntent(QuestionIntent.Type.BEGINNING, null))).thenReturn(SOURCES);
+        geminiSays("Başta roket fırlatılıyor (00:02).");
+
+        QuestionResponseDto result = questionService.ask(1L, 5L, "Filmin başında ne oluyor?");
+
+        assertThat(result.found()).isTrue();
+        verify(retriever, never()).findRelevant(anyLong(), anyString());
+    }
+
+    @Test
+    void summaryQuestionUsesSummary()
+    {
+        transcript.setSummary("Celia ile Tom'un ayrılığı ve robotlarla savaş (00:02).");
+        geminiSays("Video Celia ile Tom'un hikâyesini anlatıyor (00:02).");
+
+        QuestionResponseDto result = questionService.ask(1L, 5L, "Bu video ne anlatıyor?");
+
+        assertThat(result.found()).isTrue();
+        assertThat(result.sources()).isEmpty();
+        verify(retriever, never()).findRelevant(anyLong(), anyString());
+        ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel).call(captor.capture());
+        assertThat(captor.getValue().getInstructions().get(1).getText()).contains("Video özeti:\nCelia ile Tom'un ayrılığı");
+    }
+
+    @Test
+    void summaryQuestionWithoutSummaryFallsBackToSearch()
+    {
+        when(retriever.findRelevant(1L, "Bu video ne anlatıyor?")).thenReturn(SOURCES);
+        geminiSays("Cevap (00:02).");
+
+        assertThat(questionService.ask(1L, 5L, "Bu video ne anlatıyor?").found()).isTrue();
+        verify(retriever).findRelevant(1L, "Bu video ne anlatıyor?");
+    }
+
+    @Test
+    void notFoundMarkerAfterExplanationMeansNotFound()
+    {
+        when(retriever.findRelevant(anyLong(), anyString())).thenReturn(SOURCES);
+        geminiSays("Parçalarda sonla ilgili bilgi yok.\n\nBULUNAMADI");
+
+        assertThat(questionService.ask(1L, 5L, "Kim kazanıyor?").found()).isFalse();
+    }
+
+    @Test
+    void slowGeminiTimesOutAsServiceUnavailable()
+    {
+        ReflectionTestUtils.setField(questionService, "timeoutSeconds", 1L);
+        when(retriever.findRelevant(anyLong(), anyString())).thenReturn(SOURCES);
+        when(chatModel.call(any(Prompt.class))).thenAnswer(inv -> {
+            Thread.sleep(3000);
+            return new ChatResponse(List.of(new Generation(new AssistantMessage("geç cevap"))));
+        });
+
+        assertThatThrownBy(() -> questionService.ask(1L, 5L, "Soru?")).isInstanceOf(ServiceUnavailableException.class);
     }
 
     @Test

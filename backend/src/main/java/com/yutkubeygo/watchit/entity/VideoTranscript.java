@@ -36,6 +36,10 @@ public class VideoTranscript {
     @Column(length = 500)
     private String errorMessage;
 
+    //Gemini'nin yazdığı kısa özet ("Video ne anlatıyor?" soruları için); yazılamadıysa null
+    @Column(length = 2000)
+    private String summary;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

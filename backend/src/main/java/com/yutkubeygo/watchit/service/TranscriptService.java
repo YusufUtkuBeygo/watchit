@@ -84,6 +84,7 @@ public class TranscriptService {
         VideoTranscript transcript = transcriptRepository.findByVideoId(video.getId()).orElseGet(VideoTranscript::new);
         transcript.setVideo(video);
         transcript.setLanguage(null);
+        transcript.setSummary(null);
 
         Integer duration = video.getDurationInSeconds();
         if(duration != null && duration > MAX_DURATION_SECONDS)
@@ -110,6 +111,8 @@ public class TranscriptService {
             transcriptRepository.save(t);
             worker.processAsync(t.getVideo().getId());
         }
+        for(VideoTranscript t : transcriptRepository.findByStatusAndSummaryIsNull(TranscriptStatus.READY))
+            worker.summarizeAsync(t.getVideo().getId());
     }
 
     //İşçi videoyu veritabanından okuyacak: video kaydı commit edilmeden başlarsa onu göremez.

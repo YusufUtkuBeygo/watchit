@@ -39,6 +39,7 @@ class TranscriptWorkerTest {
     @Mock private TranscriptSegmentRepository segmentRepository;
     @Mock private TranscriptionClient transcriptionClient;
     @Mock private TranscriptIndexer indexer;
+    @Mock private TranscriptSummarizer summarizer;
 
     private TranscriptWorker worker;
     private VideoTranscript transcript;
@@ -48,7 +49,7 @@ class TranscriptWorkerTest {
     {
         //Gerçek TransactionTemplate, sahte transaction yöneticisiyle: içindeki kod normal çalışır
         TransactionTemplate transactionTemplate = new TransactionTemplate(mock(PlatformTransactionManager.class));
-        worker = new TranscriptWorker(transcriptRepository, segmentRepository, transcriptionClient, transactionTemplate, indexer);
+        worker = new TranscriptWorker(transcriptRepository, segmentRepository, transcriptionClient, transactionTemplate, indexer, summarizer);
 
         Video video = new Video();
         video.setId(7L);
@@ -74,6 +75,7 @@ class TranscriptWorkerTest {
         assertThat(transcript.getLanguage()).isEqualTo("en");
         verify(segmentRepository).deleteByVideoId(7L);
         verify(indexer).index(eq(7L), anyList());
+        verify(summarizer).summarize(any(), anyList());
         ArgumentCaptor<TranscriptSegment> captor = ArgumentCaptor.forClass(TranscriptSegment.class);
         verify(segmentRepository, times(2)).save(captor.capture());
         assertThat(captor.getAllValues()).extracting(TranscriptSegment::getText).containsExactly("Hello.", "Welcome to the video.");
@@ -90,6 +92,20 @@ class TranscriptWorkerTest {
         assertThat(transcript.getStatus()).isEqualTo(TranscriptStatus.FAILED);
         assertThat(transcript.getErrorMessage()).contains("Whisper servisine bağlanılamadı");
         verify(segmentRepository, never()).save(any());
+    }
+
+    @Test
+    void summaryFailureKeepsReady()
+    {
+        when(transcriptRepository.findByVideoId(7L)).thenReturn(Optional.of(transcript));
+        when(transcriptionClient.transcribe(anyString())).thenReturn(
+                new TranscriptionResult("en", List.of(new TranscriptionResult.Segment(0.0, 4.5, "Hello."))));
+        when(summarizer.summarize(any(), anyList())).thenThrow(new RuntimeException("503 high demand"));
+
+        worker.process(7L);
+
+        assertThat(transcript.getStatus()).isEqualTo(TranscriptStatus.READY);
+        assertThat(transcript.getSummary()).isNull();
     }
 
     @Test

@@ -28,16 +28,18 @@ public class TranscriptWorker {
     private final TranscriptionClient transcriptionClient;
     private final TransactionTemplate transactionTemplate;
     private final TranscriptIndexer indexer;
+    private final TranscriptSummarizer summarizer;
 
     public TranscriptWorker(VideoTranscriptRepository transcriptRepository, TranscriptSegmentRepository segmentRepository,
                             TranscriptionClient transcriptionClient, TransactionTemplate transactionTemplate,
-                            TranscriptIndexer indexer)
+                            TranscriptIndexer indexer, TranscriptSummarizer summarizer)
     {
         this.transcriptRepository = transcriptRepository;
         this.segmentRepository = segmentRepository;
         this.transcriptionClient = transcriptionClient;
         this.transactionTemplate = transactionTemplate;
         this.indexer = indexer;
+        this.summarizer = summarizer;
     }
 
     @Async("transcriptExecutor")
@@ -101,6 +103,34 @@ public class TranscriptWorker {
         catch(Exception e)
         {
             fail(transcript, "Transkript çıkarıldı ama vektöre çevrilemedi (Gemini): " + e.getMessage());
+            return;
+        }
+
+        writeSummary(transcript, saved);
+    }
+
+    //Özellik sonradan eklendi: özeti olmayan hazır transkriptler için açılışta çağrılır
+    @Async("transcriptExecutor")
+    public void summarizeAsync(Long videoId)
+    {
+        VideoTranscript transcript = transcriptRepository.findByVideoId(videoId).orElse(null);
+        if(transcript == null || transcript.getStatus() != TranscriptStatus.READY || transcript.getSummary() != null)
+            return;
+        writeSummary(transcript, segmentRepository.findByVideoIdOrderByStartSecondsAsc(videoId));
+    }
+
+    //Özet isteğe bağlı: yazılamazsa transkript yine READY kalır, özet soruları normal aramaya düşer
+    private void writeSummary(VideoTranscript transcript, List<TranscriptSegment> segments)
+    {
+        try
+        {
+            transcript.setSummary(summarizer.summarize(transcript.getVideo().getTitle(), segments));
+            transcriptRepository.save(transcript);
+            log.info("Özet yazıldı: video {}", transcript.getVideo().getId());
+        }
+        catch(Exception e)
+        {
+            log.warn("Özet yazılamadı: video {}: {}", transcript.getVideo().getId(), e.getMessage());
         }
     }
 

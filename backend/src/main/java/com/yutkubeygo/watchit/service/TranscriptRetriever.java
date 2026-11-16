@@ -57,6 +57,41 @@ public class TranscriptRetriever {
         return nearest.stream().filter(s -> s.score() >= minScore).toList();
     }
 
+    //Zamana göre seçim (vektör araması yok): videonun başı, sonu ya da belli bir anı
+    public List<QuestionResponseDto.Source> findByTime(Long videoId, QuestionIntent intent)
+    {
+        List<QuestionResponseDto.Source> all = jdbcTemplate.query("""
+                SELECT content, (metadata->>'start')::float8 AS start_s, (metadata->>'end')::float8 AS end_s
+                FROM vector_store
+                WHERE video_id = ?
+                ORDER BY start_s
+                """,
+                (rs, i) -> new QuestionResponseDto.Source(rs.getDouble("start_s"), rs.getDouble("end_s"), rs.getString("content"), null),
+                videoId);
+        if(all.isEmpty())
+            return all;
+
+        return switch(intent.type())
+        {
+            case BEGINNING -> all.subList(0, Math.min(2, all.size()));
+            case END -> all.subList(Math.max(0, all.size() - 2), all.size());
+            case AT_TIME -> around(all, intent.seconds());
+            default -> List.of();
+        };
+    }
+
+    //O anı kapsayan parça ve bir sonraki (örtüşme yüzünden iki parça kapsayabilir; ilkini alıp devamını ekliyoruz).
+    //Video o kadar uzun değilse boş: "20. dakika" 10 dakikalık videoda yok.
+    private static List<QuestionResponseDto.Source> around(List<QuestionResponseDto.Source> all, double seconds)
+    {
+        for(int i = 0; i < all.size(); i++)
+        {
+            if(all.get(i).end() >= seconds)
+                return all.get(i).start() > seconds + 60 ? List.of() : all.subList(i, Math.min(i + 2, all.size()));
+        }
+        return List.of();
+    }
+
     float[] embedQuestion(String question)
     {
         GoogleGenAiTextEmbeddingOptions options = GoogleGenAiTextEmbeddingOptions.builder()
