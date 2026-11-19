@@ -35,12 +35,18 @@ public class TranscriptRetriever {
 
     public List<QuestionResponseDto.Source> findRelevant(Long videoId, String question)
     {
+        return findNearest(videoId, question).stream().filter(s -> s.score() >= minScore).toList();
+    }
+
+    //Eşik uygulanmadan en yakın parçalar (değerlendirme, alakasız soruların puanını da görmek için kullanır)
+    public List<QuestionResponseDto.Source> findNearest(Long videoId, String question)
+    {
         float[] vector = embedQuestion(question);
         //pgvector'ın metin biçimi: "[0.1,0.2,...]"
         String literal = Arrays.toString(vector).replace(" ", "");
 
         //benzerlik = 1 - kosinüs uzaklığı (1 = aynı yön, 0 = alakasız)
-        List<QuestionResponseDto.Source> nearest = jdbcTemplate.query("""
+        return jdbcTemplate.query("""
                 SELECT content,
                        (metadata->>'start')::float8 AS start_s,
                        (metadata->>'end')::float8   AS end_s,
@@ -53,8 +59,11 @@ public class TranscriptRetriever {
                 (rs, i) -> new QuestionResponseDto.Source(rs.getDouble("start_s"), rs.getDouble("end_s"),
                         rs.getString("content"), Math.round(rs.getDouble("score") * 1000) / 1000.0),
                 literal, videoId, literal, maxChunks);
+    }
 
-        return nearest.stream().filter(s -> s.score() >= minScore).toList();
+    public double minScore()
+    {
+        return minScore;
     }
 
     //Zamana göre seçim (vektör araması yok): videonun başı, sonu ya da belli bir anı

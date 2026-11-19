@@ -58,5 +58,23 @@ dependencies {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+	useJUnitPlatform {
+		excludeTags 'eval'
+	}
+}
+
+//Videoya soru sor değerlendirmesi (gerçek Gemini + yerel veritabanı gerekir, CI'da çalışmaz): ./gradlew eval
+tasks.register('eval', Test) {
+	description = 'Soru-cevap değerlendirmesi: Hit@3, doğruluk, bulunamadı oranı (build/eval/sonuc.md)'
+	group = 'verification'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform {
+		includeTags 'eval'
+	}
+	systemProperty 'eval.pauseMs', findProperty('eval.pauseMs') ?: '4000'
+	testLogging {
+		showStandardStreams = true
+	}
+	outputs.upToDateWhen { false }
 }
