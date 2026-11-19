@@ -67,8 +67,10 @@ public class TranscriptService {
         if(!video.getChannel().getOwner().getId().equals(userId))
             throw new ForbiddenException();
 
+        //Video hâlâ dönüştürülüyorsa da 409: dosya birazdan değişecek, transkript dönüştürmenin ardından kendiliğinden başlar
         VideoTranscript existing = transcriptRepository.findByVideoId(videoId).orElse(null);
-        if(existing != null && (existing.getStatus() == TranscriptStatus.PENDING || existing.getStatus() == TranscriptStatus.PROCESSING))
+        if(VideoProcessingService.isRunning(video)
+                || existing != null && (existing.getStatus() == TranscriptStatus.PENDING || existing.getStatus() == TranscriptStatus.PROCESSING))
             throw new ConflictException();
 
         start(video);

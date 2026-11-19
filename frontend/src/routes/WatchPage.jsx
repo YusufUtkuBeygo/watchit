@@ -14,6 +14,9 @@ import AskVideoPanel from '../components/AskVideoPanel';
 import { formatViews } from '../utils/format';
 import './WatchPage.css';
 
+//Dönüştürme durumu bu aralıkla yeniden okunur (yalnız sahibi videosunu izlerken)
+const PROCESSING_POLL_MS = 5000;
+
 function WatchPage() {
   //Adresteki :id kısmı (/watch/5 → "5")
   const { id } = useParams();
@@ -32,6 +35,8 @@ function WatchPage() {
   //Oynatıcı ve kutusu: "Videoya sor"daki dakikaya tıklayınca video oraya sarılır ve görünür hâle kaydırılır
   const playerRef = useRef(null);
   const playerBoxRef = useRef(null);
+  //Dönüştürme video oynarken bittiyse yeni dosyaya hemen geçmiyoruz (izleyen kesilmesin), sahibine düğme gösteriyoruz
+  const [readyVideo, setReadyVideo] = useState(null);
 
   useEffect(() => {
     let ignore = false;
@@ -75,6 +80,33 @@ function WatchPage() {
     return () => { ignore = true; };
   }, [id]);
 
+  //Sahibi kendi videosunu açtıysa ve video hâlâ dönüştürülüyorsa birkaç saniyede bir durumunu yeniden oku
+  const ownerWatching = myChannelId != null && video != null && myChannelId === video.channelId;
+  const watchedStatus = video?.processingStatus;
+  useEffect(() => {
+    if (!ownerWatching || (watchedStatus !== 'PENDING' && watchedStatus !== 'PROCESSING')) return;
+    let ignore = false;
+    const timer = setInterval(async () => {
+      try {
+        const data = await getVideoById(id);
+        if (ignore || data.processingStatus === watchedStatus) return;
+        const player = playerRef.current;
+        const isPlaying = player != null && !player.paused && player.currentTime > 0;
+        //Dosya değişti ve video oynuyor: hemen geçme, düğme göster
+        if (isPlaying && data.videoUrl !== video.videoUrl) {
+          setReadyVideo(data);
+          setVideo((old) => ({ ...old, processingStatus: data.processingStatus }));
+        } else {
+          setVideo(data);
+          setPlayError(false);
+        }
+      } catch (error) {
+        console.error('Video durumu okunamadı:', error);
+      }
+    }, PROCESSING_POLL_MS);
+    return () => { ignore = true; clearInterval(timer); };
+  }, [id, ownerWatching, watchedStatus, video?.videoUrl]);
+
   if (status === 'loading') {
     return <p className="watch-message">Yükleniyor…</p>;
   }
@@ -90,6 +122,14 @@ function WatchPage() {
   }
 
   const isOwner = myChannelId != null && myChannelId === video.channelId;
+  const processing = video.processingStatus;
+  const isProcessing = processing === 'PENDING' || processing === 'PROCESSING';
+
+  const switchToReadyVideo = () => {
+    setVideo(readyVideo);
+    setReadyVideo(null);
+    setPlayError(false);
+  };
 
   const seekTo = (seconds) => {
     const player = playerRef.current;
@@ -120,9 +160,28 @@ function WatchPage() {
           <div className="watch-player-empty">Video oynatılamadı (dosyaya ulaşılamıyor)</div>
         ) : (
           //key: başka videoya geçince oynatıcı baştan kurulur
-          <VideoPlayer key={video.id} video={video} onError={() => setPlayError(true)} exposeRef={playerRef} />
+          //key: başka videoya ya da dönüşmüş dosyaya geçince oynatıcı baştan kurulur
+          <VideoPlayer key={`${video.id}-${video.videoUrl}`} video={video} onError={() => setPlayError(true)} exposeRef={playerRef} />
         )}
       </div>
+
+      {isOwner && isProcessing && (
+        <p className="watch-processing" role="status">
+          Video hazırlanıyor: her cihazda oynaması için 720p MP4'e çevriliyor. Bu sırada yüklediğin dosya oynuyor.
+        </p>
+      )}
+      {isOwner && readyVideo && (
+        <p className="watch-processing" role="status">
+          Videonun hazır sürümü geldi.{' '}
+          <button type="button" className="watch-processing-button" onClick={switchToReadyVideo}>Hazır sürüme geç</button>
+        </p>
+      )}
+      {isOwner && processing === 'FAILED' && (
+        <p className="watch-processing watch-processing-failed" role="status">
+          Video dönüştürülemedi, yüklediğin dosya olduğu gibi oynuyor; bazı tarayıcılarda açılmayabilir.
+          Sorun sürerse videoyu MP4 olarak yeniden yükle.
+        </p>
+      )}
 
       <h1 className="watch-title">{video.title}</h1>
 
@@ -171,7 +230,7 @@ function WatchPage() {
       </div>
 
       {/* key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
-      <AskVideoPanel key={`sor-${video.id}`} videoId={video.id} isOwner={isOwner} onSeek={seekTo} />
+      <AskVideoPanel key={`sor-${video.id}`} videoId={video.id} isOwner={isOwner} onSeek={seekTo} videoProcessing={isProcessing} />
 
       {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
       <CommentSection key={video.id} videoId={video.id} />

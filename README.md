@@ -58,6 +58,7 @@ The backend follows a layered structure: `controller` → `service` → `reposit
 - **Notifications are written in the same transaction.** Subscribing, commenting, liking and uploading create the notification inside one `@Transactional` method, so a failure rolls back both; a test proves the rollback. Users never get notified about their own actions.
 - **Sensitive changes need the current password.** Changing the password or the email requires the current password, and wrong attempts share the login limit (5 per 15 minutes), so a stolen token cannot take over the account.
 - **Answers come from the video, not from the model's memory (RAG).** On upload, a local Whisper container turns speech into timestamped text in the background. The text is split into 30-60 second overlapping chunks and each chunk is stored as a 768-dimension Gemini embedding in PostgreSQL (pgvector). A question is embedded the same way, the closest chunks of that video are retrieved, and Gemini answers only from them, citing minutes. If no chunk passes a similarity threshold, Gemini is not called at all and the API answers "not found"; the transcript is treated as data, so instructions inside it are ignored.
+- **Every upload plays everywhere.** After upload, the same media container converts the video in the background to at most 720p H.264/AAC MP4 with `faststart` (files that already fit are only repackaged, in seconds). The backend stores the result in MinIO, switches the video to it with a compare-and-swap update (so an edit made meanwhile is never overwritten) and deletes the original. The transcript starts only after this step, so Whisper always reads the final file. If conversion fails, the original keeps playing.
 - **Every push is checked.** GitHub Actions builds and tests the backend against a temporary PostgreSQL database and runs lint and build for the frontend on every push and pull request.
 - **Git workflow:** every feature is developed on its own branch and merged through a pull request (over 30 so far).
 
@@ -127,6 +128,7 @@ Open `http://localhost:5173`.
 - [x] Ask questions about a video (backend: Whisper transcript, pgvector retrieval, Gemini answers)
 - [x] "Ask the video" panel on the watch page (time and summary questions, clickable minutes)
 - [x] Evaluation of "Ask the video" on 3 videos and 30 questions: Hit@3 100%, accuracy 95%, "not found" 100% ([report, in Turkish](docs/soru-cevap-degerlendirme.md), `./gradlew eval`)
+- [x] Background video conversion to 720p H.264/AAC MP4
 - [ ] Wider test coverage
 - [ ] Deployment
 

@@ -6,6 +6,7 @@ import io.minio.http.Method;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -98,6 +99,43 @@ public class FileService {
             return uploadUrlResponseDto;
         } catch (Exception e) {
             throw new RuntimeException("Minio da bir hata olustu: " + e.getMessage());
+        }
+    }
+
+    //Dönüştürülmüş videoyu kovaya yazar, herkese açık adresini döner (islenmis/<uuid>.mp4)
+    public String uploadProcessedVideo(Path file)
+    {
+        try
+        {
+            prepareBucket();
+            String key = "islenmis/" + UUID.randomUUID() + ".mp4";
+            minioClient.uploadObject(UploadObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(key)
+                    .filename(file.toString())
+                    .contentType("video/mp4")
+                    .build());
+            return minioUrl + "/" + bucketName + "/" + key;
+        }
+        catch(Exception e)
+        {
+            throw new IllegalStateException("Dönüştürülmüş video depoya yazılamadı: " + e.getMessage(), e);
+        }
+    }
+
+    //Bizim kovamızdaki bir dosyayı siler (adres başka bir yeri gösteriyorsa ya da boşsa hiçbir şey yapmaz)
+    public void deleteOwnFile(String url)
+    {
+        if(url == null || url.isEmpty() || !isOwnFileUrl(url))
+            return;
+        String key = url.substring((minioUrl + "/" + bucketName + "/").length());
+        try
+        {
+            minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(key).build());
+        }
+        catch(Exception e)
+        {
+            throw new IllegalStateException("Dosya silinemedi: " + e.getMessage(), e);
         }
     }
 }

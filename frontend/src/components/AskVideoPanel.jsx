@@ -49,7 +49,8 @@ function errorText(status) {
 
 //İzleme sayfasındaki "Videoya sor" paneli: transkript durumu, soru kutusu ve cevaplar.
 //Cevaplar videodaki konuşmalardan üretilir; dakikaya tıklayınca video oraya atlar (onSeek).
-export default function AskVideoPanel({ videoId, isOwner, onSeek }) {
+//videoProcessing: video hâlâ dönüştürülüyor; transkript dönüştürmeden sonra kendiliğinden başlar
+export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessing = false }) {
   const { user } = useAuth();
   const [transcript, setTranscript] = useState(null);   //null: yükleniyor
   const [loadError, setLoadError] = useState(false);
@@ -62,6 +63,15 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek }) {
   const [history, setHistory] = useState([]);
   const inputRef = useRef(null);
 
+  //Dönüştürme az önce bittiyse transkript birkaç saniye içinde sıraya girer: o arada "transkript yok" demeyip
+  //birkaç kez daha yokluyoruz (prop değişince state'i ayarlamak: React'in önerdiği kalıp, effect'e gerek yok)
+  const [prevProcessing, setPrevProcessing] = useState(videoProcessing);
+  const [graceLeft, setGraceLeft] = useState(0);
+  if (prevProcessing !== videoProcessing) {
+    setPrevProcessing(videoProcessing);
+    if (prevProcessing && !videoProcessing) setGraceLeft(6);
+  }
+
   const status = transcript?.status;
   const isWorking = status === 'PENDING' || status === 'PROCESSING';
 
@@ -69,6 +79,7 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek }) {
   useEffect(() => {
     let ignore = false;
     let timer = null;
+    let grace = graceLeft;
 
     const load = async () => {
       try {
@@ -76,7 +87,15 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek }) {
         if (ignore) return;
         setTranscript(data);
         setLoadError(false);
-        if (data.status === 'PENDING' || data.status === 'PROCESSING') timer = setTimeout(load, POLL_MS);
+        let waiting = data.status === 'PENDING' || data.status === 'PROCESSING'
+          || (data.status === 'NOT_STARTED' && videoProcessing);
+        if (!waiting && data.status === 'NOT_STARTED' && grace > 0) {
+          grace -= 1;
+          waiting = true;
+        } else if (grace > 0 || graceLeft > 0) {
+          setGraceLeft(0);
+        }
+        if (waiting) timer = setTimeout(load, POLL_MS);
       } catch (error) {
         if (!ignore) setLoadError(true);
         console.error('Transkript durumu okunamadı:', error);
@@ -85,7 +104,7 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek }) {
 
     load();
     return () => { ignore = true; clearTimeout(timer); };
-  }, [videoId, isRequesting]);
+  }, [videoId, isRequesting, videoProcessing, graceLeft]);
 
   const handleRequest = async () => {
     setIsRequesting(true);
@@ -136,6 +155,13 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek }) {
       <p className="ask-hint" role="status">
         <span className="ask-spinner" aria-hidden="true" />
         Video yazıya çevriliyor… Birkaç dakika sürebilir, hazır olunca soru sorabilirsin.
+      </p>
+    );
+  } else if (status === 'NOT_STARTED' && (videoProcessing || graceLeft > 0)) {
+    body = (
+      <p className="ask-hint" role="status">
+        <span className="ask-spinner" aria-hidden="true" />
+        Video hazırlanıyor. Bitince yazıya çevrilecek, sonra soru sorabilirsin.
       </p>
     );
   } else if (status !== 'READY') {

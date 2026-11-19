@@ -1,5 +1,6 @@
 package com.yutkubeygo.watchit.entity;
 
+import com.yutkubeygo.watchit.enums.VideoProcessingStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,6 +31,13 @@ public class Video {
     private String thumbnailUrl;
     private String videoUrl;
     private Integer durationInSeconds;
+
+    //Dönüştürme durumu (en fazla 720p H.264/AAC MP4). Eski videolarda boş: hiç dönüştürülmedi, olduğu gibi oynar
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private VideoProcessingStatus processingStatus;
+    @Column(length = 500)
+    private String processingError;
 
     //Videonun hangi kanala ait olduğu bilgisi tuturlur
     //Bir kanalda birden çok video bulunuabilir ama bir videonun tek bir kanalı olabilir
