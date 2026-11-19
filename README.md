@@ -126,6 +126,7 @@ Open `http://localhost:5173`.
 - [x] Notifications for subscriptions, comments, likes and new videos
 - [x] Ask questions about a video (backend: Whisper transcript, pgvector retrieval, Gemini answers)
 - [x] "Ask the video" panel on the watch page (time and summary questions, clickable minutes)
+- [x] Evaluation of "Ask the video" on 3 videos and 30 questions: Hit@3 100%, accuracy 95%, "not found" 100% ([report, in Turkish](docs/soru-cevap-degerlendirme.md), `./gradlew eval`)
 - [ ] Wider test coverage
 - [ ] Deployment
 
