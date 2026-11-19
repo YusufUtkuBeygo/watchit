@@ -13,7 +13,7 @@
 }
 
 .channel-banner-empty {
-  background: linear-gradient(90deg, #272727, #3f3f3f);
+  background: var(--card-bg);
 }
 
 .channel-header {
@@ -28,8 +28,8 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background-color: #555;
-  color: #fff;
+  background-color: var(--avatar-bg);
+  color: var(--avatar-text);
   font-size: 48px;
   font-weight: 600;
   display: flex;
@@ -100,7 +100,7 @@
 }
 
 .channel-link {
-  color: #3ea6ff;
+  color: var(--accent-text);
 }
 
 @media (max-width: 600px) {

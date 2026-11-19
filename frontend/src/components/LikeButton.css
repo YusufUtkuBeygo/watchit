@@ -19,7 +19,7 @@
 }
 
 .like-btn:hover {
-  background-color: #3f3f3f;
+  background-color: var(--pill-hover);
 }
 
 .like-btn:disabled {
@@ -27,7 +27,7 @@
 }
 
 .like-btn.liked {
-  color: #3ea6ff;
+  color: var(--accent-text);
 }
 
 .like-message {

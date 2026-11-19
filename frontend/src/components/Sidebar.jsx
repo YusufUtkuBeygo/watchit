@@ -5,6 +5,7 @@ import { getAllCategories } from '../services/categoryService';
 import { getMyChannel, getMySubscriptions, SUBSCRIPTIONS_CHANGED } from '../services/channelService';
 import { useAuth } from '../context/AuthContext';
 import Avatar from './Avatar';
+import ThemeToggle from './ThemeToggle';
 import LoginModal from './LoginModal';
 import './Sidebar.css';
 
@@ -134,6 +135,13 @@ const Sidebar = ({ isOpen, onClose }) => {
           </Link>
         ))}
       </nav>
+
+      <div className="sidebar-theme">
+        <div className="sidebar-divider"></div>
+        <div className="sidebar-section">
+          <ThemeToggle variant="row" />
+        </div>
+      </div>
     </aside>
     <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </>

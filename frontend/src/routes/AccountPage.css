@@ -8,7 +8,7 @@
 }
 
 .danger-zone {
-  border-color: #6b2020;
+  border-color: var(--danger-border);
 }
 
 .danger-text {
