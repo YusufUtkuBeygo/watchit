@@ -13,15 +13,10 @@ import java.nio.charset.StandardCharsets;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 //Whisper konteynerine (whisper-servisi/, compose'ta watchit_whisper) HTTP ile istek atar
 @Component
 public class WhisperTranscriptionClient implements TranscriptionClient {
-
-    //Python servisinin hata cevabı: {"detail": "..."}
-    private static final Pattern DETAIL = Pattern.compile("\"detail\"\\s*:\\s*\"([^\"]*)\"");
 
     private final RestClient restClient;
 
@@ -48,8 +43,7 @@ public class WhisperTranscriptionClient implements TranscriptionClient {
                     //Servis hata verirse ("Videoda ses bulunamadı" gibi) yalnız açıklamasını al, ham HTTP cevabını değil
                     .onStatus(HttpStatusCode::isError, (request, response) -> {
                         String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
-                        Matcher m = DETAIL.matcher(body);
-                        throw new IllegalStateException(m.find() ? m.group(1) : "Whisper servisi hata verdi (" + response.getStatusCode().value() + ").");
+                        throw new IllegalStateException(MediaServiceError.message(body, response.getStatusCode().value()));
                     })
                     .body(TranscriptionResult.class);
         }

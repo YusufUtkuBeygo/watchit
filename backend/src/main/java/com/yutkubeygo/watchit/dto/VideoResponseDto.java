@@ -14,6 +14,8 @@ public class VideoResponseDto {
     private String thumbnailUrl;
     private String videoUrl;
     private Integer durationInSeconds;
+    //PENDING / PROCESSING / READY / FAILED; eski videolarda null
+    private String processingStatus;
     private LocalDateTime createdAt;
     private Long likeCount;
     private Long viewCount;

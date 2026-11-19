@@ -7,6 +7,7 @@ import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
 import com.yutkubeygo.watchit.entity.VideoTranscript;
 import com.yutkubeygo.watchit.enums.TranscriptStatus;
+import com.yutkubeygo.watchit.enums.VideoProcessingStatus;
 import com.yutkubeygo.watchit.exception.ConflictException;
 import com.yutkubeygo.watchit.exception.ForbiddenException;
 import com.yutkubeygo.watchit.repository.CategoryRepository;
@@ -101,6 +102,21 @@ class TranscriptServiceTest {
 
         assertThatThrownBy(() -> transcriptService.requestTranscript(video.getId(), owner.getId()))
                 .isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void requestWhileVideoIsProcessingIsConflict()
+    {
+        //Dosya birazdan değişecek: transkript dönüştürmenin ardından kendiliğinden başlar
+        video.setProcessingStatus(VideoProcessingStatus.PROCESSING);
+        videoRepository.saveAndFlush(video);
+
+        assertThatThrownBy(() -> transcriptService.requestTranscript(video.getId(), owner.getId()))
+                .isInstanceOf(ConflictException.class);
+
+        video.setProcessingStatus(VideoProcessingStatus.FAILED);
+        videoRepository.saveAndFlush(video);
+        assertThat(transcriptService.requestTranscript(video.getId(), owner.getId()).status()).isEqualTo("PENDING");
     }
 
     @Test

@@ -35,9 +35,9 @@ public class VideoService {
     private final ViewLimiterService viewLimiterService;
     private final SubscriptionRepository subscriptionRepository;
     private final NotificationService notificationService;
-    private final TranscriptService transcriptService;
+    private final VideoProcessingService videoProcessingService;
 
-    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService, SubscriptionRepository subscriptionRepository, NotificationService notificationService, TranscriptService transcriptService) {
+    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService, SubscriptionRepository subscriptionRepository, NotificationService notificationService, VideoProcessingService videoProcessingService) {
         this.videoMapper = videoMapper;
         this.channelRepository = channelRepository;
         this.categoryRepository = categoryRepository;
@@ -47,7 +47,7 @@ public class VideoService {
         this.viewLimiterService = viewLimiterService;
         this.subscriptionRepository = subscriptionRepository;
         this.notificationService = notificationService;
-        this.transcriptService = transcriptService;
+        this.videoProcessingService = videoProcessingService;
     }
 
     public VideoResponseDto getVideo(Long id,Long userId)
@@ -132,8 +132,8 @@ public class VideoService {
         notificationService.notifyAll(channel.getOwner(), subscribers, NotificationType.VIDEO_UPLOAD,
                 "Yeni video", channel.getChannelName() + " yeni bir video yükledi: " + savedVideo.getTitle());
 
-        //Transkript arka planda çıkarılır (video kaydı commit edildikten sonra başlar)
-        transcriptService.start(savedVideo);
+        //Video arka planda dönüştürülür (kayıt commit edildikten sonra başlar), transkript onun ardından çıkarılır
+        videoProcessingService.start(savedVideo);
 
         return videoMapper.toDto(savedVideo);
 
@@ -168,9 +168,9 @@ public class VideoService {
 
         Video savedVideo=videoRepository.save(video);
 
-        //Video dosyası değiştiyse eski transkript geçersiz: yeniden çıkarılır
+        //Video dosyası değiştiyse yeni dosya dönüştürülür, transkript de onun ardından yeniden çıkarılır
         if(fileChanged)
-            transcriptService.start(savedVideo);
+            videoProcessingService.start(savedVideo);
 
         return videoMapper.toDto(savedVideo);
 

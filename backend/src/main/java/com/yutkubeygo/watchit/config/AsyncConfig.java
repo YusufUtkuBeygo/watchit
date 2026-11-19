@@ -24,4 +24,17 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    //Video dönüştürme de birer birer (ffmpeg işlemciyi tam kullanır); transkriptten ayrı kuyruk
+    @Bean(name = "videoProcessingExecutor")
+    public Executor videoProcessingExecutor()
+    {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(1);
+        executor.setQueueCapacity(500);
+        executor.setThreadNamePrefix("donusturme-");
+        executor.initialize();
+        return executor;
+    }
 }

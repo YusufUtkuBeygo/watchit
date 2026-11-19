@@ -116,3 +116,38 @@
 .watch-channel {
   flex-wrap: wrap;
 }
+
+/* Dönüştürme durumu (yalnız video sahibine) */
+.watch-processing {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--pill-bg);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.watch-processing-failed {
+  color: var(--text-primary);
+  border-left: 3px solid #f28b82;
+}
+
+.watch-processing-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #3ea6ff;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.watch-processing-button:hover {
+  color: #7cc4ff;
+}
+
+.watch-processing-button:focus-visible {
+  outline: 2px solid #3ea6ff;
+  outline-offset: 2px;
+}
