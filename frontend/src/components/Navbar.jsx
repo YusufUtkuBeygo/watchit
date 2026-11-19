@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Menu, Search, Plus, PlaySquare, LogOut, CircleUser, UserSquare2, Settings, History, ListVideo } from 'lucide-react';
+import { Menu, Search, Plus, LogOut, CircleUser, UserSquare2, Settings, History, ListVideo } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import UploadModal from './UploadModal';
 import LoginModal from './LoginModal';
 import NotificationBell from './NotificationBell';
+import ThemeToggle from './ThemeToggle';
+import Logo from './Logo';
 import { useAuth } from '../context/AuthContext';
 import { getMyChannel } from '../services/channelService';
 import { MAX_SEARCH_LENGTH } from '../services/videoService';
@@ -45,8 +47,7 @@ const Navbar = ({ onMenuClick }) => {
           <Menu size={24} />
         </button>
         <Link to="/" className="logo-container" aria-label="Watchit ana sayfa">
-          <PlaySquare size={28} color="#ff0000" fill="#ff0000" aria-hidden="true" />
-          <span className="logo-text">Watchit</span>
+          <Logo />
         </Link>
       </div>
 
@@ -72,6 +73,7 @@ const Navbar = ({ onMenuClick }) => {
       </form>
 
       <div className="navbar-right">
+        <ThemeToggle />
         <button className="create-btn" onClick={handleCreateClick}>
           <Plus size={20} />
           <span className="create-text">Oluştur</span>

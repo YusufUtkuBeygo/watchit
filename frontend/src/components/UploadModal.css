@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--overlay);
 }
 
 .upload-modal {
@@ -14,7 +14,7 @@
   max-width: 512px;
   max-height: 100%;
   overflow-y: auto;
-  background-color: #1f1f1f;
+  background-color: var(--elevated-bg);
   border: 1px solid var(--border-color);
   border-radius: 16px;
 }
@@ -53,13 +53,13 @@
 }
 
 .upload-dropzone:hover {
-  border-color: #717171;
-  background-color: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-strong);
+  background-color: var(--pill-bg);
 }
 
 .upload-dropzone.dragging {
-  border-color: #3ea6ff;
-  background-color: rgba(62, 166, 255, 0.1);
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
 }
 
 .upload-file-input {
@@ -74,12 +74,12 @@
   height: 64px;
   margin-bottom: 16px;
   border-radius: 50%;
-  background-color: #272727;
+  background-color: var(--pill-bg);
   color: var(--text-secondary);
 }
 
 .upload-dropzone.dragging .upload-icon {
-  color: #3ea6ff;
+  color: var(--accent-text);
 }
 
 .upload-title {
@@ -97,15 +97,15 @@
 .upload-submit {
   height: 44px;
   border-radius: 22px;
-  background-color: #3ea6ff;
-  color: #0f0f0f;
+  background-color: var(--accent);
+  color: var(--on-accent);
   font-size: 14px;
   font-weight: 600;
   transition: background-color 0.2s;
 }
 
 .upload-submit:hover {
-  background-color: #65b8ff;
+  background-color: var(--accent-hover);
 }
 
 .upload-submit:disabled {
@@ -122,7 +122,7 @@
 .upload-success {
   font-size: 14px;
   font-weight: 500;
-  color: #34d399;
+  color: var(--success-text);
 }
 
 .upload-preview {
@@ -176,7 +176,7 @@
 .upload-input {
   min-height: 40px;
   padding: 8px 12px;
-  background-color: #121212;
+  background-color: var(--input-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-primary);
@@ -186,7 +186,7 @@
 }
 
 .upload-input:focus {
-  border-color: #3ea6ff;
+  border-color: var(--focus);
 }
 
 .upload-textarea {
@@ -207,7 +207,7 @@
 
 .upload-error {
   font-size: 14px;
-  color: #ff6b6b;
+  color: var(--danger-text);
 }
 
 .upload-link {

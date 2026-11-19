@@ -38,8 +38,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #555;
-  color: #fff;
+  background-color: var(--avatar-bg);
+  color: var(--avatar-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,8 +140,8 @@
 }
 
 .comment-submit {
-  background-color: #3ea6ff;
-  color: #0f0f0f;
+  background-color: var(--accent);
+  color: var(--on-accent);
 }
 
 .comment-submit:disabled {
@@ -156,5 +156,5 @@
 
 .comment-error {
   font-size: 13px;
-  color: #ff6b6b;
+  color: var(--danger-text);
 }

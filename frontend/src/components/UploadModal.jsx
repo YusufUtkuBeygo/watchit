@@ -54,6 +54,14 @@ export default function UploadModal({ onClose }) {
       });
   }, []);
 
+  //Esc ile kapanır (yükleme sürerken değil: yarım kalmasın, kapat düğmesi de o sırada kapalı)
+  useEffect(() => {
+    if (isSubmitting) return;
+    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isSubmitting, onClose]);
+
   //Geçici adresler iş bitince bırakılır (yoksa tarayıcı belleğinde kalır)
   useEffect(() => {
     return () => {

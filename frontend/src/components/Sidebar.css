@@ -19,7 +19,7 @@
   border-radius: 4px;
 }
 .sidebar:hover::-webkit-scrollbar-thumb {
-  background: #717171;
+  background: var(--border-strong);
 }
 
 .sidebar-section {
@@ -52,6 +52,23 @@
   margin: 0 12px;
 }
 
+/* Tema düğmesi: dar ekranda üst menüde yer yok, sol menünün en altında durur */
+.sidebar-theme {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .sidebar-theme {
+    display: block;
+  }
+}
+
+.sidebar-item.theme-toggle-row {
+  width: 100%;
+  text-align: left;
+  font-size: inherit;
+}
+
 .section-title {
   display: flex;
   align-items: center;
@@ -69,8 +86,8 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background-color: #555;
-  color: #fff;
+  background-color: var(--avatar-bg);
+  color: var(--avatar-text);
   font-size: 12px;
   font-weight: 600;
   display: flex;
@@ -95,7 +112,7 @@
 
 
 .sidebar-item:focus-visible {
-  outline: 2px solid #3ea6ff;
+  outline: 2px solid var(--focus);
   outline-offset: -2px;
 }
 
@@ -137,7 +154,7 @@
     position: fixed;
     inset: var(--navbar-height) 0 0 0;
     z-index: 155;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--overlay);
   }
 }
 
