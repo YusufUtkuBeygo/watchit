@@ -94,6 +94,9 @@
   --badge-text: #fff;
   --progress-track: rgba(255, 255, 255, 0.3); /* kapak altındaki "kalınan yer" çubuğunun boşu */
   --on-danger: #fff;                         /* kırmızı düğmenin yazısı */
+  --on-player: #fff;                         /* siyah oynatıcı zemini üstündeki yazı */
+  --on-player-muted: rgba(255, 255, 255, 0.7);
+  --on-player-soft: rgba(255, 255, 255, 0.08); /* oynatıcı üstündeki simge dairesi */
 
   /* Boşluk ölçeği (padding, margin, gap) */
   --space-1: 4px;

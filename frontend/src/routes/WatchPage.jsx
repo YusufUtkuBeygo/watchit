@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, VideoOff, CircleAlert, RotateCw } from 'lucide-react';
 import { getVideoById, deleteVideoById } from '../services/videoService';
 import { getChannelById, getMyChannel } from '../services/channelService';
 import { useAuth } from '../context/AuthContext';
@@ -28,6 +28,8 @@ function WatchPage() {
   const [status, setStatus] = useState('loading');
   //Kayıt var ama video dosyası açılamadıysa true
   const [playError, setPlayError] = useState(false);
+  //"Tekrar dene" sayacı: oynatıcının key'ine girer, artınca oynatıcı baştan kurulur
+  const [playAttempt, setPlayAttempt] = useState(0);
   const { user } = useAuth();
   const navigate = useNavigate();
   //Giriş yapanın kanalı (video onunsa düzenle/sil gösterilir)
@@ -156,13 +158,35 @@ function WatchPage() {
     <div className="watch-page">
       <div className="watch-player" ref={playerBoxRef}>
         {!video.videoUrl ? (
-          <div className="watch-player-empty">Bu videonun dosyası yok</div>
+          <PlayerState
+            icon={<VideoOff size={28} aria-hidden="true" />}
+            title="Bu videonun dosyası yok"
+            text="Videonun kaydı duruyor ama yüklenmiş bir dosyası bulunmuyor."
+          />
         ) : playError ? (
-          <div className="watch-player-empty">Video oynatılamadı (dosyaya ulaşılamıyor)</div>
+          <PlayerState
+            icon={<CircleAlert size={28} aria-hidden="true" />}
+            title="Video oynatılamadı"
+            text="Dosyaya şu an ulaşılamıyor. Bağlantını kontrol edip tekrar dene."
+            action={
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => { setPlayError(false); setPlayAttempt((n) => n + 1); }}
+              >
+                <RotateCw size={16} aria-hidden="true" />
+                Tekrar dene
+              </button>
+            }
+          />
         ) : (
-          //key: başka videoya geçince oynatıcı baştan kurulur
-          //key: başka videoya ya da dönüşmüş dosyaya geçince oynatıcı baştan kurulur
-          <VideoPlayer key={`${video.id}-${video.videoUrl}`} video={video} onError={() => setPlayError(true)} exposeRef={playerRef} />
+          //key: başka videoya, dönüşmüş dosyaya geçince ya da "Tekrar dene"de oynatıcı baştan kurulur
+          <VideoPlayer
+            key={`${video.id}-${video.videoUrl}-${playAttempt}`}
+            video={video}
+            onError={() => setPlayError(true)}
+            exposeRef={playerRef}
+          />
         )}
       </div>
 
@@ -248,6 +272,18 @@ function WatchPage() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+//Oynatıcının yerinde duran durum kutusu (dosya yok, oynatılamadı): simge, başlık, açıklama, isteğe bağlı düğme
+function PlayerState({ icon, title, text, action }) {
+  return (
+    <div className="player-state" role="status">
+      <span className="player-state-icon">{icon}</span>
+      <p className="player-state-title">{title}</p>
+      <p className="player-state-text">{text}</p>
+      {action}
     </div>
   );
 }
