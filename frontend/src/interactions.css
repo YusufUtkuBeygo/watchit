@@ -33,7 +33,7 @@
 
 /* Düğmeler: basılınca içe göçme (dokunmatikte de geri bildirim olsun diye hover'a bağlı değil) */
 @media (prefers-reduced-motion: no-preference) {
-  :root :is(.btn, .create-btn, .login-btn, .like-btn, .subscribe-btn, .category-chip, .ask-chip,
+  :root :is(.btn, .create-btn, .login-btn, .like-btn, .subscribe-btn, .category-chip, .ask-chip, .ask-send,
     .login-submit, .upload-submit, .comment-submit, .comment-cancel, .icon-btn, .user-avatar-btn) {
     transition:
       background-color var(--dur-base) var(--ease-out),
@@ -41,7 +41,7 @@
       transform var(--dur-fast) var(--ease-out);
   }
 
-  :root :is(.btn, .create-btn, .login-btn, .like-btn, .subscribe-btn, .category-chip, .ask-chip,
+  :root :is(.btn, .create-btn, .login-btn, .like-btn, .subscribe-btn, .category-chip, .ask-chip, .ask-send,
     .login-submit, .upload-submit, .comment-submit, .comment-cancel, .icon-btn, .user-avatar-btn):active:not(:disabled) {
     transform: scale(0.97);
   }

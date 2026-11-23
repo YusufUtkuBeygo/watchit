@@ -1,8 +1,18 @@
+/* "Videoya sor" paneli (A tasarımı): oynatıcının hemen altında, onunla aynı genişlikte,
+   ince sarı üst çizgi; büyük hap biçimli soru kutusu ve sarı gönder düğmesi */
 .ask-panel {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-top: 2px solid var(--accent);
+  border-radius: var(--radius-xl);
+}
+
+.ask-title svg {
+  color: var(--accent-text);
 }
 
 .ask-title {
@@ -121,12 +131,125 @@
 
 .ask-form {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
+  min-height: 56px;
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-5);
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  transition: border-color var(--dur-base) var(--ease-out);
 }
 
-.ask-form .input {
+/* Odak kutunun içindeki alanda; çerçeve bütün hapın etrafına çizilir */
+.ask-form:focus-within {
+  border-color: var(--focus);
+  outline: 1px solid var(--focus);
+}
+
+.ask-input {
   flex: 1;
   min-width: 0;
+  height: 46px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--fs-md);
+}
+
+.ask-input:focus {
+  outline: none;
+}
+
+.ask-input::placeholder {
+  color: var(--text-muted);
+}
+
+.ask-send {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  height: 46px;
+  padding: 0 var(--space-5) 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background-color: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+}
+
+@media (hover: hover) {
+  .ask-send:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+  }
+}
+
+.ask-send:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ask-send:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Zaman şeridi: videonun tamamı = çubuğun tamamı; son cevabın kaynakları sarı işaret */
+.ask-strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ask-strip-label {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}
+
+.ask-strip-track {
+  position: relative;
+  height: 6px;
+  margin: var(--space-2) 0;
+  border-radius: var(--radius-pill);
+  background-color: var(--pill-bg);
+}
+
+.ask-strip-mark {
+  position: absolute;
+  top: 50%;
+  min-width: 10px;
+  height: 10px;
+  transform: translateY(-50%);
+  border-radius: var(--radius-pill);
+  background-color: var(--accent);
+}
+
+/* Dokunma alanı görünen işaretten büyük (en az 24 px yükseklik) */
+.ask-strip-mark::before {
+  content: "";
+  position: absolute;
+  inset: -8px -4px;
+}
+
+@media (hover: hover) {
+  .ask-strip-mark:hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+.ask-strip-mark:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.ask-strip-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .ask-note {

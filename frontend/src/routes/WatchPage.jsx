@@ -213,6 +213,16 @@ function WatchPage() {
         </p>
       )}
 
+      {/* "Videoya sor" oynatıcının hemen altında (A tasarımı); key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
+      <AskVideoPanel
+        key={`sor-${video.id}`}
+        videoId={video.id}
+        isOwner={isOwner}
+        onSeek={seekTo}
+        videoProcessing={isProcessing}
+        duration={video.durationInSeconds || 0}
+      />
+
       <h1 className="watch-title">{video.title}</h1>
 
       <div className="watch-channel">
@@ -256,8 +266,6 @@ function WatchPage() {
         <p>{video.description || 'Açıklama yok.'}</p>
       </div>
 
-      {/* key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
-      <AskVideoPanel key={`sor-${video.id}`} videoId={video.id} isOwner={isOwner} onSeek={seekTo} videoProcessing={isProcessing} />
 
       {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
       <CommentSection key={video.id} videoId={video.id} />

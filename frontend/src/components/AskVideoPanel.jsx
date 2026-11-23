@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Sparkles, CircleAlert, FileText, LogIn } from 'lucide-react';
+import { Sparkles, CircleAlert, FileText, LogIn, ArrowUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { askVideo, getTranscript, requestTranscript } from '../services/transcriptService';
 import { LinesSkeleton } from './Skeleton';
@@ -52,7 +52,8 @@ function errorText(status) {
 //İzleme sayfasındaki "Videoya sor" paneli: transkript durumu, soru kutusu ve cevaplar.
 //Cevaplar videodaki konuşmalardan üretilir; dakikaya tıklayınca video oraya atlar (onSeek).
 //videoProcessing: video hâlâ dönüştürülüyor; transkript dönüştürmeden sonra kendiliğinden başlar
-export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessing = false }) {
+//duration: videonun süresi (saniye); son cevabın kaynak dakikaları zaman şeridinde bu süreye göre yerleşir
+export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessing = false, duration = 0 }) {
   const { user } = useAuth();
   const [transcript, setTranscript] = useState(null);   //null: yükleniyor
   const [loadError, setLoadError] = useState(false);
@@ -233,11 +234,14 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
 
         <form className="ask-form" onSubmit={handleSubmit}>
           <label htmlFor="ask-input" className="sr-only">Videoya sorun</label>
-          <input id="ask-input" ref={inputRef} className="input" name="question" autoComplete="off"
+          <input id="ask-input" ref={inputRef} className="ask-input" name="question" autoComplete="off"
             placeholder="Videoya bir soru sor…" maxLength={MAX_QUESTION}
             value={question} onChange={(e) => { setQuestion(e.target.value); setInputError(''); }}
             aria-invalid={Boolean(inputError)} aria-describedby={inputError ? 'ask-input-error' : undefined} />
-          <button type="submit" className="btn btn-primary" disabled={isAsking}>Sor</button>
+          <button type="submit" className="ask-send" disabled={isAsking}>
+            <ArrowUp size={18} aria-hidden="true" />
+            Sor
+          </button>
         </form>
         {inputError && <p id="ask-input-error" className="form-error">{inputError}</p>}
         <p className="ask-note">Cevaplar yapay zekâ ile videodaki konuşmalardan üretilir, hatalı olabilir.</p>
@@ -245,10 +249,48 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
     );
   }
 
+  //Son cevabın kaynak dakikaları: oynatıcının hemen altındaki zaman şeridinde işaret olur
+  const lastSources = [...history].reverse().find((item) => item.sources?.length > 0)?.sources ?? [];
+
   return (
-    <section className="card ask-panel" aria-labelledby="ask-title">
+    <section className="ask-panel" aria-labelledby="ask-title">
+      {duration > 0 && lastSources.length > 0 && (
+        <TimeStrip sources={lastSources} duration={duration} onSeek={onSeek} />
+      )}
       <h2 id="ask-title" className="ask-title"><Sparkles size={18} aria-hidden="true" /> Videoya sor</h2>
       {body}
     </section>
+  );
+}
+
+//Zaman şeridi: videonun tamamını temsil eden ince çubuk; son cevabın kaynakları sarı işaret.
+//İşaretler gerçek düğme (Tab ile gezilir, Enter/boşluk ile atlar); dokunma alanı görünen noktadan büyük
+function TimeStrip({ sources, duration, onSeek }) {
+  const marks = [...sources].sort((a, b) => a.start - b.start);
+  return (
+    <div className="ask-strip">
+      <span className="ask-strip-label" id="ask-strip-label">Cevabın geçtiği yerler</span>
+      <div className="ask-strip-track" role="group" aria-labelledby="ask-strip-label">
+        {marks.map((s) => {
+          const left = Math.min(100, Math.max(0, (s.start / duration) * 100));
+          const width = Math.max(0.8, Math.min(100 - left, ((s.end - s.start) / duration) * 100));
+          return (
+            <button
+              key={s.start}
+              type="button"
+              className="ask-strip-mark"
+              style={{ left: `${left}%`, width: `${width}%` }}
+              onClick={() => onSeek(s.start)}
+              aria-label={`Videoda ${toClock(s.start)} anına git`}
+              title={`${toClock(s.start)} · ${s.text}`}
+            />
+          );
+        })}
+      </div>
+      <span className="ask-strip-ends" aria-hidden="true">
+        <span>00:00</span>
+        <span>{toClock(duration)}</span>
+      </span>
+    </div>
   );
 }
