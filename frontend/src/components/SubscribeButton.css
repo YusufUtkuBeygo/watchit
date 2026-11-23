@@ -1,19 +1,19 @@
 .subscribe {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 /* YouTube gibi: abone değilken beyaz, aboneyken koyu */
 .subscribe-btn {
   height: 36px;
-  padding: 0 16px;
-  border-radius: 18px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
   background-color: var(--text-primary);
   color: var(--bg-color);
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  transition: background-color var(--dur-base);
 }
 
 .subscribe-btn:hover {
@@ -34,6 +34,6 @@
 }
 
 .subscribe-message {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
 }

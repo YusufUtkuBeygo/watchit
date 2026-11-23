@@ -2,8 +2,8 @@
 .categories-container {
   display: flex;
   overflow-x: auto;
-  padding: 12px 0;
-  gap: 12px;
+  padding: var(--space-3) 0;
+  gap: var(--space-3);
   scrollbar-width: none;
 }
 
@@ -12,14 +12,14 @@
 }
 
 .category-chip {
-  padding: 6px 12px;
-  border-radius: 16px;
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-pill);
   background-color: var(--pill-bg);
   color: var(--text-primary);
   white-space: nowrap;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  transition: background-color var(--dur-base);
 }
 
 .category-chip:hover {

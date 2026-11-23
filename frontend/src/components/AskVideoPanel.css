@@ -1,23 +1,23 @@
 .ask-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 20px;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
 }
 
 .ask-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 600;
+  gap: var(--space-2);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
 }
 
 .ask-hint {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: var(--space-2);
+  font-size: var(--fs-base);
   color: var(--text-secondary);
 }
 
@@ -26,14 +26,14 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .ask-history {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .ask-item {
@@ -45,10 +45,10 @@
 .ask-question {
   align-self: flex-end;
   max-width: 85%;
-  padding: 8px 12px;
-  border-radius: 12px 12px 4px 12px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-xs) var(--radius-md);
   background-color: var(--hover-color);
-  font-size: 14px;
+  font-size: var(--fs-base);
   overflow-wrap: anywhere;
 }
 
@@ -56,8 +56,8 @@
   max-width: 95%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: 15px;
+  gap: var(--space-2);
+  font-size: var(--fs-md);
   line-height: 1.6;
 }
 
@@ -74,7 +74,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
 }
 
@@ -90,7 +90,7 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.6;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--dur-base);
 }
 
 .ask-time:hover {
@@ -106,16 +106,16 @@
 .ask-suggestions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .ask-chip {
-  padding: 6px 12px;
-  border-radius: 16px;
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-pill);
   border: 1px solid var(--border-color);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-primary);
-  transition: background-color 0.2s;
+  transition: background-color var(--dur-base);
 }
 
 .ask-chip:hover:not(:disabled) {
@@ -129,7 +129,7 @@
 
 .ask-form {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .ask-form .input {
@@ -138,7 +138,7 @@
 }
 
 .ask-note {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-secondary);
 }
 
@@ -148,7 +148,7 @@
   flex-shrink: 0;
   border: 2px solid var(--border-color);
   border-top-color: var(--accent);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: ask-spin 0.8s linear infinite;
 }
 

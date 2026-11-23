@@ -1,21 +1,21 @@
 .like {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .like-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   height: 36px;
-  padding: 0 16px;
-  border-radius: 18px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
   background-color: var(--hover-color);
   color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  transition: background-color var(--dur-base);
 }
 
 .like-btn:hover {
@@ -31,6 +31,6 @@
 }
 
 .like-message {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
 }

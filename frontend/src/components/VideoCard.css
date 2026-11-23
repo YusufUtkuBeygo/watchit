@@ -1,7 +1,7 @@
 .video-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   min-width: 0;
 }
 
@@ -10,7 +10,7 @@
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background-color: var(--thumb-bg);
 }
@@ -26,25 +26,25 @@
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: var(--fs-base);
 }
 
 .duration {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 3px 4px;
-  border-radius: 4px;
+  bottom: var(--space-2);
+  right: var(--space-2);
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  padding: 3px var(--space-1);
+  border-radius: var(--radius-xs);
   font-variant-numeric: tabular-nums;
 }
 
 .video-info {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: flex-start;
 }
 
@@ -52,11 +52,11 @@
 .vc-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background-color: var(--avatar-bg);
   color: var(--avatar-text);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,8 +79,8 @@
 }
 
 .video-title {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -91,13 +91,13 @@
 
 .vc-channel,
 .video-metadata {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-secondary);
 }
 
 .vc-channel {
   align-self: flex-start;
-  transition: color 0.2s;
+  transition: color var(--dur-base);
 }
 
 .vc-channel:hover {
@@ -105,6 +105,6 @@
 }
 
 .vc-avatar-link {
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   flex-shrink: 0;
 }
