@@ -163,3 +163,22 @@
     transition: none;
   }
 }
+
+/* "Abonelikler >" başlığı: tıklanınca abonelik sayfası */
+.section-title-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+}
+
+.section-title-link:hover {
+  color: var(--accent-text);
+}
+
+/* "Daha fazla göster" düğmesi bağlantılarla aynı görünür */
+.sidebar-item.sidebar-more {
+  width: 100%;
+  text-align: left;
+  font-size: inherit;
+}

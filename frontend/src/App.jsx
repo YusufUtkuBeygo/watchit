@@ -15,6 +15,7 @@ import PlaylistPage from './routes/PlaylistPage';
 import AccountPage from './routes/AccountPage';
 import StudioPage from './routes/StudioPage';
 import LikedPage from './routes/LikedPage';
+import WatchLaterPage from './routes/WatchLaterPage';
 
 //Geniş ekran mı? (CSS'teki 1000px sınırıyla aynı)
 const isWideScreen = () => window.matchMedia('(min-width: 1001px)').matches;
@@ -49,6 +50,7 @@ function App() {
             <Route path="/account" element={<AccountPage />} />
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/liked" element={<LikedPage />} />
+            <Route path="/later" element={<WatchLaterPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>

@@ -1,0 +1,670 @@
+{
+  "aciklama": "WatchIt demo içeriği: serbest arşivlerden (NASA kamu malı, Internet Archive telifi düşmüş eserler, Wikimedia Commons CC). yukle.py okur.",
+  "kanallar": {
+    "sinema": {
+      "username": "sinema",
+      "email": "sinema@demo.watchit",
+      "channelName": "Açık Filmler",
+      "description": "Blender Foundation'ın açık lisanslı animasyon ve kısa filmleri."
+    },
+    "mehmet": {
+      "username": "mehmet",
+      "email": "mehmet@demo.watchit",
+      "channelName": "Mehmet Oyunda",
+      "description": "Oyun videoları"
+    },
+    "zeynep": {
+      "username": "zeynep",
+      "email": "zeynep@demo.watchit",
+      "channelName": "Zeynep Müzik",
+      "description": "Müzik"
+    },
+    "ayse": {
+      "username": "ayse",
+      "email": "ayse@demo.watchit",
+      "channelName": "Ayşe Kod Yazıyor",
+      "description": "Yazılım ve teknoloji"
+    },
+    "uzay": {
+      "username": "uzaybulteni",
+      "email": "uzay@demo.watchit",
+      "channelName": "Uzay Bülteni",
+      "description": "Mars'tan Ay'a, uzay istasyonundan teleskoplara: NASA arşivinden seçilmiş görüntüler."
+    },
+    "siyahbeyaz": {
+      "username": "siyahbeyaz",
+      "email": "siyahbeyaz@demo.watchit",
+      "channelName": "Siyah Beyaz Sinema",
+      "description": "Sessiz sinemanın ve çizgi filmin altın çağından telifi düşmüş klasikler."
+    },
+    "spor": {
+      "username": "sporarsivi",
+      "email": "spor@demo.watchit",
+      "channelName": "Spor Arşivi",
+      "description": "Sörften ragbiye, eski boks haberlerinden basketbol belgesellerine."
+    },
+    "doga": {
+      "username": "dogapenceresi",
+      "email": "doga@demo.watchit",
+      "channelName": "Doğa Penceresi",
+      "description": "Şelaleler, resifler, ormanlar ve uzaydan Dünya."
+    },
+    "arsiv": {
+      "username": "tariharsivi",
+      "email": "arsiv@demo.watchit",
+      "channelName": "Tarih Arşivi",
+      "description": "Haber filmleri ve eski eğitim filmleriyle 20. yüzyıl."
+    }
+  },
+  "videolar": [
+    {
+      "anahtar": "perseverance",
+      "kaynak": "nasa",
+      "id": "JPL-20210218-M2020f-0003-Perseverance Landing Wrap v2",
+      "baslik": "Perseverance Mars'a indi",
+      "aciklama": "NASA'nın Perseverance gezgini 18 Şubat 2021'de Jezero kraterine indi. Kontrol odasındaki o anlar.",
+      "kategori": "Bilim ve Uzay",
+      "kanal": "uzay",
+      "sinir": 600
+    },
+    {
+      "anahtar": "artemis1",
+      "kaynak": "nasa",
+      "id": "Artemis I Launches to the Moon (Official NASA Recap)",
+      "baslik": "Artemis I Ay'a doğru yola çıktı",
+      "aciklama": "İnsanlı Ay yolculuklarının ilk adımı: SLS roketinin ilk fırlatışının özeti.",
+      "kategori": "Bilim ve Uzay",
+      "kanal": "uzay",
+      "sinir": 600
+    },
+    {
+      "anahtar": "webb",
+      "kaynak": "nasa",
+      "id": "James_Webb_Space_Telescope__An_Overview_1080",
+      "baslik": "James Webb Uzay Teleskobu nedir?",
+      "aciklama": "Evrenin ilk galaksilerini görmek için tasarlanan teleskobun kısa tanıtımı.",
+      "kategori": "Bilim ve Uzay",
+      "kanal": "uzay",
+      "sinir": 600
+    },
+    {
+      "anahtar": "tutulma",
+      "kaynak": "nasa",
+      "id": "GSFC_20170721_LRO_m12648_SolarEclipse",
+      "baslik": "Güneş tutulmasında Ay'ın rolü",
+      "aciklama": "Ay'ın gölgesi Dünya'ya nasıl düşer? Lunar Reconnaissance Orbiter verileriyle tutulma.",
+      "kategori": "Bilim ve Uzay",
+      "kanal": "uzay",
+      "sinir": 600
+    },
+    {
+      "anahtar": "apollo11",
+      "kaynak": "ia",
+      "id": "Apollo11MoonLanding",
+      "dosya": "161993main_06c_arrivemoon_wmvV9_512kb.mp4",
+      "baslik": "Apollo 11: Ay'a ilk adım",
+      "aciklama": "20 Temmuz 1969: Kartal modülünün Ay'a inişi ve ilk adımlar, NASA arşivinden.",
+      "kategori": "Bilim ve Uzay",
+      "kanal": "uzay",
+      "sinir": 600,
+      "tam_sure": 404
+    },
+    {
+      "anahtar": "ingenuity",
+      "kaynak": "nasa",
+      "id": "JPL-20210425-TECHf-0002-Ingenuity Third Flight",
+      "baslik": "Ingenuity Mars'ta üçüncü kez uçtu",
+      "aciklama": "Başka bir gezegende uçan ilk helikopterin üçüncü uçuşu.",
+      "kategori": "Teknoloji",
+      "kanal": "ayse",
+      "sinir": 600
+    },
+    {
+      "anahtar": "x59",
+      "kaynak": "nasa",
+      "id": "NHQ20210803ARMD",
+      "baslik": "X-59 sessiz süpersonik uçağın yapımı",
+      "aciklama": "Ses patlaması yapmadan sesten hızlı uçmak için tasarlanan X-59'un yapımı, hızlandırılmış.",
+      "kategori": "Teknoloji",
+      "kanal": "ayse",
+      "sinir": 600
+    },
+    {
+      "anahtar": "artemisrollout",
+      "kaynak": "nasa",
+      "id": "KSC-20221104-MH-GEB01-0001-Artemis_I_Rollout_for_Launch-3317651",
+      "baslik": "Dev roket fırlatma rampasına yürüyor",
+      "aciklama": "SLS roketinin montaj binasından fırlatma rampasına saatler süren yolculuğu.",
+      "kategori": "Teknoloji",
+      "kanal": "ayse",
+      "sinir": 600
+    },
+    {
+      "anahtar": "webbtitresim",
+      "kaynak": "nasa",
+      "id": "Social_Media_Video_Master_A",
+      "baslik": "James Webb titreşim testinde",
+      "aciklama": "Fırlatmanın sarsıntısına dayanıp dayanmayacağını görmek için teleskop sarsılıyor.",
+      "kategori": "Teknoloji",
+      "kanal": "ayse",
+      "sinir": 600
+    },
+    {
+      "anahtar": "franklin",
+      "kaynak": "nasa",
+      "id": "Expedition_69_Space_Station_Flies_Over_Hurricane_Franklin_Replay",
+      "baslik": "Uzay istasyonundan Franklin Kasırgası",
+      "aciklama": "Uluslararası Uzay İstasyonu Atlantik'teki Franklin Kasırgası'nın üzerinden geçiyor.",
+      "kategori": "Doğa",
+      "kanal": "doga",
+      "sinir": 600
+    },
+    {
+      "anahtar": "kasirgalar",
+      "kaynak": "nasa",
+      "id": "GSFC_20171004_m12738_RapidIntensification",
+      "baslik": "Uzaydan görülen kasırga dizisi",
+      "aciklama": "2017'de art arda gelen kasırgalar uydulardan nasıl görüldü?",
+      "kategori": "Doğa",
+      "kanal": "doga",
+      "sinir": 600
+    },
+    {
+      "anahtar": "nehir",
+      "kaynak": "ia",
+      "id": "Dayatthe1928",
+      "dosya": "Dayatthe1928_512kb.mp4",
+      "baslik": "Nehirde bir gün (1928)",
+      "aciklama": "1928'den bir doğa bilgisi ders filmi: nehir kıyısındaki canlılar.",
+      "kategori": "Doğa",
+      "kanal": "doga",
+      "sinir": 600,
+      "tam_sure": 534
+    },
+    {
+      "anahtar": "kozjak",
+      "kaynak": "commons",
+      "id": "File:CANYONING & CLIFF JUMPING OFF KOZJAK WATERFALL - SLOVENIA.webm",
+      "baslik": "Kozjak Şelalesi'nde kanyon macerası",
+      "aciklama": "Slovenya'daki Kozjak Şelalesi'nde kanyon geçişi ve kayalıklardan atlama.",
+      "kategori": "Doğa",
+      "kanal": "doga",
+      "sinir": 600,
+      "tam_sure": 327
+    },
+    {
+      "anahtar": "galler",
+      "kaynak": "commons",
+      "id": "File:Rhaeadr Ewynnol, Betws-y-coed - waterfall in Wales.webm",
+      "baslik": "Galler'de bir şelale: Rhaeadr Ewynnol",
+      "aciklama": "Betws-y-coed yakınındaki Rhaeadr Ewynnol şelalesi.",
+      "kategori": "Doğa",
+      "kanal": "doga",
+      "sinir": 600,
+      "tam_sure": 130
+    },
+    {
+      "anahtar": "mammalweb",
+      "kaynak": "commons",
+      "id": "File:MammalWeb citizen science project (short).webm",
+      "baslik": "Gizli kameralarla yaban hayatı",
+      "aciklama": "Gönüllülerin kurduğu gizli kameralar ormandaki memelileri görüntülüyor.",
+      "kategori": "Doğa",
+      "kanal": "doga",
+      "sinir": 600,
+      "tam_sure": 105
+    },
+    {
+      "anahtar": "resif",
+      "kaynak": "commons",
+      "id": "File:Davies Reef (GBR) Underwater Camera 18 Month Time Lapse in 30 sec.webm",
+      "baslik": "Mercan resifinde 18 ay, 30 saniyede",
+      "aciklama": "Büyük Set Resifi'ndeki Davies Resifi'nin sualtı kamerasından hızlandırılmış görüntü.",
+      "kategori": "Doğa",
+      "kanal": "doga",
+      "sinir": 600,
+      "tam_sure": 62
+    },
+    {
+      "anahtar": "bbb",
+      "kaynak": "commons",
+      "id": "File:Big Buck Bunny 4K.webm",
+      "baslik": "Big Buck Bunny",
+      "aciklama": "Uykucu dev tavşan, ormanın kabadayı kemirgenlerine karşı. Blender Foundation'ın ikinci açık filmi.",
+      "kategori": "Film ve Animasyon",
+      "kanal": "sinema",
+      "sinir": 900,
+      "tam_sure": 635
+    },
+    {
+      "anahtar": "sintel",
+      "kaynak": "commons",
+      "id": "File:Sintel movie 4K.webm",
+      "baslik": "Sintel",
+      "aciklama": "Yaralı bir yavru ejderhayı kurtaran genç kızın onu arama yolculuğu.",
+      "kategori": "Film ve Animasyon",
+      "kanal": "sinema",
+      "sinir": 900,
+      "tam_sure": 888
+    },
+    {
+      "anahtar": "spring",
+      "kaynak": "commons",
+      "id": "File:Spring - Blender Open Movie.webm",
+      "baslik": "Spring",
+      "aciklama": "Bir çoban kız ve köpeği, dağların ruhlarıyla karşılaşıyor.",
+      "kategori": "Film ve Animasyon",
+      "kanal": "sinema",
+      "sinir": 900,
+      "tam_sure": 464
+    },
+    {
+      "anahtar": "cosmos",
+      "kaynak": "commons",
+      "id": "File:Cosmos Laundromat - First Cycle - Official Blender Foundation release.webm",
+      "baslik": "Cosmos Laundromat",
+      "aciklama": "Hayattan bıkmış bir koyun, ona yeni hayatlar vaat eden gizemli bir satıcıyla tanışıyor.",
+      "kategori": "Film ve Animasyon",
+      "kanal": "sinema",
+      "sinir": 900,
+      "tam_sure": 731
+    },
+    {
+      "anahtar": "caminandes",
+      "kaynak": "commons",
+      "id": "File:Caminandes 3 - Llamigos - Blender Animated Short.webm",
+      "baslik": "Caminandes: Llamigos",
+      "aciklama": "Patagonya'nın en inatçı laması Koro, bu kez bir penguenle kozunu paylaşıyor.",
+      "kategori": "Film ve Animasyon",
+      "kanal": "sinema",
+      "sinir": 600,
+      "tam_sure": 150
+    },
+    {
+      "anahtar": "superman",
+      "kaynak": "ia",
+      "id": "superman_1941",
+      "dosya": "superman_1941_512kb.mp4",
+      "baslik": "Superman (1941)",
+      "aciklama": "Fleischer Stüdyoları'nın ilk Superman çizgi filmi: çılgın bilim insanının şimşek topu.",
+      "kategori": "Film ve Animasyon",
+      "kanal": "siyahbeyaz",
+      "sinir": 900,
+      "tam_sure": 621
+    },
+    {
+      "anahtar": "supermanrobot",
+      "kaynak": "ia",
+      "id": "superman_the_mechanical_monsters",
+      "dosya": "superman_the_mechanical_monsters_512kb.mp4",
+      "baslik": "Superman: Mekanik Canavarlar",
+      "aciklama": "Dev robotlarla banka soyan bir mucit ve Superman.",
+      "kategori": "Film ve Animasyon",
+      "kanal": "siyahbeyaz",
+      "sinir": 900,
+      "tam_sure": 615
+    },
+    {
+      "anahtar": "popeyesinbad",
+      "kaynak": "ia",
+      "id": "Popeye_meetsSinbadtheSailor",
+      "dosya": "Popeye_meetsSinbadtheSailor_512kb.mp4",
+      "baslik": "Popeye, Denizci Sinbad'a karşı",
+      "aciklama": "Popeye'ın renkli ilk uzun macerası (1936).",
+      "kategori": "Film ve Animasyon",
+      "kanal": "siyahbeyaz",
+      "sinir": 900,
+      "tam_sure": 966
+    },
+    {
+      "anahtar": "easystreet",
+      "kaynak": "ia",
+      "id": "EasyStreet1917_201708",
+      "dosya": "Easy Street (1917).mp4",
+      "baslik": "Chaplin: Easy Street (1917)",
+      "aciklama": "Şarlo polis oluyor ve mahallenin en azılı kabadayısıyla karşı karşıya geliyor.",
+      "kategori": "Komedi",
+      "kanal": "siyahbeyaz",
+      "sinir": 600,
+      "tam_sure": 1136
+    },
+    {
+      "anahtar": "immigrant",
+      "kaynak": "ia",
+      "id": "charlie-chaplin-.-the-immigrant-1917-restored-silent-short-film-noir-comedy",
+      "dosya": "Charlie Chaplin . The Immigrant (1917 Restored Silent Short Film Noir Comedy).mp4",
+      "baslik": "Chaplin: Göçmen (1917)",
+      "aciklama": "Amerika'ya giden bir gemide ve ardından bir lokantada Şarlo'nun başına gelenler.",
+      "kategori": "Komedi",
+      "kanal": "siyahbeyaz",
+      "sinir": 600,
+      "tam_sure": 1471
+    },
+    {
+      "anahtar": "electrichouse",
+      "kaynak": "ia",
+      "id": "BusterKeatonTheElectricHouse",
+      "dosya": "Buster Keaton - The Electric House.mp4",
+      "baslik": "Buster Keaton: Elektrikli Ev (1922)",
+      "aciklama": "Yanlışlıkla mühendis sanılan Keaton bir evi baştan sona elektrikli aletlerle donatıyor.",
+      "kategori": "Komedi",
+      "kanal": "siyahbeyaz",
+      "sinir": 600,
+      "tam_sure": 1396
+    },
+    {
+      "anahtar": "stoogesmahkeme",
+      "kaynak": "ia",
+      "id": "3stooges",
+      "dosya": "3stooges_NewDisorder2_512kb.mp4",
+      "baslik": "Three Stooges: Mahkemede Kargaşa (1936)",
+      "aciklama": "Üç ahbap çavuş tanık olarak mahkemeye çağrılırsa ne olur?",
+      "kategori": "Komedi",
+      "kanal": "siyahbeyaz",
+      "sinir": 600,
+      "tam_sure": 994
+    },
+    {
+      "anahtar": "stoogesdamat",
+      "kaynak": "ia",
+      "id": "3stooges",
+      "dosya": "3stooges_NewGroom_512kb.mp4",
+      "baslik": "Three Stooges: Gelinsiz Damat (1947)",
+      "aciklama": "Shemp mirası alabilmek için bir gün içinde evlenmek zorunda.",
+      "kategori": "Komedi",
+      "kanal": "siyahbeyaz",
+      "sinir": 600,
+      "tam_sure": 997
+    },
+    {
+      "anahtar": "popeyecam",
+      "kaynak": "ia",
+      "id": "Popeye_ThePanelessWindowWasher",
+      "dosya": "Popeye_ThePanelessWindowWasher_512kb.mp4",
+      "baslik": "Popeye: Cam Silici",
+      "aciklama": "Popeye ile Bluto gökdelende cam silme işi için kapışıyor.",
+      "kategori": "Komedi",
+      "kanal": "siyahbeyaz",
+      "sinir": 600,
+      "tam_sure": 365
+    },
+    {
+      "anahtar": "marimba",
+      "kaynak": "ia",
+      "id": "SoundieF",
+      "dosya": "SoundieF_512kb.mp4",
+      "baslik": "Reg Kehoe ve Marimba Kraliçeleri",
+      "aciklama": "1940'ların 'soundie' müzik filmlerinden: marimba orkestrası.",
+      "kategori": "Müzik",
+      "kanal": "zeynep",
+      "sinir": 600,
+      "tam_sure": 144
+    },
+    {
+      "anahtar": "lamba",
+      "kaynak": "ia",
+      "id": "LampOfMemory",
+      "dosya": "LampOfMemory_512kb.mp4",
+      "baslik": "Hatıraların Lambası (1944)",
+      "aciklama": "Savaş yıllarından duygusal bir şarkı.",
+      "kategori": "Müzik",
+      "kanal": "zeynep",
+      "sinir": 600,
+      "tam_sure": 167
+    },
+    {
+      "anahtar": "jiveroo",
+      "kaynak": "ia",
+      "id": "soundie_11",
+      "dosya": "soundie_11_512kb.mp4",
+      "baslik": "Jiveroo",
+      "aciklama": "Swing döneminden enerjik bir dans parçası.",
+      "kategori": "Müzik",
+      "kanal": "zeynep",
+      "sinir": 600,
+      "tam_sure": 156
+    },
+    {
+      "anahtar": "hutsut",
+      "kaynak": "ia",
+      "id": "soundie_1",
+      "dosya": "soundie_1_512kb.mp4",
+      "baslik": "The Hut Sut Song",
+      "aciklama": "1941'in anlamsız sözleriyle meşhur olan hit şarkısı.",
+      "kategori": "Müzik",
+      "kanal": "zeynep",
+      "sinir": 600,
+      "tam_sure": 165
+    },
+    {
+      "anahtar": "yehudi",
+      "kaynak": "ia",
+      "id": "WhosYourHoot",
+      "dosya": "WhosYourHoot_512kb.mp4",
+      "baslik": "Who's Yehudi?",
+      "aciklama": "1942'den esprili bir swing şarkısı.",
+      "kategori": "Müzik",
+      "kanal": "zeynep",
+      "sinir": 600,
+      "tam_sure": 169
+    },
+    {
+      "anahtar": "boogie",
+      "kaynak": "ia",
+      "id": "soundie_12",
+      "dosya": "soundie_12_512kb.mp4",
+      "baslik": "Hollywood Boogie",
+      "aciklama": "Boogie-woogie piyanosu ve dans (1946).",
+      "kategori": "Müzik",
+      "kanal": "zeynep",
+      "sinir": 600,
+      "tam_sure": 152
+    },
+    {
+      "anahtar": "0ad",
+      "kaynak": "commons",
+      "id": "File:0 A.D. - Gameplay-Test 15052019 Full-HD.webm",
+      "baslik": "0 A.D. oynanış",
+      "aciklama": "Antik çağda geçen açık kaynak strateji oyunu 0 A.D.'den bir oynanış.",
+      "kategori": "Oyun",
+      "kanal": "mehmet",
+      "sinir": 600,
+      "tam_sure": 145
+    },
+    {
+      "anahtar": "xonotic",
+      "kaynak": "commons",
+      "id": "File:Xonotic 0-8-2 gameplay.webm",
+      "baslik": "Xonotic 0.8.2 oynanış",
+      "aciklama": "Hızlı tempolu açık kaynak arena nişancı oyunu.",
+      "kategori": "Oyun",
+      "kanal": "mehmet",
+      "sinir": 600,
+      "tam_sure": 183
+    },
+    {
+      "anahtar": "luanti",
+      "kaynak": "commons",
+      "id": "File:Luanti 5.12 Cambios y Novedades-Luanti.webm",
+      "baslik": "Luanti 5.12'de neler yeni?",
+      "aciklama": "Açık kaynak blok oyunu Luanti'nin (eski adıyla Minetest) yeni sürümü.",
+      "kategori": "Oyun",
+      "kanal": "mehmet",
+      "sinir": 600,
+      "tam_sure": 139
+    },
+    {
+      "anahtar": "mineclone",
+      "kaynak": "commons",
+      "id": "File:MineClone2 - Release 0.84 - The Very Nice Release.webm",
+      "baslik": "MineClone2 0.84 sürümü",
+      "aciklama": "Luanti üzerinde çalışan MineClone2 oyununun yeni sürüm tanıtımı.",
+      "kategori": "Oyun",
+      "kanal": "mehmet",
+      "sinir": 600,
+      "tam_sure": 86
+    },
+    {
+      "anahtar": "nodecore",
+      "kaynak": "commons",
+      "id": "File:NodeCore- Fire Basics.webm",
+      "baslik": "NodeCore: ateş yakmanın temelleri",
+      "aciklama": "Hayatta kalma bulmaca oyunu NodeCore'da ateş nasıl yakılır?",
+      "kategori": "Oyun",
+      "kanal": "mehmet",
+      "sinir": 600,
+      "tam_sure": 160
+    },
+    {
+      "anahtar": "basketbol",
+      "kaynak": "commons",
+      "id": "File:OUR GAME - Episode 1- Whatever It Takes - Basketball Documentary.webm",
+      "baslik": "Bizim Oyun: basketbol belgeseli",
+      "aciklama": "Bir basketbol takımının sezonunu anlatan belgeselin ilk bölümü.",
+      "kategori": "Spor",
+      "kanal": "spor",
+      "sinir": 600,
+      "tam_sure": 1497
+    },
+    {
+      "anahtar": "sorf",
+      "kaynak": "commons",
+      "id": "File:Surfing competition at Salt Creek Beach, Dana Point, California, USA as viewed from a FPV drone.webm",
+      "baslik": "Salt Creek'te sörf yarışması",
+      "aciklama": "Kaliforniya, Dana Point'teki sörf yarışmasından dalgalar.",
+      "kategori": "Spor",
+      "kanal": "spor",
+      "sinir": 600,
+      "tam_sure": 497
+    },
+    {
+      "anahtar": "downhill",
+      "kaynak": "commons",
+      "id": "File:Skate Pilipinas' Downhill Skateboarding and Street Luge World Championship - 25 February 2024.webm",
+      "baslik": "Yokuş aşağı kaykay ve sokak kızağı",
+      "aciklama": "Filipinler'de düzenlenen yokuş aşağı kaykay ve street luge dünya şampiyonası.",
+      "kategori": "Spor",
+      "kanal": "spor",
+      "sinir": 600,
+      "tam_sure": 259
+    },
+    {
+      "anahtar": "freeride",
+      "kaynak": "commons",
+      "id": "File:Freeride Skateboarding & Downhill Slides.webm",
+      "baslik": "Freeride kaykay ve kaymalar",
+      "aciklama": "Yokuş aşağı kaykayla kayarak fren yapma teknikleri.",
+      "kategori": "Spor",
+      "kanal": "spor",
+      "sinir": 600,
+      "tam_sure": 121
+    },
+    {
+      "anahtar": "ragbi",
+      "kaynak": "commons",
+      "id": "File:Avant le match de rugby Australie Portugal.webm",
+      "baslik": "Ragbi maçı öncesi: Avustralya - Portekiz",
+      "aciklama": "Dünya Kupası maçından önce stadyumda ve sahada.",
+      "kategori": "Spor",
+      "kanal": "spor",
+      "sinir": 600,
+      "tam_sure": 255
+    },
+    {
+      "anahtar": "dempsey",
+      "kaynak": "ia",
+      "id": "JackDempseyNewsreel1920s",
+      "dosya": "JackDempseyNewsreel1920s_512kb.mp4",
+      "baslik": "Jack Dempsey: 1920'lerin boks efsanesi",
+      "aciklama": "Ağır sıklet şampiyonu Jack Dempsey'nin maçlarından haber filmi görüntüleri.",
+      "kategori": "Spor",
+      "kanal": "spor",
+      "sinir": 600,
+      "tam_sure": 382
+    },
+    {
+      "anahtar": "hindenburg",
+      "kaynak": "ia",
+      "id": "hindenberg_explodes",
+      "dosya": "hindenberg_explodes_512kb.mp4",
+      "baslik": "Hindenburg faciası (1937)",
+      "aciklama": "Dev zeplin Hindenburg'un New Jersey'de alev alıp düşmesi, dönemin haber filminden.",
+      "kategori": "Tarih",
+      "kanal": "arsiv",
+      "sinir": 600,
+      "tam_sure": 327
+    },
+    {
+      "anahtar": "hindenburgses",
+      "kaynak": "ia",
+      "id": "SF145",
+      "dosya": "SF145_512kb.mp4",
+      "baslik": "Hindenburg: Herb Morrison'ın canlı anlatımı",
+      "aciklama": "Radyocu Herb Morrison'ın facia anındaki unutulmaz anlatımı, görüntülerle.",
+      "kategori": "Tarih",
+      "kanal": "arsiv",
+      "sinir": 600,
+      "tam_sure": 81
+    },
+    {
+      "anahtar": "renklihaber",
+      "kaynak": "ia",
+      "id": "200504_First_Color_Newsreel",
+      "dosya": "200504_First_Color_Newsreel_master.intros.mp4",
+      "baslik": "İlk renkli haber filmi",
+      "aciklama": "Haber filmlerinin renkli çekilmeye başladığı yıllardan bir örnek.",
+      "kategori": "Tarih",
+      "kanal": "arsiv",
+      "sinir": 600,
+      "tam_sure": 219
+    },
+    {
+      "anahtar": "reklamlar",
+      "kaynak": "ia",
+      "id": "ClassicT1948",
+      "dosya": "ClassicT1948_512kb.mp4",
+      "baslik": "1940'ların ve 50'lerin televizyon reklamları",
+      "aciklama": "Televizyonun ilk yıllarından reklam derlemesi.",
+      "kategori": "Tarih",
+      "kanal": "arsiv",
+      "sinir": 600,
+      "tam_sure": 536
+    },
+    {
+      "anahtar": "duckcover",
+      "kaynak": "ia",
+      "id": "DuckandC1951",
+      "dosya": "DuckandC1951_512kb.mp4",
+      "baslik": "Eğil ve Korun (1951)",
+      "aciklama": "Soğuk Savaş yıllarında okullarda gösterilen ünlü sivil savunma filmi.",
+      "kategori": "Eğitim",
+      "kanal": "arsiv",
+      "sinir": 600,
+      "tam_sure": 555
+    },
+    {
+      "anahtar": "atom",
+      "kaynak": "ia",
+      "id": "isforAto1953",
+      "dosya": "isforAto1953_512kb.mp4",
+      "baslik": "A, Atom İçindir (1953)",
+      "aciklama": "Atom enerjisini anlatan 1950'lerin renkli animasyonlu eğitim filmi.",
+      "kategori": "Eğitim",
+      "kanal": "arsiv",
+      "sinir": 600,
+      "tam_sure": 883
+    },
+    {
+      "anahtar": "ses",
+      "kaynak": "ia",
+      "id": "Natureof1948",
+      "dosya": "Natureof1948_512kb.mp4",
+      "baslik": "Sesin Doğası (1948)",
+      "aciklama": "Ses dalgaları, titreşim ve yankı: 1940'ların fizik ders filmi.",
+      "kategori": "Eğitim",
+      "kanal": "arsiv",
+      "sinir": 600,
+      "tam_sure": 644
+    }
+  ]
+}

@@ -17,6 +17,7 @@ import com.yutkubeygo.watchit.repository.ChannelRepository;
 import com.yutkubeygo.watchit.repository.SubscriptionRepository;
 import com.yutkubeygo.watchit.repository.VideoLikeRepository;
 import com.yutkubeygo.watchit.repository.VideoRepository;
+import com.yutkubeygo.watchit.repository.WatchLaterRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +37,9 @@ public class VideoService {
     private final SubscriptionRepository subscriptionRepository;
     private final NotificationService notificationService;
     private final VideoProcessingService videoProcessingService;
+    private final WatchLaterRepository watchLaterRepository;
 
-    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService, SubscriptionRepository subscriptionRepository, NotificationService notificationService, VideoProcessingService videoProcessingService) {
+    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService, SubscriptionRepository subscriptionRepository, NotificationService notificationService, VideoProcessingService videoProcessingService, WatchLaterRepository watchLaterRepository) {
         this.videoMapper = videoMapper;
         this.channelRepository = channelRepository;
         this.categoryRepository = categoryRepository;
@@ -48,6 +50,7 @@ public class VideoService {
         this.subscriptionRepository = subscriptionRepository;
         this.notificationService = notificationService;
         this.videoProcessingService = videoProcessingService;
+        this.watchLaterRepository = watchLaterRepository;
     }
 
     public VideoResponseDto getVideo(Long id,Long userId)
@@ -65,6 +68,7 @@ public class VideoService {
             Optional<VideoLike> myLike =videoLikeRepository.findByUserIdAndVideoId(userId,id);
             if(myLike.isPresent())
                 dto.setLikedByMe(true);
+            dto.setSavedForLater(watchLaterRepository.existsByUserIdAndVideoId(userId, id));
 
         }
         return dto;

@@ -26,4 +26,6 @@ public class VideoResponseDto {
     private String channelProfilePictureUrl;
     private Long categoryId;
     private boolean likedByMe;
+    //Giriş yapanın "Daha sonra izle" listesinde mi (yalnız tek video cevabında dolar)
+    private boolean savedForLater;
 }

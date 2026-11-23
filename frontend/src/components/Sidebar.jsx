@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser, Clapperboard, ThumbsUp } from 'lucide-react';
+import { Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser, Clapperboard, ThumbsUp, ChevronDown, ChevronUp, ChevronRight, Clock } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { getAllCategories } from '../services/categoryService';
 import { getMyChannel, getMySubscriptions, SUBSCRIPTIONS_CHANGED } from '../services/channelService';
@@ -9,6 +9,9 @@ import ThemeToggle from './ThemeToggle';
 import LoginModal from './LoginModal';
 import './Sidebar.css';
 
+//Abonelikler listesinde ilk bu kadar kanal görünür, gerisi "Daha fazla göster" ile açılır
+const SUBSCRIPTION_LIMIT = 7;
+
 //Sol menü. isOpen: dar ekranda açık mı (App tutar), onClose: dar ekranda kapatmak için
 const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuth();
@@ -17,6 +20,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [myChannelId, setMyChannelId] = useState(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [showAllSubscriptions, setShowAllSubscriptions] = useState(false);
 
   useEffect(() => {
     getAllCategories()
@@ -97,6 +101,10 @@ const Sidebar = ({ isOpen, onClose }) => {
               <ListVideo size={24} />
               <span>Oynatma listeleri</span>
             </NavLink>
+            <NavLink to="/later" className="sidebar-item">
+              <Clock size={24} />
+              <span>Daha sonra izle</span>
+            </NavLink>
             <NavLink to="/liked" className="sidebar-item">
               <ThumbsUp size={24} />
               <span>Beğendiğim videolar</span>
@@ -107,13 +115,28 @@ const Sidebar = ({ isOpen, onClose }) => {
             <>
               <div className="sidebar-divider"></div>
               <nav className="sidebar-section" aria-label="Abone olunan kanallar">
-                <h3 className="section-title">Abonelikler</h3>
-                {subscriptions.map((sub) => (
+                <h3 className="section-title">
+                  <Link to="/subscriptions" className="section-title-link">
+                    Abonelikler <ChevronRight size={18} aria-hidden="true" />
+                  </Link>
+                </h3>
+                {(showAllSubscriptions ? subscriptions : subscriptions.slice(0, SUBSCRIPTION_LIMIT)).map((sub) => (
                   <NavLink to={`/channel/${sub.channelId}`} className="sidebar-item sub-item" key={sub.id}>
                     <Avatar className="sub-avatar" src={sub.channelProfilePictureUrl} name={sub.channelName} />
                     <span className="sub-name">{sub.channelName}</span>
                   </NavLink>
                 ))}
+                {subscriptions.length > SUBSCRIPTION_LIMIT && (
+                  <button
+                    type="button"
+                    className="sidebar-item sidebar-more"
+                    onClick={() => setShowAllSubscriptions((open) => !open)}
+                    aria-expanded={showAllSubscriptions}
+                  >
+                    {showAllSubscriptions ? <ChevronUp size={24} aria-hidden="true" /> : <ChevronDown size={24} aria-hidden="true" />}
+                    <span>{showAllSubscriptions ? 'Daha az göster' : 'Daha fazla göster'}</span>
+                  </button>
+                )}
               </nav>
             </>
           )}

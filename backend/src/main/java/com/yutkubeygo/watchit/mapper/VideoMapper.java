@@ -24,6 +24,7 @@ public interface VideoMapper {
     //Beğeni sayısı ve "beğendim mi" tabloda yok, servis doldurur
     @Mapping(target = "likeCount", ignore = true)
     @Mapping(target = "likedByMe", ignore = true)
+    @Mapping(target = "savedForLater", ignore = true)
     VideoResponseDto toDto(Video video);
     //Liste halinde isteklerin returnleri için ResponseDto nesnelerinden oluşan bir liste return eder
     List<VideoResponseDto> toDtoList(List<Video>  videoResponseDtoList);
