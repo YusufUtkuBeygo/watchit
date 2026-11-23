@@ -1,98 +1,68 @@
 .channel-page {
-  padding: 16px 0 24px;
+  padding: var(--space-4) 0 var(--space-6);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.channel-banner {
-  width: 100%;
-  aspect-ratio: 6 / 1;
-  border-radius: 12px;
-  object-fit: cover;
-}
-
-.channel-banner-empty {
-  background: var(--card-bg);
+  gap: var(--space-4);
 }
 
 .channel-header {
   display: flex;
   align-items: flex-start;
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 /* Profil resmi; resim yoksa ya da açılmazsa altındaki baş harf görünür */
 .channel-avatar {
-  position: relative;
   width: 120px;
   height: 120px;
-  border-radius: 50%;
-  background-color: var(--avatar-bg);
-  color: var(--avatar-text);
-  font-size: 48px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.channel-avatar img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  font-size: var(--fs-4xl);
 }
 
 .channel-info {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--space-2);
   min-width: 0;
 }
 
 .channel-name {
-  font-size: 32px;
-  font-weight: 700;
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-bold);
   overflow-wrap: anywhere;
 }
 
 .channel-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 12px;
-  font-size: 14px;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--fs-base);
   color: var(--text-secondary);
 }
 
 .channel-description {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-secondary);
   white-space: pre-wrap;
   max-width: 700px;
 }
 
 .channel-section-title {
-  font-size: 18px;
-  font-weight: 600;
-  padding-bottom: 8px;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--border-color);
 }
 
-.channel-empty,
 .channel-message {
   color: var(--text-secondary);
 }
 
 .channel-message {
-  padding: 48px 0;
+  padding: var(--space-8) 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .channel-message h2 {
@@ -100,22 +70,24 @@
 }
 
 .channel-link {
-  color: var(--accent-text);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 @media (max-width: 600px) {
   .channel-header {
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-3);
   }
 
   .channel-avatar {
     width: 80px;
     height: 80px;
-    font-size: 32px;
+    font-size: var(--fs-3xl);
   }
 
   .channel-name {
-    font-size: 24px;
+    font-size: var(--fs-2xl);
   }
 }

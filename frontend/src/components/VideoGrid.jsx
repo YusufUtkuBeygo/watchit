@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import VideoCard from './VideoCard';
 import './VideoGrid.css';
 import { getAllVideos, getVideosByCategoryId } from '../services/videoService';
+import { VideoGridSkeleton } from './Skeleton';
+import { Link } from 'react-router-dom';
+import { Clapperboard } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 //Ana sayfadaki video ızgarası; kategori seçiliyse yalnız o kategorinin videoları
 function VideoGrid({ selectedCategory }) {
@@ -33,13 +37,22 @@ function VideoGrid({ selectedCategory }) {
     return () => { ignore = true; };
   }, [selectedCategory]);
 
-  if (status === 'loading') return <p className="grid-message">Yükleniyor…</p>;
+  if (status === 'loading') return <VideoGridSkeleton />;
   if (status === 'error') return <p className="grid-message">Videolar yüklenemedi. Biraz sonra tekrar dene.</p>;
   if (videos.length === 0) {
-    return (
-      <p className="grid-message">
-        {selectedCategory ? 'Bu kategoride henüz video yok.' : 'Henüz video yok.'}
-      </p>
+    return selectedCategory ? (
+      <EmptyState
+        icon={Clapperboard}
+        title="Bu kategoride henüz video yok"
+        text="Başka bir kategoriye göz at ya da tüm videolara dön."
+        action={<Link to="/" className="btn">Tüm videolar</Link>}
+      />
+    ) : (
+      <EmptyState
+        icon={Clapperboard}
+        title="Henüz video yok"
+        text="İlk videoyu sen yükle: üst menüdeki “Oluştur” düğmesiyle başlayabilirsin."
+      />
     );
   }
 

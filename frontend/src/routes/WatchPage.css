@@ -1,18 +1,72 @@
+/* İzleme düzeni (YouTube gibi). Grid alanları:
+   - geniş (içerik alanı >= 900 px; izleme sayfasında sol menü kapalı başlar, alan geniş kalır):
+       oynatıcı | sıradakiler
+       bilgiler | sıradakiler
+       yorumlar | sıradakiler
+     Sağ sütun oynatıcının üst hizasından başlar; sticky değil (liste ekrandan uzun olabilir).
+   - dar: oynatıcı, bilgiler (Videoya sor dahil), sıradakiler, yorumlar (YouTube mobil sırası) */
+.watch-layout {
+  container: watch-layout / inline-size;
+  padding: var(--space-6) 0;
+}
+
+.watch-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "player"
+    "main"
+    "side"
+    "comments";
+  column-gap: var(--space-6);
+  row-gap: var(--space-4);
+  max-width: 1760px;
+}
+
+.watch-columns > .watch-player { grid-area: player; }
+.watch-columns > .watch-main { grid-area: main; }
+.watch-columns > .related { grid-area: side; }
+.watch-columns > .watch-comments { grid-area: comments; min-width: 0; }
+
+@container watch-layout (min-width: 900px) {
+  .watch-columns {
+    grid-template-columns: minmax(0, 1fr) clamp(320px, 30%, 400px);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "player side"
+      "main side"
+      "comments side";
+  }
+
+  /* Sinema modu: oynatıcı iki sütunun üstünde tam genişlik, altında yine iki sütun */
+  .watch-layout.is-theater .watch-columns {
+    grid-template-areas:
+      "player player"
+      "main side"
+      "comments side";
+  }
+
+  .watch-columns > .related,
+  .watch-columns > .watch-comments {
+    align-self: start;
+  }
+}
+
 .watch-page {
-  max-width: 1100px;
-  padding: 24px 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .watch-player {
+  container: watch-player / inline-size;
   /* Dakikaya tıklayınca buraya kaydırılır; üstteki sabit menünün altında kalmasın */
-  scroll-margin-top: calc(var(--navbar-height) + 12px);
+  scroll-margin-top: calc(var(--navbar-height) + var(--space-3));
   width: 100%;
   aspect-ratio: 16 / 9;
-  background-color: #000;
-  border-radius: 12px;
+  background-color: var(--player-bg);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -22,66 +76,118 @@
   display: block;
 }
 
-.watch-player-empty {
+/* Oynatıcının yerindeki durum kutusu: dosya yok ya da oynatılamadı.
+   Zemin oynatıcı gibi her iki temada siyah; yazılar ona göre açık */
+.player-state {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  gap: var(--space-2);
+  padding: var(--space-4);
+  color: var(--on-player);
+  text-align: center;
+}
+
+.player-state-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--space-1);
+  border-radius: var(--radius-full);
+  background-color: var(--on-player-soft);
+  color: var(--on-player);
+}
+
+.player-state-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  text-wrap: balance;
+}
+
+.player-state-text {
+  max-width: 42ch;
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  color: var(--on-player-muted);
+  text-wrap: pretty;
+}
+
+.player-state .btn {
+  margin-top: var(--space-2);
+}
+
+/* Açık temada odak rengi siyah: siyah oynatıcı zemininde görünmez, sarı kullanılır */
+.player-state .btn:focus-visible {
+  outline-color: var(--accent);
+}
+
+/* Telefonda oynatıcı alçak: simge gizlenir, yazılar küçülür */
+@container watch-player (max-width: 480px) {
+  .player-state-icon {
+    display: none;
+  }
+
+  .player-state-title {
+    font-size: var(--fs-md);
+  }
+
+  .player-state-text {
+    font-size: var(--fs-sm);
+  }
 }
 
 .watch-title {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
   line-height: 1.4;
 }
 
 .watch-channel {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .watch-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background-color: var(--avatar-bg);
-  object-fit: cover;
-  flex-shrink: 0;
+  font-size: var(--fs-md);
 }
 
 .watch-channel-name {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
 }
 
 .watch-subscribers,
 .watch-date {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
 }
 
 .watch-description {
   background-color: var(--hover-color);
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 14px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  font-size: var(--fs-base);
   line-height: 1.5;
   white-space: pre-wrap;
 }
 
 .watch-date {
-  margin-bottom: 4px;
-  font-weight: 500;
+  margin-bottom: var(--space-1);
+  font-weight: var(--fw-medium);
 }
 
 .watch-message {
-  padding: 48px 0;
+  padding: var(--space-8) 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   color: var(--text-secondary);
 }
 
@@ -90,7 +196,9 @@
 }
 
 .watch-link {
-  color: var(--accent-text);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* Kanal avatarı ve adı kanal sayfasına bağlantı */
@@ -109,7 +217,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   margin-left: auto;
 }
 
@@ -119,12 +227,12 @@
 
 /* Dönüştürme durumu (yalnız video sahibine) */
 .watch-processing {
-  margin: 12px 0 0;
-  padding: 10px 12px;
-  border-radius: 8px;
+  margin: var(--space-3) 0 0;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
   background: var(--pill-bg);
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1.4;
 }
 
@@ -137,10 +245,12 @@
   background: none;
   border: none;
   padding: 0;
-  color: var(--accent-text);
+  color: var(--text-primary);
   font: inherit;
+  font-weight: var(--fw-medium);
   cursor: pointer;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .watch-processing-button:hover {
@@ -156,7 +266,7 @@
 .watch-later {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .watch-later-btn.is-saved {
@@ -164,6 +274,12 @@
 }
 
 .watch-later-message {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
+}
+
+/* Sinema modu: oynatıcı yüksekliği ekrana sığar; video kutuda ortalanır (object-fit: contain) */
+.watch-layout.is-theater .watch-player {
+  aspect-ratio: auto;
+  height: min(calc(100cqi * 9 / 16), calc(100dvh - var(--navbar-height) - 96px));
 }

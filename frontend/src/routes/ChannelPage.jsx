@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Pencil } from 'lucide-react';
+import { Pencil, Clapperboard } from 'lucide-react';
 import { getChannelById, getMyChannel } from '../services/channelService';
 import { useAuth } from '../context/AuthContext';
 import ChannelEditModal from '../components/ChannelEditModal';
 import { getVideosByChannelId } from '../services/videoService';
 import SubscribeButton from '../components/SubscribeButton';
+import Avatar from '../components/Avatar';
+import ChannelBanner from '../components/ChannelBanner';
 import VideoCard from '../components/VideoCard';
+import { ChannelSkeleton } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 import '../components/VideoGrid.css';
 import './ChannelPage.css';
 
@@ -60,7 +64,7 @@ function ChannelPage() {
   }, [id]);
 
   if (status === 'loading') {
-    return <p className="channel-message">Yükleniyor…</p>;
+    return <ChannelSkeleton />;
   }
 
   if (status === 'notFound' || status === 'error') {
@@ -73,33 +77,12 @@ function ChannelPage() {
     );
   }
 
-  //Kapak ve profil resmi yoksa (ya da adresleri açılmazsa) düz renk gösterilir
-  const initial = (channel.channelName || '?').charAt(0).toUpperCase();
-
   return (
     <div className="channel-page">
-      {channel.bannerImageUrl ? (
-        <img
-          className="channel-banner"
-          src={channel.bannerImageUrl}
-          alt=""
-          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-        />
-      ) : (
-        <div className="channel-banner channel-banner-empty" />
-      )}
+      <ChannelBanner src={channel.bannerImageUrl} name={channel.channelName} />
 
       <div className="channel-header">
-        <div className="channel-avatar">
-          {channel.profilePictureUrl && (
-            <img
-              src={channel.profilePictureUrl}
-              alt=""
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-            />
-          )}
-          <span>{initial}</span>
-        </div>
+        <Avatar className="channel-avatar" src={channel.profilePictureUrl} name={channel.channelName} />
 
         <div className="channel-info">
           <h1 className="channel-name">{channel.channelName}</h1>
@@ -119,7 +102,11 @@ function ChannelPage() {
 
       <h2 className="channel-section-title">Videolar</h2>
       {videos.length === 0 ? (
-        <p className="channel-empty">Bu kanalda henüz video yok.</p>
+        <EmptyState
+          icon={Clapperboard}
+          title="Bu kanalda henüz video yok"
+          text={myChannelId === channel.id ? 'İlk videonu yükle; kanalına gelenler burada görecek.' : 'Kanal video yükleyince burada görünür. Abone olursan haberin olur.'}
+        />
       ) : (
         <div className="video-grid">
           {videos.map((video) => (

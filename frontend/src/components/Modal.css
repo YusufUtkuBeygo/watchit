@@ -1,11 +1,11 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: var(--space-4);
   background-color: var(--overlay);
   overscroll-behavior: contain;
 }
@@ -17,7 +17,12 @@
   overflow-y: auto;
   background-color: var(--elevated-bg);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* Pencerenin kendisi yalnız odak yedeği (içinde alan yoksa); çerçeve çizilmez */
+.modal:focus {
+  outline: none;
 }
 
 .modal-wide {
@@ -27,40 +32,40 @@
 .modal-header {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-raised);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 12px 12px 24px;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-6);
   background-color: var(--elevated-bg);
   border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h2 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
 }
 
 .modal-body {
-  padding: 24px;
+  padding: var(--space-6);
 }
 
 /* Resim seçici (kapak, profil resmi, kanal kapağı) */
 .image-picker {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
 .image-picker-preview {
   width: 120px;
   aspect-ratio: 16 / 9;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background-color: var(--thumb-bg);
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,7 +75,7 @@
 .image-picker-preview.round {
   width: 64px;
   aspect-ratio: 1;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
 }
 
 .image-picker-preview img {
@@ -81,7 +86,7 @@
 
 .image-picker-buttons {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 

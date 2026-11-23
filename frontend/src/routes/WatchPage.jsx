@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, VideoOff, CircleAlert, RotateCw } from 'lucide-react';
 import { getVideoById, deleteVideoById } from '../services/videoService';
 import { getChannelById, getMyChannel } from '../services/channelService';
 import { useAuth } from '../context/AuthContext';
@@ -8,12 +8,17 @@ import VideoEditModal from '../components/VideoEditModal';
 import CommentSection from '../components/CommentSection';
 import LikeButton from '../components/LikeButton';
 import SubscribeButton from '../components/SubscribeButton';
-import VideoPlayer from '../components/VideoPlayer';
+import Avatar from '../components/Avatar';
 import SaveToPlaylist from '../components/SaveToPlaylist';
 import WatchLaterButton from '../components/WatchLaterButton';
 import AskVideoPanel from '../components/AskVideoPanel';
+import RelatedVideos from '../components/RelatedVideos';
 import { formatViews } from '../utils/format';
+import { WatchSkeleton } from '../components/Skeleton';
 import './WatchPage.css';
+
+//Oynatıcı (Video.js) ayrı parça olarak yalnız izleme sayfasında indirilir; ana sayfa hafif kalır
+const VideoPlayer = lazy(() => import('../components/VideoPlayer'));
 
 //Dönüştürme durumu bu aralıkla yeniden okunur (yalnız sahibi videosunu izlerken)
 const PROCESSING_POLL_MS = 5000;
@@ -28,6 +33,18 @@ function WatchPage() {
   const [status, setStatus] = useState('loading');
   //Kayıt var ama video dosyası açılamadıysa true
   const [playError, setPlayError] = useState(false);
+  //"Tekrar dene" sayacı: oynatıcının key'ine girer, artınca oynatıcı baştan kurulur
+  const [playAttempt, setPlayAttempt] = useState(0);
+  //"Videoya sor" son cevabının kaynakları: oynatıcının zaman çubuğunda sarı işaret
+  const [askMarks, setAskMarks] = useState([]);
+  //Sinema modu: oynatıcı sayfanın tüm genişliğine yayılır; tercih bu tarayıcıda hatırlanır
+  const [theater, setTheater] = useState(() => {
+    try { return localStorage.getItem('watchit_theater') === '1'; } catch { return false; }
+  });
+  const toggleTheater = useCallback(() => setTheater((on) => !on), []);
+  useEffect(() => {
+    try { localStorage.setItem('watchit_theater', theater ? '1' : '0'); } catch { /* izin yoksa yalnız bu sayfada */ }
+  }, [theater]);
   const { user } = useAuth();
   const navigate = useNavigate();
   //Giriş yapanın kanalı (video onunsa düzenle/sil gösterilir)
@@ -109,7 +126,7 @@ function WatchPage() {
   }, [id, ownerWatching, watchedStatus, video?.videoUrl]);
 
   if (status === 'loading') {
-    return <p className="watch-message">Yükleniyor…</p>;
+    return <WatchSkeleton />;
   }
 
   if (status === 'notFound' || status === 'error') {
@@ -153,19 +170,51 @@ function WatchPage() {
   };
 
   return (
-    <div className="watch-page">
+    //YouTube düzeni: masaüstünde solda oynatıcı + bilgiler + Videoya sor + yorumlar, sağda sıradaki videolar
+    //(oynatıcının üst hizasından başlar). Dar ekranda tek sütun: oynatıcı, bilgiler, Videoya sor, sıradakiler, yorumlar.
+    //Sinema modunda oynatıcı iki sütunun üstünde tam genişlik. Yerleşim WatchPage.css'teki grid alanlarında
+    <div className={`watch-layout ${theater ? 'is-theater' : ''}`}>
+    <div className="watch-columns">
       <div className="watch-player" ref={playerBoxRef}>
         {!video.videoUrl ? (
-          <div className="watch-player-empty">Bu videonun dosyası yok</div>
+          <PlayerState
+            icon={<VideoOff size={28} aria-hidden="true" />}
+            title="Bu videonun dosyası yok"
+            text="Videonun kaydı duruyor ama yüklenmiş bir dosyası bulunmuyor."
+          />
         ) : playError ? (
-          <div className="watch-player-empty">Video oynatılamadı (dosyaya ulaşılamıyor)</div>
+          <PlayerState
+            icon={<CircleAlert size={28} aria-hidden="true" />}
+            title="Video oynatılamadı"
+            text="Dosyaya şu an ulaşılamıyor. Bağlantını kontrol edip tekrar dene."
+            action={
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => { setPlayError(false); setPlayAttempt((n) => n + 1); }}
+              >
+                <RotateCw size={16} aria-hidden="true" />
+                Tekrar dene
+              </button>
+            }
+          />
         ) : (
-          //key: başka videoya geçince oynatıcı baştan kurulur
-          //key: başka videoya ya da dönüşmüş dosyaya geçince oynatıcı baştan kurulur
-          <VideoPlayer key={`${video.id}-${video.videoUrl}`} video={video} onError={() => setPlayError(true)} exposeRef={playerRef} />
+          //key: başka videoya, dönüşmüş dosyaya geçince ya da "Tekrar dene"de oynatıcı baştan kurulur
+          <Suspense fallback={null}>
+          <VideoPlayer
+            key={`${video.id}-${video.videoUrl}-${playAttempt}`}
+            video={video}
+            onError={() => setPlayError(true)}
+            exposeRef={playerRef}
+            marks={askMarks}
+            theater={theater}
+            onToggleTheater={toggleTheater}
+          />
+          </Suspense>
         )}
       </div>
 
+    <div className="watch-page watch-main">
       {isOwner && isProcessing && (
         <p className="watch-processing" role="status">
           Video hazırlanıyor: her cihazda oynaması için 720p MP4'e çevriliyor. Bu sırada yüklediğin dosya oynuyor.
@@ -184,16 +233,14 @@ function WatchPage() {
         </p>
       )}
 
+
       <h1 className="watch-title">{video.title}</h1>
 
       <div className="watch-channel">
         {/* Avatar ve kanal adı kanal sayfasına götürür */}
-        <Link to={`/channel/${video.channelId}`} className="watch-channel-link">
-          {channel?.profilePictureUrl ? (
-            <img className="watch-avatar" src={channel.profilePictureUrl} alt="" />
-          ) : (
-            <div className="watch-avatar" />
-          )}
+        {/* Yanındaki kanal adıyla aynı yere gider: ekran okuyucu ve Tab için tek bağlantı yeter */}
+        <Link to={`/channel/${video.channelId}`} className="watch-channel-link" aria-hidden="true" tabIndex={-1}>
+          <Avatar className="watch-avatar" src={channel?.profilePictureUrl} name={channel?.channelName} />
         </Link>
         <div>
           <Link to={`/channel/${video.channelId}`} className="watch-channel-name watch-channel-link">
@@ -231,11 +278,15 @@ function WatchPage() {
         <p>{video.description || 'Açıklama yok.'}</p>
       </div>
 
-      {/* key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
-      <AskVideoPanel key={`sor-${video.id}`} videoId={video.id} isOwner={isOwner} onSeek={seekTo} videoProcessing={isProcessing} />
-
-      {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
-      <CommentSection key={video.id} videoId={video.id} />
+      {/* "Videoya sor" açıklamanın altında, yorumların hemen üstünde; key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
+      <AskVideoPanel
+        key={`sor-${video.id}`}
+        videoId={video.id}
+        isOwner={isOwner}
+        onSeek={seekTo}
+        videoProcessing={isProcessing}
+        onSourcesChange={setAskMarks}
+      />
 
       {isEditing && (
         <VideoEditModal
@@ -248,6 +299,26 @@ function WatchPage() {
           }}
         />
       )}
+    </div>
+    {/* key: başka videoya geçince liste yeniden toplanır */}
+    <RelatedVideos key={`sira-${video.id}`} video={video} />
+    <div className="watch-comments">
+      {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
+      <CommentSection key={video.id} videoId={video.id} />
+    </div>
+    </div>
+    </div>
+  );
+}
+
+//Oynatıcının yerinde duran durum kutusu (dosya yok, oynatılamadı): simge, başlık, açıklama, isteğe bağlı düğme
+function PlayerState({ icon, title, text, action }) {
+  return (
+    <div className="player-state" role="status">
+      <span className="player-state-icon">{icon}</span>
+      <p className="player-state-title">{title}</p>
+      <p className="player-state-text">{text}</p>
+      {action}
     </div>
   );
 }

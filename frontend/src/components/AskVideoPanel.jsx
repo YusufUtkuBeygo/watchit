@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, CircleAlert, FileText, LogIn, ArrowUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { askVideo, getTranscript, requestTranscript } from '../services/transcriptService';
+import { LinesSkeleton } from './Skeleton';
+import EmptyState from './EmptyState';
 import './AskVideoPanel.css';
 
 //Transkript hazırlanırken durum bu sıklıkla yeniden okunur
@@ -50,7 +52,8 @@ function errorText(status) {
 //İzleme sayfasındaki "Videoya sor" paneli: transkript durumu, soru kutusu ve cevaplar.
 //Cevaplar videodaki konuşmalardan üretilir; dakikaya tıklayınca video oraya atlar (onSeek).
 //videoProcessing: video hâlâ dönüştürülüyor; transkript dönüştürmeden sonra kendiliğinden başlar
-export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessing = false }) {
+//onSourcesChange: son cevabın kaynak aralıkları değişince çağrılır (oynatıcının zaman çubuğunda sarı işaret olurlar)
+export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessing = false, onSourcesChange }) {
   const { user } = useAuth();
   const [transcript, setTranscript] = useState(null);   //null: yükleniyor
   const [loadError, setLoadError] = useState(false);
@@ -71,6 +74,14 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
     setPrevProcessing(videoProcessing);
     if (prevProcessing && !videoProcessing) setGraceLeft(6);
   }
+
+  //Son cevabın kaynakları sayfaya bildirilir (oynatıcının zaman çubuğundaki işaretler)
+  const onSourcesChangeRef = useRef(onSourcesChange);
+  useEffect(() => { onSourcesChangeRef.current = onSourcesChange; });
+  useEffect(() => {
+    const last = [...history].reverse().find((item) => item.sources?.length > 0);
+    onSourcesChangeRef.current?.(last ? last.sources : []);
+  }, [history]);
 
   const status = transcript?.status;
   const isWorking = status === 'PENDING' || status === 'PROCESSING';
@@ -149,7 +160,7 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
   if (loadError) {
     body = <p className="ask-hint">Durum okunamadı. Sayfayı yenileyip tekrar dene.</p>;
   } else if (transcript == null) {
-    body = <p className="ask-hint">Yükleniyor…</p>;
+    body = <LinesSkeleton label="Soru-cevap durumu yükleniyor…" />;
   } else if (isWorking) {
     body = (
       <p className="ask-hint" role="status">
@@ -167,21 +178,29 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
   } else if (status !== 'READY') {
     const failed = status === 'FAILED';
     body = (
-      <div className="ask-state">
-        <p className="ask-hint">
-          {failed
-            ? (isOwner ? transcript.errorMessage || 'Transkript çıkarılamadı.' : 'Bu videoya şu an soru sorulamıyor.')
-            : (isOwner ? 'Bu videonun transkripti yok. Çıkarırsan izleyiciler videoya soru sorabilir.' : 'Bu videoya henüz soru sorulamıyor.')}
-        </p>
-        {isOwner && (
+      <EmptyState
+        compact
+        icon={failed ? CircleAlert : FileText}
+        title={failed ? 'Soru-cevap açılamadı' : 'Soru-cevap kapalı'}
+        text={failed
+          ? (isOwner ? transcript.errorMessage || 'Transkript çıkarılamadı. Yeniden denemeyi dene.' : 'Bu videoya şu an soru sorulamıyor. Daha sonra tekrar bak.')
+          : (isOwner ? 'Bu videonun transkripti yok. Çıkarırsan izleyiciler videoya soru sorabilir.' : 'Video sahibi transkript çıkarınca bu videoya soru sorabileceksin.')}
+        action={isOwner && (
           <button type="button" className="btn" onClick={handleRequest} disabled={isRequesting}>
             {isRequesting ? 'Başlatılıyor…' : failed ? 'Yeniden dene' : 'Transkript çıkar'}
           </button>
         )}
-      </div>
+      />
     );
   } else if (!user) {
-    body = <p className="ask-hint">Bu videoya soru sormak için giriş yap.</p>;
+    body = (
+      <EmptyState
+        compact
+        icon={LogIn}
+        title="Soru sormak için giriş yap"
+        text="Giriş yapınca videonun konuşmalarına dayanarak sorularını cevaplar, ilgili dakikayı gösterir."
+      />
+    );
   } else {
     body = (
       <>
@@ -223,11 +242,14 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
 
         <form className="ask-form" onSubmit={handleSubmit}>
           <label htmlFor="ask-input" className="sr-only">Videoya sorun</label>
-          <input id="ask-input" ref={inputRef} className="input" name="question" autoComplete="off"
+          <input id="ask-input" ref={inputRef} className="ask-input" name="question" autoComplete="off"
             placeholder="Videoya bir soru sor…" maxLength={MAX_QUESTION}
             value={question} onChange={(e) => { setQuestion(e.target.value); setInputError(''); }}
             aria-invalid={Boolean(inputError)} aria-describedby={inputError ? 'ask-input-error' : undefined} />
-          <button type="submit" className="btn btn-primary" disabled={isAsking}>Sor</button>
+          <button type="submit" className="ask-send" disabled={isAsking}>
+            <ArrowUp size={18} aria-hidden="true" />
+            Sor
+          </button>
         </form>
         {inputError && <p id="ask-input-error" className="form-error">{inputError}</p>}
         <p className="ask-note">Cevaplar yapay zekâ ile videodaki konuşmalardan üretilir, hatalı olabilir.</p>
@@ -236,7 +258,7 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
   }
 
   return (
-    <section className="card ask-panel" aria-labelledby="ask-title">
+    <section className="ask-panel" aria-labelledby="ask-title">
       <h2 id="ask-title" className="ask-title"><Sparkles size={18} aria-hidden="true" /> Videoya sor</h2>
       {body}
     </section>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { formatDuration, formatViews, timeAgo } from '../utils/format';
 import Avatar from './Avatar';
+import Thumbnail from './Thumbnail';
 import './VideoCard.css';
 
 //Video kartı: kapak + süre, kanal avatarı, başlık, kanal adı, görüntülenme + tarih
@@ -15,14 +16,11 @@ function VideoCard({ video }) {
   return (
     <article className="video-card">
       <Link to={watchUrl} className="thumbnail-container" aria-label={video.title}>
-        {video.thumbnailUrl ? (
-          <img className="thumbnail" src={video.thumbnailUrl} alt="" loading="lazy" />
-        ) : (
-          <div className="thumbnail thumbnail-empty">Kapak yok</div>
-        )}
-        {video.durationInSeconds > 0 && (
-          <span className="duration">{formatDuration(video.durationInSeconds)}</span>
-        )}
+        <Thumbnail
+          src={video.thumbnailUrl}
+          title={video.title}
+          badge={video.durationInSeconds > 0 ? formatDuration(video.durationInSeconds) : null}
+        />
       </Link>
 
       <div className="video-info">

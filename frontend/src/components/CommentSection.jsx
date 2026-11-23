@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getCommentsByVideoId, createComment, deleteComment, updateComment } from '../services/commentService';
 import './CommentSection.css';
+import Avatar from './Avatar';
+import { CommentsSkeleton } from './Skeleton';
+import { MessageSquare } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 //Yorum içeriği veritabanında en fazla 1000 karakter (comments.content varchar(1000))
 const MAX_LENGTH = 1000;
@@ -67,7 +71,8 @@ export default function CommentSection({ videoId }) {
   return (
     <section className="comments">
       <h2 className="comments-title">
-        {status === 'ready' ? `${comments.length} yorum` : 'Yorumlar'}
+        Yorumlar
+        {status === 'ready' && comments.length > 0 && <span className="comments-count">{comments.length}</span>}
       </h2>
 
       {user ? (
@@ -76,10 +81,15 @@ export default function CommentSection({ videoId }) {
         <p className="comments-hint">Yorum yapmak için giriş yap.</p>
       )}
 
-      {status === 'loading' && <p className="comments-hint">Yorumlar yükleniyor…</p>}
+      {status === 'loading' && <CommentsSkeleton />}
       {status === 'error' && <p className="comments-hint">Yorumlar yüklenemedi.</p>}
       {status === 'ready' && comments.length === 0 && (
-        <p className="comments-hint">Henüz yorum yok. İlk yorumu sen yaz.</p>
+        <EmptyState
+          compact
+          icon={MessageSquare}
+          title="Henüz yorum yok"
+          text={user ? 'Video hakkında ne düşündüğünü ilk sen yaz.' : 'Giriş yapıp ilk yorumu sen yazabilirsin.'}
+        />
       )}
 
       <ul className="comments-list">
@@ -135,7 +145,7 @@ function CommentItem({ comment, canDelete, onDelete, onReply, onEdited }) {
 
   return (
     <div className="comment">
-      <div className="comment-avatar">{(comment.username || '?').charAt(0).toUpperCase()}</div>
+      <Avatar className="comment-avatar" name={comment.username} />
       <div className="comment-body">
         <div className="comment-meta">
           <span className="comment-author">{comment.username || 'Silinmiş kullanıcı'}</span>

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Lock, Globe, Pencil, Trash2, X } from 'lucide-react';
+import { Lock, Globe, Pencil, Trash2, X, ListVideo } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import PlaylistForm from '../components/PlaylistForm';
 import VideoRow from '../components/VideoRow';
+import { RowListSkeleton } from '../components/Skeleton';
 import {
   getPlaylist, getPlaylistEntriesWithVideos, updatePlaylist, deletePlaylist, removePlaylistEntry,
 } from '../services/playlistService';
+import EmptyState from '../components/EmptyState';
 import './PlaylistsPage.css';
 
 //Tek oynatma listesi (/playlist/:id): başlık, açıklama, videolar
@@ -46,7 +48,7 @@ function PlaylistPage() {
     return () => { ignore = true; };
   }, [playlistId, user?.id]);
 
-  if (status === 'loading') return <p className="grid-message">Yükleniyor…</p>;
+  if (status === 'loading') return <div className="page"><RowListSkeleton label="Liste yükleniyor…" /></div>;
   if (status !== 'ready') {
     const texts = {
       notFound: ['Liste bulunamadı', 'Bu liste silinmiş ya da hiç olmamış olabilir.'],
@@ -116,9 +118,11 @@ function PlaylistPage() {
       )}
 
       {entries.length === 0 ? (
-        <p className="grid-message">
-          Bu listede henüz video yok.{isOwner && ' İzleme sayfasındaki “Kaydet” düğmesiyle video ekleyebilirsin.'}
-        </p>
+        <EmptyState
+          icon={ListVideo}
+          title="Bu listede henüz video yok"
+          text={isOwner ? 'İzleme sayfasındaki “Kaydet” düğmesiyle bu listeye video ekleyebilirsin.' : 'Liste sahibi video ekleyince burada görünür.'}
+        />
       ) : (
         <ol className="row-list">
           {entries.map((entry, index) => (

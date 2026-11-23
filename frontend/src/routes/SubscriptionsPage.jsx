@@ -5,6 +5,9 @@ import Avatar from '../components/Avatar';
 import VideoCard from '../components/VideoCard';
 import { getMySubscribedChannels } from '../services/channelService';
 import { getVideosByChannelId } from '../services/videoService';
+import { VideoGridSkeleton } from '../components/Skeleton';
+import { Users } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 import '../components/VideoGrid.css';
 import './SubscriptionsPage.css';
 
@@ -49,15 +52,19 @@ function SubscriptionsFeed() {
     return () => { ignore = true; };
   }, []);
 
-  if (status === 'loading') return <p className="grid-message">Yükleniyor…</p>;
+  if (status === 'loading') return <div className="page"><VideoGridSkeleton label="Abonelikler yükleniyor…" /></div>;
   if (status === 'error') return <p className="grid-message">Abonelikler yüklenemedi. Biraz sonra tekrar dene.</p>;
 
   if (channels.length === 0) {
     return (
-      <div className="page-message">
-        <h2>Henüz hiçbir kanala abone olmadın.</h2>
-        <p>Beğendiğin bir kanalın sayfasında “Abone ol” düğmesine bas, videoları burada görünsün.</p>
-        <Link to="/" className="text-link">Videolara göz at</Link>
+      <div className="page">
+        <h1 className="page-title">Abonelikler</h1>
+        <EmptyState
+          icon={Users}
+          title="Henüz hiçbir kanala abone olmadın"
+          text="Beğendiğin bir kanalın sayfasında “Abone ol” düğmesine bas; yeni videoları burada görünsün."
+          action={<Link to="/" className="btn">Videolara göz at</Link>}
+        />
       </div>
     );
   }

@@ -1,0 +1,474 @@
+/*
+  Oynatıcı derisi (Video.js 10 bileşenleri, kendi stilimiz). Video her iki temada koyu zeminde,
+  denetimler de iki temada aynı: beyaz simgeler, sarı ilerleme. Cam/bulanıklık efekti yok.
+  Köşeler: oynatıcı --radius-lg (dış kutu .watch-player), menü --radius-lg, düğmeler daire, çubuklar hap.
+*/
+.vp {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: var(--player-bg);
+  color: var(--on-player);
+  font-family: inherit;
+  /* Video.js bileşenlerinin okuduğu ortak ayar: menü ve ipucu tetikleyiciden bu kadar uzakta açılır */
+  --media-menu-side-offset: 10px;
+  --media-tooltip-side-offset: 10px;
+}
+
+.vp:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.vp-media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: var(--player-bg);
+}
+
+/* Altyazı: okunur, sade */
+.vp-media::cue {
+  background-color: rgba(0, 0, 0, 0.75);
+  color: var(--on-player);
+  font-family: inherit;
+  font-size: 1.05em;
+  line-height: 1.4;
+}
+
+/* Denetimler görünürken altyazı yukarı kayar, çubuğun altında kalmasın (Chromium/Safari; diğerlerinde yerinde kalır) */
+.vp-media::-webkit-media-text-track-container {
+  transition: translate var(--dur-base) var(--ease-out);
+}
+
+.vp[data-controls-visible] .vp-media::-webkit-media-text-track-container {
+  translate: 0 -92px;
+}
+
+/* ---- Denetimler (Controls.Root kendi öğesini çizmez: arka plan ve içerik doğrudan .vp içinde) ---- */
+
+.vp-scrim {
+  position: absolute;
+  inset: auto 0 0;
+  height: 120px;
+  background: linear-gradient(to top, var(--player-scrim), transparent);
+  pointer-events: none;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.vp-controls-content {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0 var(--space-3) var(--space-2);
+  pointer-events: auto;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+/* Oynarken fare durunca denetimler kaybolur; klavye odağı içerideyse görünür kalır */
+.vp-scrim:not([data-visible]),
+.vp-controls-content:not([data-visible]):not(:has(:focus-visible)) {
+  opacity: 0;
+}
+
+.vp-controls-content:not([data-visible]):not(:has(:focus-visible)) {
+  pointer-events: none;
+}
+
+.vp:has(.vp-controls-content:not([data-visible]):not(:has(:focus-visible))) {
+  cursor: none;
+}
+
+.vp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.vp-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.vp-button {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  color: var(--on-player);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .vp-button:hover {
+    background-color: var(--player-hover);
+  }
+}
+
+.vp-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+/* Kullanılamayan düğme (ör. transkript yoksa altyazı, tarayıcı izin vermiyorsa resim içinde resim) görünmez */
+.vp-button[data-hidden] {
+  display: none;
+}
+
+.vp-button[aria-pressed="true"] {
+  color: var(--accent);
+}
+
+.vp-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.vp-icon-fill {
+  fill: currentColor;
+}
+
+/* ---- Zaman ve ses çubukları ---- */
+.vp-timeline,
+.vp-volume-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.vp-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background-color: var(--player-track);
+  transition: height var(--dur-fast) var(--ease-out);
+}
+
+.vp-timeline:hover .vp-track,
+.vp-timeline[data-dragging] .vp-track {
+  height: 6px;
+}
+
+.vp-buffer,
+.vp-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+}
+
+.vp-buffer {
+  width: var(--media-slider-buffer);
+  background-color: var(--player-buffer);
+}
+
+.vp-fill {
+  width: var(--media-slider-fill);
+  background-color: var(--accent);
+}
+
+.vp-fill-volume {
+  background-color: var(--on-player);
+}
+
+/* "Videoya sor" kaynakları: zaman çubuğunda sarı/beyaz kenarlı işaret (dolu kısımda da seçilir) */
+.vp-mark {
+  position: absolute;
+  top: 50%;
+  min-width: 6px;
+  height: 10px;
+  transform: translateY(-50%);
+  border-radius: var(--radius-pill);
+  background-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--player-bg);
+  pointer-events: none;
+}
+
+.vp-thumb {
+  position: absolute;
+  left: var(--media-slider-fill);
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background-color: var(--accent);
+  translate: -50% 0;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.vp-thumb-small {
+  width: 12px;
+  height: 12px;
+  background-color: var(--on-player);
+}
+
+.vp-timeline:hover .vp-thumb,
+.vp-timeline[data-dragging] .vp-thumb,
+.vp-timeline:focus-visible .vp-thumb,
+.vp-volume-slider:hover .vp-thumb,
+.vp-volume-slider:focus-visible .vp-thumb {
+  opacity: 1;
+}
+
+.vp-timeline:focus-visible,
+.vp-volume-slider:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-pill);
+}
+
+/* Üstüne gelince gösterilen dakika */
+.vp-preview {
+  position: absolute;
+  bottom: 24px;
+  left: var(--media-slider-pointer);
+  translate: -50% 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background-color: var(--player-menu-bg);
+  color: var(--on-player);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.vp-timeline:hover .vp-preview,
+.vp-timeline[data-dragging] .vp-preview {
+  opacity: 1;
+}
+
+/* Ses: kaydırıcı fareyle üstüne gelince ya da odaklanınca açılır */
+.vp-volume {
+  display: flex;
+  align-items: center;
+}
+
+.vp-volume-slider {
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: width var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out), margin var(--dur-base) var(--ease-out);
+}
+
+.vp-volume:hover .vp-volume-slider,
+.vp-volume:focus-within .vp-volume-slider {
+  width: 72px;
+  margin: 0 var(--space-2) 0 var(--space-1);
+  overflow: visible;
+  opacity: 1;
+}
+
+.vp-time {
+  display: flex;
+  gap: var(--space-1);
+  margin-left: var(--space-2);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.vp-time-sep {
+  color: var(--on-player-muted);
+}
+
+/* ---- İpucu ve ayarlar menüsü ---- */
+.vp-tooltip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--player-menu-bg);
+  color: var(--on-player);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.vp-tooltip-key {
+  padding: 0 6px;
+  border-radius: var(--radius-xs);
+  background-color: var(--player-hover);
+  font-size: var(--fs-xs);
+}
+
+.vp-tooltip-key:empty {
+  display: none;
+}
+
+/* Menü kutusu boyunu açık panele göre alır (--media-menu-width/height Video.js'ten);
+   alt menü açılınca ana panel sola kayar, alt menü sağdan gelir. Bulanıklık yok */
+.vp-menu {
+  position: relative;
+  box-sizing: border-box;
+  width: var(--media-menu-width);
+  min-width: 220px;
+  height: var(--media-menu-height);
+  max-height: var(--media-menu-available-height, none);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--player-menu-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--player-menu-bg);
+  color: var(--on-player);
+  box-shadow: var(--shadow-md);
+  transition: width var(--dur-base) var(--ease-out), height var(--dur-base) var(--ease-out);
+}
+
+.vp-menu-content {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: var(--space-2);
+  overflow: auto;
+  outline: none;
+  translate: 0 0;
+  transition: translate var(--dur-base) var(--ease-out);
+}
+
+.vp-menu-content[data-child-open] {
+  translate: -100% 0;
+}
+
+.vp-menu-content[data-submenu] {
+  z-index: 1;
+}
+
+.vp-menu-content[data-submenu][data-starting-style],
+.vp-menu-content[data-submenu][data-ending-style] {
+  translate: 100% 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vp-menu,
+  .vp-menu-content {
+    transition: none;
+  }
+}
+
+.vp-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  color: inherit;
+  font-size: var(--fs-base);
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+
+.vp-menu-item[data-highlighted],
+.vp-menu-item:focus-visible {
+  background-color: var(--player-hover);
+}
+
+.vp-menu-item:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.vp-menu-back {
+  font-weight: var(--fw-semibold);
+}
+
+.vp-menu-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: auto;
+  color: var(--on-player-muted);
+}
+
+.vp-menu-check {
+  display: inline-flex;
+  margin-left: auto;
+  color: var(--accent);
+}
+
+.vp-menu-separator {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background-color: var(--player-menu-border);
+}
+
+/* ---- Yükleniyor halkası ---- */
+.vp-buffering {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.vp-buffering:not([data-visible]) {
+  display: none;
+}
+
+.vp-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--player-track);
+  border-top-color: var(--accent);
+  border-radius: var(--radius-full);
+  animation: vp-spin 0.9s linear infinite;
+}
+
+@keyframes vp-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vp-spinner { animation-duration: 3s; }
+  .vp-track, .vp-thumb, .vp-preview, .vp-volume-slider, .vp-scrim, .vp-controls-content { transition: none; }
+}
+
+/* Dar oynatıcıda (telefon) ses kaydırıcısı gizli, düğmeler biraz küçük: yer açılsın */
+/* Orta genişlikte sinema modu ve resim içinde resim düğmeleri gizlenir (zaman yazısına yer kalsın) */
+@container watch-player (max-width: 600px) {
+  .vp-optional {
+    display: none;
+  }
+
+  .vp-time {
+    margin-left: var(--space-1);
+  }
+}
+
+@container watch-player (max-width: 480px) {
+  .vp-volume-slider {
+    display: none;
+  }
+
+  .vp-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .vp-icon {
+    width: 20px;
+    height: 20px;
+  }
+}

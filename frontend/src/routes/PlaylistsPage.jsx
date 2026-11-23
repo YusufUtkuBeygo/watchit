@@ -6,6 +6,9 @@ import PlaylistForm from '../components/PlaylistForm';
 import { useAuth } from '../context/AuthContext';
 import { getMyPlaylists, createPlaylist, getVisiblePlaylistVideos, sortEntries } from '../services/playlistService';
 import { getVideoById } from '../services/videoService';
+import Thumbnail from '../components/Thumbnail';
+import { PlaylistGridSkeleton } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 import './PlaylistsPage.css';
 
 //Oynatma listelerim (/playlists): liste kartları + yeni liste oluşturma
@@ -85,12 +88,15 @@ function MyPlaylists() {
         </div>
       )}
 
-      {status === 'loading' && <p className="grid-message">Yükleniyor…</p>}
+      {status === 'loading' && <PlaylistGridSkeleton />}
       {status === 'error' && <p className="grid-message">Listeler yüklenemedi. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && playlists.length === 0 && !isCreating && (
-        <p className="grid-message">
-          Henüz oynatma listen yok. İzleme sayfasındaki “Kaydet” düğmesiyle de liste oluşturabilirsin.
-        </p>
+        <EmptyState
+          icon={ListVideo}
+          title="Henüz oynatma listen yok"
+          text="Yeni bir liste oluştur ya da izleme sayfasındaki “Kaydet” düğmesiyle videoyu bir listeye ekle."
+          action={<button type="button" className="btn btn-primary" onClick={() => setIsCreating(true)}><Plus size={16} aria-hidden="true" /> Yeni liste</button>}
+        />
       )}
 
       <ul className="playlist-grid">
@@ -100,8 +106,12 @@ function MyPlaylists() {
             <li key={playlist.id}>
               <Link to={`/playlist/${playlist.id}`} className="playlist-card">
                 <div className="playlist-cover">
-                  {info?.cover ? <img src={info.cover} alt="" /> : <ListVideo size={40} aria-hidden="true" />}
-                  <span className="playlist-count">{info ? `${info.count} video` : '…'}</span>
+                  <Thumbnail
+                    src={info?.cover}
+                    title={info && info.count === 0 ? 'Liste boş' : null}
+                    icon={<ListVideo size={32} aria-hidden="true" />}
+                    badge={info ? `${info.count} video` : '…'}
+                  />
                 </div>
                 <span className="playlist-title">{playlist.title}</span>
                 <span className="playlist-visibility">

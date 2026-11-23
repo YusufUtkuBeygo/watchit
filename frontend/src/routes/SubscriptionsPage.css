@@ -1,9 +1,9 @@
 /* Abone olunan kanallar: yana kayan yuvarlak avatarlar */
 .sub-channels {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding-bottom: var(--space-2);
 }
 
 .sub-channel {
@@ -12,8 +12,8 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 8px;
-  border-radius: 12px;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
   text-align: center;
 }
 
@@ -24,38 +24,24 @@
 .sub-channel-avatar {
   width: 80px;
   height: 80px;
-  border-radius: 50%;
-  background-color: var(--avatar-bg);
-  color: var(--avatar-text);
-  font-size: 32px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.sub-channel-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  font-size: var(--fs-3xl);
 }
 
 .sub-channel-name {
   width: 100%;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .sub-channel-meta {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-secondary);
 }
 
 .sub-section-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
 }

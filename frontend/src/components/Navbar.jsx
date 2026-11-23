@@ -10,11 +10,12 @@ import { useAuth } from '../context/AuthContext';
 import { getMyChannel } from '../services/channelService';
 import { MAX_SEARCH_LENGTH } from '../services/videoService';
 import { initialOf } from '../utils/format';
+import { nameColor } from '../utils/nameColor';
 import './Navbar.css';
 
 //Üst çubuk: menü düğmesi + logo, arama, "Oluştur", bildirimler ve kullanıcı menüsü
 //onMenuClick: sol menüyü açar/kapatır (App tutar)
-const Navbar = ({ onMenuClick }) => {
+const Navbar = ({ onMenuClick, isMenuOpen }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -43,7 +44,13 @@ const Navbar = ({ onMenuClick }) => {
     <>
     <header className="navbar">
       <div className="navbar-left">
-        <button className="icon-btn menu-btn" onClick={onMenuClick} aria-label="Menüyü aç/kapat">
+        <button
+          className="icon-btn menu-btn"
+          onClick={onMenuClick}
+          aria-label="Ana menü"
+          aria-expanded={isMenuOpen}
+          aria-controls="ana-menu"
+        >
           <Menu size={24} />
         </button>
         <Link to="/" className="logo-container" aria-label="Watchit ana sayfa">
@@ -135,6 +142,7 @@ function UserMenu({ user, onSignOut }) {
     <div className="user-menu" ref={menuRef}>
       <button
         className="user-avatar-btn"
+        style={nameColor(user.username)}
         onClick={() => setIsOpen((open) => !open)}
         aria-label="Hesap menüsü"
         aria-expanded={isOpen}

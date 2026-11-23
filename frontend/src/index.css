@@ -1,82 +1,4 @@
-/*
-  Renkler tek yerde: bütün CSS bu değişkenleri kullanır, sabit renk yazılmaz.
-  Tema <html data-theme="dark|light"> ile seçilir (index.html'deki küçük betik, src/theme.js).
-  Koyu tema varsayılan: betik çalışmasa da site koyu açılır.
-*/
-:root,
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg-color: #121212;          /* sayfa zemini */
-  --surface-color: #121212;     /* üst menü, sol menü */
-  --card-bg: #1a1a1a;           /* kartlar, paneller */
-  --elevated-bg: #1e1e1e;       /* açılır menü, pencere */
-  --input-bg: #181818;
-  --hover-color: #262626;
-  --border-color: #2e2e2e;
-  --border-strong: #3d3d3d;
-  --text-primary: #ececec;
-  --text-secondary: #9a9a9a;
-  --text-muted: #6e6e6e;
-  --pill-bg: #1f1f1f;
-  --pill-hover: #2a2a2a;
-  --pill-active-bg: #ececec;
-  --pill-active-text: #121212;
-  --accent: #f2c230;            /* sarı: ana düğme, seçili, rozet */
-  --accent-hover: #f7d25c;
-  --on-accent: #121212;         /* sarının üstündeki yazı */
-  --accent-text: #f2c230;       /* sarı yazı ve bağlantı */
-  --accent-soft: rgba(242, 194, 48, 0.12);
-  --accent-soft-strong: rgba(242, 194, 48, 0.24);
-  --focus: #f2c230;             /* klavye odak çerçevesi */
-  --danger: #d93a3f;
-  --danger-hover: #e5484d;
-  --danger-text: #ff7a7e;
-  --danger-border: #5c2324;
-  --success-text: #5bd08a;
-  --thumb-bg: #242424;          /* kapak resmi yokken */
-  --avatar-bg: #3a3a3a;
-  --avatar-text: #ececec;
-  --overlay: rgba(0, 0, 0, 0.7);
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --navbar-height: 56px;
-  --sidebar-width: 240px;
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
-  --bg-color: #f6f4ee;
-  --surface-color: #f6f4ee;
-  --card-bg: #ffffff;
-  --elevated-bg: #ffffff;
-  --input-bg: #ffffff;
-  --hover-color: #ece9e0;
-  --border-color: #e2dfd6;
-  --border-strong: #cfcbc0;
-  --text-primary: #141414;
-  --text-secondary: #5f5c55;
-  --text-muted: #8c8a84;
-  --pill-bg: #ece9e0;
-  --pill-hover: #e2ded3;
-  --pill-active-bg: #141414;
-  --pill-active-text: #f6f4ee;
-  --accent: #f2c230;
-  --accent-hover: #e5b21c;
-  --on-accent: #141414;
-  --accent-text: #8a6400;       /* açık zeminde sarı yazı okunmaz: koyu hardal */
-  --accent-soft: rgba(242, 194, 48, 0.18);
-  --accent-soft-strong: rgba(242, 194, 48, 0.35);
-  --focus: #141414;
-  --danger: #c9372c;
-  --danger-hover: #b42f25;
-  --danger-text: #b42318;
-  --danger-border: #f0c5c0;
-  --success-text: #1e7a45;
-  --thumb-bg: #e3dfd5;
-  --avatar-bg: #dcd8ce;
-  --avatar-text: #141414;
-  --overlay: rgba(20, 20, 20, 0.45);
-  --shadow: 0 8px 28px rgba(20, 20, 20, 0.12);
-}
+/* Renkler ve ölçekler tokens.css'te (main.jsx onu bu dosyadan önce yükler). */
 
 * {
   box-sizing: border-box;
@@ -91,7 +13,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden; /* Main scroll will be in content area */
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color var(--dur-base), color var(--dur-base);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -117,6 +39,29 @@ ul {
   list-style: none;
 }
 
+/* Ortak avatar (Avatar.jsx): daire, resim ya da isim renginde baş harf.
+   Boyutu ve yazı boyunu kullanan sınıf verir (.vc-avatar, .watch-avatar...) */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: var(--avatar-bg);
+  color: var(--avatar-text);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  user-select: none;
+}
+
+.avatar > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* Common utility classes */
 .icon-btn {
   display: flex;
@@ -124,8 +69,8 @@ ul {
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
+  border-radius: var(--radius-full);
+  transition: background-color var(--dur-base) var(--ease-out);
 }
 
 .icon-btn:hover {
@@ -137,14 +82,14 @@ ul {
 .page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px 0;
+  gap: var(--space-4);
+  padding: var(--space-6) 0;
   max-width: 1100px;
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
 }
 
 .page-header {
@@ -152,15 +97,15 @@ ul {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .page-message {
-  padding: 48px 0;
+  padding: var(--space-8) 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--text-secondary);
 }
 
@@ -169,11 +114,14 @@ ul {
 }
 
 .text-link {
-  color: var(--accent-text);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
 }
 
 .text-link:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .btn {
@@ -182,13 +130,13 @@ ul {
   justify-content: center;
   gap: 6px;
   height: 36px;
-  padding: 0 16px;
-  border-radius: 18px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
   background-color: var(--pill-bg);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
   white-space: nowrap;
-  transition: background-color 0.2s;
+  transition: background-color var(--dur-base);
 }
 
 .btn:hover {
@@ -211,7 +159,7 @@ ul {
 
 .btn-danger {
   background-color: var(--danger);
-  color: #fff;
+  color: var(--on-danger);
 }
 
 .btn-danger:hover {
@@ -236,33 +184,33 @@ a:focus-visible {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-secondary);
 }
 
 .field-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: var(--space-2);
+  font-size: var(--fs-base);
 }
 
 .input {
   width: 100%;
   min-height: 40px;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   background-color: var(--input-bg);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: var(--fs-md);
   font-family: inherit;
 }
 
@@ -276,12 +224,12 @@ textarea.input {
 }
 
 .form-error {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--danger-text);
 }
 
 .form-success {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--success-text);
 }
 
@@ -289,20 +237,20 @@ textarea.input {
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .card {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
 }
 
 .card-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  margin-bottom: var(--space-4);
 }
 
 /* Klavyeyle gezen için bütün düğmelerde görünür odak çerçevesi */
@@ -321,14 +269,14 @@ input[type="checkbox"]:focus-visible {
 /* "İçeriğe geç" bağlantısı: yalnız klavyeyle odaklanınca görünür */
 .skip-link {
   position: fixed;
-  top: 8px;
-  left: 8px;
-  z-index: 300;
-  padding: 8px 16px;
-  border-radius: 8px;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: var(--z-skip-link);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
   background-color: var(--accent);
   color: var(--on-accent);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   transform: translateY(-200%);
 }
 

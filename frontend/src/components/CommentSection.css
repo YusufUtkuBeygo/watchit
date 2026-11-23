@@ -1,17 +1,28 @@
 .comments {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 12px;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
 }
 
 .comments-title {
-  font-size: 18px;
-  font-weight: 600;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+/* Başlığın yanındaki sayı: küçük ve soluk */
+.comments-count {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-regular);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 .comments-hint {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-secondary);
 }
 
@@ -20,55 +31,47 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 /* Cevaplar üst yorumun altında, avatar genişliği kadar içeride */
 .comments-replies {
-  margin-top: 12px;
-  padding-left: 52px;
+  margin-top: var(--space-3);
+  padding-left: calc(40px + var(--space-3)); /* avatar + boşluk */
 }
 
 .comment {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .comment-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background-color: var(--avatar-bg);
-  color: var(--avatar-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  flex-shrink: 0;
 }
 
 .comments-replies .comment-avatar {
   width: 28px;
   height: 28px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 
 .comment-body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   min-width: 0;
 }
 
 .comment-meta {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  font-size: 13px;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
 }
 
 .comment-author {
-  font-weight: 500;
+  font-weight: var(--fw-medium);
 }
 
 .comment-date {
@@ -76,7 +79,7 @@
 }
 
 .comment-content {
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -84,15 +87,15 @@
 
 .comment-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .comment-action {
-  padding: 4px 8px;
-  margin-left: -8px;
-  border-radius: 16px;
-  font-size: 13px;
-  font-weight: 500;
+  padding: var(--space-1) var(--space-2);
+  margin-left: calc(-1 * var(--space-2));
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
   color: var(--text-secondary);
 }
 
@@ -104,17 +107,17 @@
 .comment-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .comment-input {
   width: 100%;
-  padding: 8px 0;
+  padding: var(--space-2) 0;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: inherit;
   resize: vertical;
   outline: none;
@@ -127,16 +130,16 @@
 .comment-form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .comment-submit,
 .comment-cancel {
   height: 36px;
-  padding: 0 16px;
-  border-radius: 18px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
 }
 
 .comment-submit {
@@ -155,6 +158,6 @@
 }
 
 .comment-error {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--danger-text);
 }

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, History } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import RequireLogin from '../components/RequireLogin';
 import { getMyWatchHistoryWithVideos, deleteWatchHistory } from '../services/watchHistoryService';
 import VideoRow from '../components/VideoRow';
 import { timeAgo } from '../utils/format';
+import { RowListSkeleton } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 import './ListPage.css';
 
 //İzleme geçmişi (/history): en son izlenen en üstte, nerede kalındığı çubukla gösterilir
@@ -44,10 +47,15 @@ function HistoryList() {
   return (
     <div className="page">
       <h1 className="page-title">İzleme geçmişi</h1>
-      {status === 'loading' && <p className="grid-message">Yükleniyor…</p>}
+      {status === 'loading' && <RowListSkeleton label="Geçmiş yükleniyor…" />}
       {status === 'error' && <p className="grid-message">Geçmiş yüklenemedi. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && entries.length === 0 && (
-        <p className="grid-message">Henüz bir video izlemedin.</p>
+        <EmptyState
+          icon={History}
+          title="Henüz bir video izlemedin"
+          text="İzlediğin videolar burada sırayla durur; yarım bıraktığın yerden devam edebilirsin."
+          action={<Link to="/" className="btn">Videolara göz at</Link>}
+        />
       )}
       <ul className="row-list">
         {entries.map((entry) => (

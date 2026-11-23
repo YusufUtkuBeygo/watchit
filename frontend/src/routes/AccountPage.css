@@ -3,7 +3,7 @@
 }
 
 .field-hint {
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: var(--text-secondary);
 }
 
@@ -12,10 +12,10 @@
 }
 
 .danger-text {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-secondary);
   line-height: 1.5;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .danger-zone strong {
