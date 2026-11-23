@@ -15,33 +15,6 @@
   background-color: var(--thumb-bg);
 }
 
-.thumbnail {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.thumbnail-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  font-size: var(--fs-base);
-}
-
-.duration {
-  position: absolute;
-  bottom: var(--space-2);
-  right: var(--space-2);
-  background-color: var(--badge-bg);
-  color: var(--badge-text);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
-  padding: 3px var(--space-1);
-  border-radius: var(--radius-xs);
-  font-variant-numeric: tabular-nums;
-}
-
 .video-info {
   display: flex;
   gap: var(--space-3);

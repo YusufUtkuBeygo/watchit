@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { formatDuration } from '../utils/format';
+import Thumbnail from './Thumbnail';
 import '../routes/ListPage.css';
 
 //Yatay video satırı: solda kapak (+ ilerleme çubuğu), sağda başlık ve bilgiler, en sağda düğme
@@ -11,11 +12,15 @@ export default function VideoRow({ video, note, progress, action, prefix, detail
     <div className="video-row">
       {prefix}
       <Link to={watchUrl} className="row-thumb" aria-label={video.title}>
-        {video.thumbnailUrl ? <img src={video.thumbnailUrl} alt="" /> : <span>Kapak yok</span>}
-        {video.durationInSeconds > 0 && <span className="duration">{formatDuration(video.durationInSeconds)}</span>}
-        {progress > 0 && (
-          <span className="row-progress"><span style={{ width: `${Math.min(progress, 1) * 100}%` }} /></span>
-        )}
+        <Thumbnail
+          src={video.thumbnailUrl}
+          title={video.title}
+          badge={video.durationInSeconds > 0 ? formatDuration(video.durationInSeconds) : null}
+        >
+          {progress > 0 && (
+            <span className="row-progress"><span style={{ width: `${Math.min(progress, 1) * 100}%` }} /></span>
+          )}
+        </Thumbnail>
       </Link>
       <div className="row-info">
         <Link to={watchUrl} className="row-title">{video.title}</Link>

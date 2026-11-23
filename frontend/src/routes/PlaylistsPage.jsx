@@ -6,6 +6,7 @@ import PlaylistForm from '../components/PlaylistForm';
 import { useAuth } from '../context/AuthContext';
 import { getMyPlaylists, createPlaylist, getVisiblePlaylistVideos, sortEntries } from '../services/playlistService';
 import { getVideoById } from '../services/videoService';
+import Thumbnail from '../components/Thumbnail';
 import './PlaylistsPage.css';
 
 //Oynatma listelerim (/playlists): liste kartları + yeni liste oluşturma
@@ -100,8 +101,12 @@ function MyPlaylists() {
             <li key={playlist.id}>
               <Link to={`/playlist/${playlist.id}`} className="playlist-card">
                 <div className="playlist-cover">
-                  {info?.cover ? <img src={info.cover} alt="" /> : <ListVideo size={40} aria-hidden="true" />}
-                  <span className="playlist-count">{info ? `${info.count} video` : '…'}</span>
+                  <Thumbnail
+                    src={info?.cover}
+                    title={info && info.count === 0 ? 'Liste boş' : null}
+                    icon={<ListVideo size={32} aria-hidden="true" />}
+                    badge={info ? `${info.count} video` : '…'}
+                  />
                 </div>
                 <span className="playlist-title">{playlist.title}</span>
                 <span className="playlist-visibility">
