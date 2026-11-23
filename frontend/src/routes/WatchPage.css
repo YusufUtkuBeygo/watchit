@@ -1,18 +1,18 @@
 .watch-page {
   max-width: 1100px;
-  padding: 24px 0;
+  padding: var(--space-6) 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .watch-player {
   /* Dakikaya tıklayınca buraya kaydırılır; üstteki sabit menünün altında kalmasın */
-  scroll-margin-top: calc(var(--navbar-height) + 12px);
+  scroll-margin-top: calc(var(--navbar-height) + var(--space-3));
   width: 100%;
   aspect-ratio: 16 / 9;
-  background-color: #000;
-  border-radius: 12px;
+  background-color: var(--player-bg);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -32,56 +32,56 @@
 }
 
 .watch-title {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
   line-height: 1.4;
 }
 
 .watch-channel {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .watch-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background-color: var(--avatar-bg);
   object-fit: cover;
   flex-shrink: 0;
 }
 
 .watch-channel-name {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
 }
 
 .watch-subscribers,
 .watch-date {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
 }
 
 .watch-description {
   background-color: var(--hover-color);
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 14px;
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--fs-base);
   line-height: 1.5;
   white-space: pre-wrap;
 }
 
 .watch-date {
-  margin-bottom: 4px;
-  font-weight: 500;
+  margin-bottom: var(--space-1);
+  font-weight: var(--fw-medium);
 }
 
 .watch-message {
-  padding: 48px 0;
+  padding: var(--space-8) 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   color: var(--text-secondary);
 }
 
@@ -109,7 +109,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   margin-left: auto;
 }
 
@@ -119,12 +119,12 @@
 
 /* Dönüştürme durumu (yalnız video sahibine) */
 .watch-processing {
-  margin: 12px 0 0;
-  padding: 10px 12px;
-  border-radius: 8px;
+  margin: var(--space-3) 0 0;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-sm);
   background: var(--pill-bg);
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1.4;
 }
 
@@ -156,7 +156,7 @@
 .watch-later {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .watch-later-btn.is-saved {
@@ -164,6 +164,6 @@
 }
 
 .watch-later-message {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
 }

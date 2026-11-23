@@ -5,7 +5,7 @@
 .playlist-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px 16px;
+  gap: var(--space-5) var(--space-4);
 }
 
 .playlist-card {
@@ -17,7 +17,7 @@
 .playlist-cover {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background-color: var(--thumb-bg);
   color: var(--text-muted);
@@ -34,27 +34,27 @@
 
 .playlist-count {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
+  right: var(--space-2);
+  bottom: var(--space-2);
   padding: 3px 6px;
-  border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 500;
+  border-radius: var(--radius-xs);
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
 }
 
 .playlist-title {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
   overflow-wrap: anywhere;
 }
 
 .playlist-visibility {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
+  gap: var(--space-1);
+  font-size: var(--fs-sm);
   color: var(--text-secondary);
 }
 
@@ -63,7 +63,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .playlist-header .page-title {
@@ -71,7 +71,7 @@
 }
 
 .playlist-description {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--text-secondary);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -80,7 +80,7 @@
 .playlist-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .playlist-edit {
