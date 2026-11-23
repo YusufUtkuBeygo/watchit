@@ -114,11 +114,14 @@ ul {
 }
 
 .text-link {
-  color: var(--accent-text);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
 }
 
 .text-link:hover {
-  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .btn {

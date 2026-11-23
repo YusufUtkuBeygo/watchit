@@ -27,6 +27,7 @@
 }
 
 .category-chip.active {
-  background-color: var(--pill-active-bg);
-  color: var(--pill-active-text);
+  background-color: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: var(--fw-semibold);
 }

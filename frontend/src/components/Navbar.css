@@ -116,14 +116,14 @@
   height: 36px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-pill);
-  color: var(--accent-text);
+  color: var(--text-primary);
   font-weight: var(--fw-medium);
   font-size: var(--fs-base);
   transition: background-color var(--dur-base);
 }
 
 .login-btn:hover {
-  background-color: var(--accent-soft);
+  background-color: var(--hover-color);
 }
 
 
@@ -255,8 +255,8 @@
   height: 18px;
   padding: 0 var(--space-1);
   border-radius: var(--radius-pill);
-  background-color: var(--accent);
-  color: var(--on-accent);
+  background-color: var(--pill-active-bg);
+  color: var(--pill-active-text);
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
   line-height: 18px;
@@ -282,7 +282,12 @@
 }
 
 .notification.unread {
-  background-color: var(--accent-soft);
+  background-color: var(--pill-bg);
+}
+
+.notification.unread .notification-text strong,
+.notification.unread .notification-text > span:first-child {
+  font-weight: var(--fw-semibold);
 }
 
 .notification-text {

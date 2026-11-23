@@ -80,7 +80,7 @@
   --accent: #f2c230;
   --accent-hover: #e5b21c;
   --on-accent: #141414;
-  --accent-text: #8a6400;       /* açık zeminde sarı yazı okunmaz: koyu hardal */
+  --accent-text: #7a5700;       /* açık zeminde sarı yazı okunmaz: koyu hardal (seçili zeminde 5:1) */
   --accent-soft: rgba(242, 194, 48, 0.18);
   --accent-soft-strong: rgba(242, 194, 48, 0.35);
   --focus: #141414;
@@ -147,6 +147,12 @@
   --fw-medium: 500;
   --fw-semibold: 600;
   --fw-bold: 700;
+
+  /* Sarı kuralı (3a): sarı yalnız
+     - seçili/etkin durumda: --accent-soft zemin + --accent-text (sol menü, kategori çipi, beğenildi, sürükleme)
+     - birincil eylemde: --accent zemin + --on-accent (.btn-primary, Oluştur, Giriş, Yayınla)
+     - marka anlarında: logo, "Videoya sor"
+     Bağlantılar, rozetler, bildirimler ve süs simgeleri nötr renkte kalır. */
 
   /* Köşe yuvarlaklığı: keskin köşe yok, öğe büyüdükçe köşe de büyür */
   --radius-xs: 6px;      /* kapak üstündeki süre rozeti, küçük etiket */

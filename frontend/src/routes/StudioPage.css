@@ -59,8 +59,8 @@
 }
 
 .status-badge.is-accent {
-  background-color: var(--accent-soft);
-  color: var(--accent-text);
+  background-color: var(--pill-bg);
+  color: var(--success-text);
 }
 
 .status-badge.is-muted {

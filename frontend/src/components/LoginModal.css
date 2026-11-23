@@ -99,11 +99,13 @@
 }
 
 .login-switch-btn {
-  color: var(--accent-text);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
   font-size: var(--fs-base);
   font-weight: var(--fw-medium);
 }
 
 .login-switch-btn:hover {
-  text-decoration: underline;
+  text-decoration-color: var(--accent);
 }

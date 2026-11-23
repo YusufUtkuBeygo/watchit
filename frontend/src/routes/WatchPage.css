@@ -66,7 +66,7 @@
   margin-bottom: var(--space-1);
   border-radius: var(--radius-full);
   background-color: var(--on-player-soft);
-  color: var(--accent);
+  color: var(--on-player);
 }
 
 .player-state-title {
@@ -163,7 +163,9 @@
 }
 
 .watch-link {
-  color: var(--accent-text);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* Kanal avatarı ve adı kanal sayfasına bağlantı */
@@ -210,10 +212,12 @@
   background: none;
   border: none;
   padding: 0;
-  color: var(--accent-text);
+  color: var(--text-primary);
   font: inherit;
+  font-weight: var(--fw-medium);
   cursor: pointer;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .watch-processing-button:hover {

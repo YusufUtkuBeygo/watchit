@@ -70,7 +70,9 @@
 }
 
 .channel-link {
-  color: var(--accent-text);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 @media (max-width: 600px) {
