@@ -52,8 +52,8 @@ function errorText(status) {
 //İzleme sayfasındaki "Videoya sor" paneli: transkript durumu, soru kutusu ve cevaplar.
 //Cevaplar videodaki konuşmalardan üretilir; dakikaya tıklayınca video oraya atlar (onSeek).
 //videoProcessing: video hâlâ dönüştürülüyor; transkript dönüştürmeden sonra kendiliğinden başlar
-//duration: videonun süresi (saniye); son cevabın kaynak dakikaları zaman şeridinde bu süreye göre yerleşir
-export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessing = false, duration = 0 }) {
+//onSourcesChange: son cevabın kaynak aralıkları değişince çağrılır (oynatıcının zaman çubuğunda sarı işaret olurlar)
+export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessing = false, onSourcesChange }) {
   const { user } = useAuth();
   const [transcript, setTranscript] = useState(null);   //null: yükleniyor
   const [loadError, setLoadError] = useState(false);
@@ -74,6 +74,14 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
     setPrevProcessing(videoProcessing);
     if (prevProcessing && !videoProcessing) setGraceLeft(6);
   }
+
+  //Son cevabın kaynakları sayfaya bildirilir (oynatıcının zaman çubuğundaki işaretler)
+  const onSourcesChangeRef = useRef(onSourcesChange);
+  useEffect(() => { onSourcesChangeRef.current = onSourcesChange; });
+  useEffect(() => {
+    const last = [...history].reverse().find((item) => item.sources?.length > 0);
+    onSourcesChangeRef.current?.(last ? last.sources : []);
+  }, [history]);
 
   const status = transcript?.status;
   const isWorking = status === 'PENDING' || status === 'PROCESSING';
@@ -249,48 +257,10 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
     );
   }
 
-  //Son cevabın kaynak dakikaları: oynatıcının hemen altındaki zaman şeridinde işaret olur
-  const lastSources = [...history].reverse().find((item) => item.sources?.length > 0)?.sources ?? [];
-
   return (
     <section className="ask-panel" aria-labelledby="ask-title">
-      {duration > 0 && lastSources.length > 0 && (
-        <TimeStrip sources={lastSources} duration={duration} onSeek={onSeek} />
-      )}
       <h2 id="ask-title" className="ask-title"><Sparkles size={18} aria-hidden="true" /> Videoya sor</h2>
       {body}
     </section>
-  );
-}
-
-//Zaman şeridi: videonun tamamını temsil eden ince çubuk; son cevabın kaynakları sarı işaret.
-//İşaretler gerçek düğme (Tab ile gezilir, Enter/boşluk ile atlar); dokunma alanı görünen noktadan büyük
-function TimeStrip({ sources, duration, onSeek }) {
-  const marks = [...sources].sort((a, b) => a.start - b.start);
-  return (
-    <div className="ask-strip">
-      <span className="ask-strip-label" id="ask-strip-label">Cevabın geçtiği yerler</span>
-      <div className="ask-strip-track" role="group" aria-labelledby="ask-strip-label">
-        {marks.map((s) => {
-          const left = Math.min(100, Math.max(0, (s.start / duration) * 100));
-          const width = Math.max(0.8, Math.min(100 - left, ((s.end - s.start) / duration) * 100));
-          return (
-            <button
-              key={s.start}
-              type="button"
-              className="ask-strip-mark"
-              style={{ left: `${left}%`, width: `${width}%` }}
-              onClick={() => onSeek(s.start)}
-              aria-label={`Videoda ${toClock(s.start)} anına git`}
-              title={`${toClock(s.start)} · ${s.text}`}
-            />
-          );
-        })}
-      </div>
-      <span className="ask-strip-ends" aria-hidden="true">
-        <span>00:00</span>
-        <span>{toClock(duration)}</span>
-      </span>
-    </div>
   );
 }
