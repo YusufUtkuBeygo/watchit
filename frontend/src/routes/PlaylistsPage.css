@@ -19,8 +19,8 @@
   aspect-ratio: 16 / 9;
   border-radius: 12px;
   overflow: hidden;
-  background-color: #333;
-  color: #888;
+  background-color: var(--thumb-bg);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;

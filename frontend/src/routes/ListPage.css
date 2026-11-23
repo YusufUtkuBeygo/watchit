@@ -19,11 +19,11 @@
   aspect-ratio: 16 / 9;
   border-radius: 8px;
   overflow: hidden;
-  background-color: #333;
+  background-color: var(--thumb-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #777;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -33,7 +33,7 @@
   object-fit: cover;
 }
 
-/* Nerede kalındığını gösteren kırmızı çubuk */
+/* Nerede kalındığını gösteren sarı çubuk */
 .row-progress {
   position: absolute;
   left: 0;
@@ -46,7 +46,7 @@
 .row-progress span {
   display: block;
   height: 100%;
-  background-color: var(--red-accent);
+  background-color: var(--accent);
 }
 
 .row-info {

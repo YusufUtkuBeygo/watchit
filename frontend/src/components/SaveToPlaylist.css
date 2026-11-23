@@ -20,9 +20,10 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background-color: #282828;
+  background-color: var(--elevated-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow);
 }
 
 .save-box h3 {
