@@ -23,12 +23,7 @@
   margin-left: var(--sidebar-width);
 }
 
-/* Dar ekranda menü içeriğin üstüne açılır, içerik kaymaz */
-@media (max-width: 1000px) {
-  .content-area.with-sidebar {
-    margin-left: 0;
-  }
-}
+/* Çekmece hâlinde (dar ekran, izleme sayfası) App bu sınıfı vermez: menü içeriğin üstüne açılır, içerik kaymaz */
 
 @media (max-width: 700px) {
   .content-area {

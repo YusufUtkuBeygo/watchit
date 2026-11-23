@@ -1,5 +1,10 @@
-/* İzleme düzeni: içerik alanı yeterince genişse (sol menü açıkken de hesaba katılır,
-   container query) sağda "Sıradaki videolar" sütunu; değilse liste sayfanın altına iner */
+/* İzleme düzeni (YouTube gibi). Grid alanları:
+   - geniş (içerik alanı >= 900 px; izleme sayfasında sol menü kapalı başlar, alan geniş kalır):
+       oynatıcı | sıradakiler
+       bilgiler | sıradakiler
+       yorumlar | sıradakiler
+     Sağ sütun oynatıcının üst hizasından başlar; sticky değil (liste ekrandan uzun olabilir).
+   - dar: oynatıcı, bilgiler (Videoya sor dahil), sıradakiler, yorumlar (YouTube mobil sırası) */
 .watch-layout {
   container: watch-layout / inline-size;
   padding: var(--space-6) 0;
@@ -8,18 +13,46 @@
 .watch-columns {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6);
-  max-width: 1600px;
+  grid-template-areas:
+    "player"
+    "main"
+    "side"
+    "comments";
+  column-gap: var(--space-6);
+  row-gap: var(--space-4);
+  max-width: 1760px;
 }
 
-@container watch-layout (min-width: 1080px) {
+.watch-columns > .watch-player { grid-area: player; }
+.watch-columns > .watch-main { grid-area: main; }
+.watch-columns > .related { grid-area: side; }
+.watch-columns > .watch-comments { grid-area: comments; min-width: 0; }
+
+@container watch-layout (min-width: 900px) {
   .watch-columns {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    grid-template-columns: minmax(0, 1fr) clamp(320px, 30%, 400px);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "player side"
+      "main side"
+      "comments side";
+  }
+
+  /* Sinema modu: oynatıcı iki sütunun üstünde tam genişlik, altında yine iki sütun */
+  .watch-layout.is-theater .watch-columns {
+    grid-template-areas:
+      "player player"
+      "main side"
+      "comments side";
+  }
+
+  .watch-columns > .related,
+  .watch-columns > .watch-comments {
+    align-self: start;
   }
 }
 
 .watch-page {
-  max-width: 1100px;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -245,17 +278,7 @@
   color: var(--text-secondary);
 }
 
-/* Sinema modu: oynatıcı içerik alanının tüm genişliğine yayılır, "Sıradaki videolar" alta iner.
-   Yükseklik ekrana sığacak kadar; video kutuda ortalanır (object-fit: contain) */
-.watch-layout.is-theater .watch-columns {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: none;
-}
-
-.watch-layout.is-theater .watch-page {
-  max-width: none;
-}
-
+/* Sinema modu: oynatıcı yüksekliği ekrana sığar; video kutuda ortalanır (object-fit: contain) */
 .watch-layout.is-theater .watch-player {
   aspect-ratio: auto;
   height: min(calc(100cqi * 9 / 16), calc(100dvh - var(--navbar-height) - 96px));

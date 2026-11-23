@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import useMediaQuery from './hooks/useMediaQuery';
 import './App.css';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -19,26 +20,36 @@ import WatchLaterPage from './routes/WatchLaterPage';
 //En son: bileşen stillerinin üstüne yazan mikro etkileşimler
 import './interactions.css';
 
-//Geniş ekran mı? (CSS'teki 1000px sınırıyla aynı)
+//Geniş ekran mı? (useMediaQuery'deki 1000px sınırıyla aynı)
 const isWideScreen = () => window.matchMedia('(min-width: 1001px)').matches;
 
 function App() {
-  //Geniş ekranda menü açık başlar, dar ekranda kapalı
-  const [isSidebarOpen, setIsSidebarOpen] = useState(isWideScreen);
+  const location = useLocation();
+  //Sol menü iki hâlde çalışır:
+  //- sabit: geniş ekranda, izleme dışındaki sayfalarda; açık başlar, ☰ ile gizlenir, seçim sayfalar arasında kalır
+  //- çekmece: dar ekranda ve izleme sayfasında (YouTube gibi; video ve öneriler geniş kalsın);
+  //  kapalı başlar, ☰ ile içeriği itmeden üste açılır, sayfa değişince kapanır
+  const isNarrow = useMediaQuery('(max-width: 1000px)');
+  const isWatchPage = location.pathname.startsWith('/watch/');
+  const isDrawer = isNarrow || isWatchPage;
 
-  const toggleSidebar = () => setIsSidebarOpen((open) => !open);
-  //Dar ekranda sayfa değişince menü kapanır; geniş ekranda kullanıcının seçimi kalır
-  const closeSidebarOnSmallScreen = useCallback(() => {
-    if (!isWideScreen()) setIsSidebarOpen(false);
-  }, []);
+  const [isPinnedOpen, setIsPinnedOpen] = useState(isWideScreen);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const isSidebarOpen = isDrawer ? isDrawerOpen : isPinnedOpen;
+
+  const toggleSidebar = () => {
+    if (isDrawer) setIsDrawerOpen((open) => !open);
+    else setIsPinnedOpen((open) => !open);
+  };
+  const closeDrawer = useCallback(() => setIsDrawerOpen(false), []);
 
   return (
-    <div className={`app-container ${isSidebarOpen ? '' : 'sidebar-hidden'}`}>
+    <div className={`app-container ${isSidebarOpen ? '' : 'sidebar-hidden'} ${isDrawer ? 'drawer-mode' : ''}`}>
       <a href="#icerik" className="skip-link">İçeriğe geç</a>
       <Navbar onMenuClick={toggleSidebar} isMenuOpen={isSidebarOpen} />
       <div className="main-content">
-        <Sidebar isOpen={isSidebarOpen} onClose={closeSidebarOnSmallScreen} />
-        <main id="icerik" tabIndex={-1} className={`content-area ${isSidebarOpen ? 'with-sidebar' : ''}`}>
+        <Sidebar isOpen={isSidebarOpen} onClose={closeDrawer} isDrawer={isDrawer} />
+        <main id="icerik" tabIndex={-1} className={`content-area ${!isDrawer && isPinnedOpen ? 'with-sidebar' : ''}`}>
           {/* Adrese göre hangi sayfanın çizileceği burada seçilir */}
           <Routes>
             <Route path="/" element={<HomePage />} />

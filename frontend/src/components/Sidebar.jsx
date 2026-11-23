@@ -8,14 +8,14 @@ import Avatar from './Avatar';
 import ThemeToggle from './ThemeToggle';
 import LoginModal from './LoginModal';
 import useFocusTrap from '../hooks/useFocusTrap';
-import useMediaQuery from '../hooks/useMediaQuery';
 import './Sidebar.css';
 
 //Abonelikler listesinde ilk bu kadar kanal görünür, gerisi "Daha fazla göster" ile açılır
 const SUBSCRIPTION_LIMIT = 7;
 
-//Sol menü. isOpen: dar ekranda açık mı (App tutar), onClose: dar ekranda kapatmak için
-const Sidebar = ({ isOpen, onClose }) => {
+//Sol menü. isOpen: açık mı (App tutar), onClose: çekmeceyi kapatmak için,
+//isDrawer: çekmece hâli mi (dar ekran ya da izleme sayfası; App karar verir)
+const Sidebar = ({ isOpen, onClose, isDrawer }) => {
   const { user } = useAuth();
   const location = useLocation();
   const [categories, setCategories] = useState([]);
@@ -25,9 +25,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const [showAllSubscriptions, setShowAllSubscriptions] = useState(false);
   const asideRef = useRef(null);
 
-  //Dar ekranda (CSS'teki 1000px sınırı) menü içeriğin üstüne açılan bir çekmecedir:
-  //açıkken odak içinde kalır, Esc kapatır; kapalıyken ekran dışında durur ve odaklanamaz (inert)
-  const isDrawer = useMediaQuery('(max-width: 1000px)');
+  //Çekmece hâlinde açıkken odak içinde kalır, Esc kapatır; kapalıyken ekran dışında durur ve odaklanamaz (inert)
   useFocusTrap(asideRef, { active: isDrawer && isOpen, onEscape: onClose });
 
   useEffect(() => {
@@ -59,7 +57,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     };
   }, [user]);
 
-  //Dar ekranda bir bağlantıya tıklanınca menü kapanır
+  //Çekmece açıkken bir bağlantıya tıklanınca (sayfa değişince) kapanır; geniş ekrandaki sabit menüye dokunmaz
   useEffect(() => {
     onClose();
     // eslint-disable-next-line react-hooks/exhaustive-deps

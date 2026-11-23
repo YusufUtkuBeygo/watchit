@@ -170,9 +170,11 @@ function WatchPage() {
   };
 
   return (
+    //YouTube düzeni: masaüstünde solda oynatıcı + bilgiler + Videoya sor + yorumlar, sağda sıradaki videolar
+    //(oynatıcının üst hizasından başlar). Dar ekranda tek sütun: oynatıcı, bilgiler, Videoya sor, sıradakiler, yorumlar.
+    //Sinema modunda oynatıcı iki sütunun üstünde tam genişlik. Yerleşim WatchPage.css'teki grid alanlarında
     <div className={`watch-layout ${theater ? 'is-theater' : ''}`}>
     <div className="watch-columns">
-    <div className="watch-page">
       <div className="watch-player" ref={playerBoxRef}>
         {!video.videoUrl ? (
           <PlayerState
@@ -212,6 +214,7 @@ function WatchPage() {
         )}
       </div>
 
+    <div className="watch-page watch-main">
       {isOwner && isProcessing && (
         <p className="watch-processing" role="status">
           Video hazırlanıyor: her cihazda oynaması için 720p MP4'e çevriliyor. Bu sırada yüklediğin dosya oynuyor.
@@ -230,15 +233,6 @@ function WatchPage() {
         </p>
       )}
 
-      {/* "Videoya sor" oynatıcının hemen altında (A tasarımı); key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
-      <AskVideoPanel
-        key={`sor-${video.id}`}
-        videoId={video.id}
-        isOwner={isOwner}
-        onSeek={seekTo}
-        videoProcessing={isProcessing}
-        onSourcesChange={setAskMarks}
-      />
 
       <h1 className="watch-title">{video.title}</h1>
 
@@ -284,9 +278,15 @@ function WatchPage() {
         <p>{video.description || 'Açıklama yok.'}</p>
       </div>
 
-
-      {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
-      <CommentSection key={video.id} videoId={video.id} />
+      {/* "Videoya sor" açıklamanın altında, yorumların hemen üstünde; key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
+      <AskVideoPanel
+        key={`sor-${video.id}`}
+        videoId={video.id}
+        isOwner={isOwner}
+        onSeek={seekTo}
+        videoProcessing={isProcessing}
+        onSourcesChange={setAskMarks}
+      />
 
       {isEditing && (
         <VideoEditModal
@@ -302,6 +302,10 @@ function WatchPage() {
     </div>
     {/* key: başka videoya geçince liste yeniden toplanır */}
     <RelatedVideos key={`sira-${video.id}`} video={video} />
+    <div className="watch-comments">
+      {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
+      <CommentSection key={video.id} videoId={video.id} />
+    </div>
     </div>
     </div>
   );
