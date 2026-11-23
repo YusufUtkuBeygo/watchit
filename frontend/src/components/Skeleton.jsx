@@ -110,7 +110,7 @@ export function CommentsSkeleton({ count = 3 }) {
 //İzleme sayfası: oynatıcı, başlık, kanal satırı, açıklama
 export function WatchSkeleton() {
   return (
-    <Loading label="Video yükleniyor…" className="watch-page">
+    <Loading label="Video yükleniyor…" className="watch-page sk-watch">
       <Skeleton className="sk-player" />
       <Skeleton className="sk-line sk-line-lg sk-w-60" />
       <div className="sk-row" aria-hidden="true">

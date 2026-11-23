@@ -13,6 +13,7 @@ import Avatar from '../components/Avatar';
 import SaveToPlaylist from '../components/SaveToPlaylist';
 import WatchLaterButton from '../components/WatchLaterButton';
 import AskVideoPanel from '../components/AskVideoPanel';
+import RelatedVideos from '../components/RelatedVideos';
 import { formatViews } from '../utils/format';
 import { WatchSkeleton } from '../components/Skeleton';
 import './WatchPage.css';
@@ -157,6 +158,8 @@ function WatchPage() {
   };
 
   return (
+    <div className="watch-layout">
+    <div className="watch-columns">
     <div className="watch-page">
       <div className="watch-player" ref={playerBoxRef}>
         {!video.videoUrl ? (
@@ -270,6 +273,10 @@ function WatchPage() {
           }}
         />
       )}
+    </div>
+    {/* key: başka videoya geçince liste yeniden toplanır */}
+    <RelatedVideos key={`sira-${video.id}`} video={video} />
+    </div>
     </div>
   );
 }

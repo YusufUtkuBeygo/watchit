@@ -100,3 +100,8 @@
   .sk-banner { aspect-ratio: 4 / 1; border-radius: var(--radius-lg); }
   .sk-avatar-120 { width: 80px; height: 80px; }
 }
+
+/* İzleme sayfası iskeleti: gerçek sayfadaki üst-alt boşluk (.watch-layout) */
+.sk-watch {
+  padding-block: var(--space-6);
+}

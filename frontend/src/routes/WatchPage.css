@@ -1,6 +1,26 @@
+/* İzleme düzeni: içerik alanı yeterince genişse (sol menü açıkken de hesaba katılır,
+   container query) sağda "Sıradaki videolar" sütunu; değilse liste sayfanın altına iner */
+.watch-layout {
+  container: watch-layout / inline-size;
+  padding: var(--space-6) 0;
+}
+
+.watch-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  max-width: 1600px;
+}
+
+@container watch-layout (min-width: 1080px) {
+  .watch-columns {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  }
+}
+
 .watch-page {
   max-width: 1100px;
-  padding: var(--space-6) 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
