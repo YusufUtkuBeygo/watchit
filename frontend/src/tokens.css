@@ -120,6 +120,13 @@
   --on-player: #fff;                         /* siyah oynatıcı zemini üstündeki yazı */
   --on-player-muted: rgba(255, 255, 255, 0.7);
   --on-player-soft: rgba(255, 255, 255, 0.08); /* oynatıcı üstündeki simge dairesi */
+  /* Oynatıcı denetimleri: video her temada koyu zeminde durur, denetimler de iki temada aynı (cam/bulanıklık yok) */
+  --player-scrim: rgba(0, 0, 0, 0.55);       /* alt denetimlerin arkasındaki karartma */
+  --player-track: rgba(255, 255, 255, 0.28); /* zaman ve ses çubuğunun boşu */
+  --player-buffer: rgba(255, 255, 255, 0.45);
+  --player-hover: rgba(255, 255, 255, 0.14); /* düğme ve menü satırı vurgusu */
+  --player-menu-bg: #1c1c1c;                 /* ayarlar menüsü ve ipucu zemini (düz, saydam değil) */
+  --player-menu-border: #333;
 
   /* Boşluk ölçeği (padding, margin, gap) */
   --space-1: 4px;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Pencil, Trash2, VideoOff, CircleAlert, RotateCw } from 'lucide-react';
 import { getVideoById, deleteVideoById } from '../services/videoService';
@@ -8,7 +8,6 @@ import VideoEditModal from '../components/VideoEditModal';
 import CommentSection from '../components/CommentSection';
 import LikeButton from '../components/LikeButton';
 import SubscribeButton from '../components/SubscribeButton';
-import VideoPlayer from '../components/VideoPlayer';
 import Avatar from '../components/Avatar';
 import SaveToPlaylist from '../components/SaveToPlaylist';
 import WatchLaterButton from '../components/WatchLaterButton';
@@ -17,6 +16,9 @@ import RelatedVideos from '../components/RelatedVideos';
 import { formatViews } from '../utils/format';
 import { WatchSkeleton } from '../components/Skeleton';
 import './WatchPage.css';
+
+//Oynatıcı (Video.js) ayrı parça olarak yalnız izleme sayfasında indirilir; ana sayfa hafif kalır
+const VideoPlayer = lazy(() => import('../components/VideoPlayer'));
 
 //Dönüştürme durumu bu aralıkla yeniden okunur (yalnız sahibi videosunu izlerken)
 const PROCESSING_POLL_MS = 5000;
@@ -33,6 +35,16 @@ function WatchPage() {
   const [playError, setPlayError] = useState(false);
   //"Tekrar dene" sayacı: oynatıcının key'ine girer, artınca oynatıcı baştan kurulur
   const [playAttempt, setPlayAttempt] = useState(0);
+  //"Videoya sor" son cevabının kaynakları: oynatıcının zaman çubuğunda sarı işaret
+  const [askMarks, setAskMarks] = useState([]);
+  //Sinema modu: oynatıcı sayfanın tüm genişliğine yayılır; tercih bu tarayıcıda hatırlanır
+  const [theater, setTheater] = useState(() => {
+    try { return localStorage.getItem('watchit_theater') === '1'; } catch { return false; }
+  });
+  const toggleTheater = useCallback(() => setTheater((on) => !on), []);
+  useEffect(() => {
+    try { localStorage.setItem('watchit_theater', theater ? '1' : '0'); } catch { /* izin yoksa yalnız bu sayfada */ }
+  }, [theater]);
   const { user } = useAuth();
   const navigate = useNavigate();
   //Giriş yapanın kanalı (video onunsa düzenle/sil gösterilir)
@@ -158,7 +170,7 @@ function WatchPage() {
   };
 
   return (
-    <div className="watch-layout">
+    <div className={`watch-layout ${theater ? 'is-theater' : ''}`}>
     <div className="watch-columns">
     <div className="watch-page">
       <div className="watch-player" ref={playerBoxRef}>
@@ -186,12 +198,17 @@ function WatchPage() {
           />
         ) : (
           //key: başka videoya, dönüşmüş dosyaya geçince ya da "Tekrar dene"de oynatıcı baştan kurulur
+          <Suspense fallback={null}>
           <VideoPlayer
             key={`${video.id}-${video.videoUrl}-${playAttempt}`}
             video={video}
             onError={() => setPlayError(true)}
             exposeRef={playerRef}
+            marks={askMarks}
+            theater={theater}
+            onToggleTheater={toggleTheater}
           />
+          </Suspense>
         )}
       </div>
 
@@ -220,7 +237,7 @@ function WatchPage() {
         isOwner={isOwner}
         onSeek={seekTo}
         videoProcessing={isProcessing}
-        duration={video.durationInSeconds || 0}
+        onSourcesChange={setAskMarks}
       />
 
       <h1 className="watch-title">{video.title}</h1>

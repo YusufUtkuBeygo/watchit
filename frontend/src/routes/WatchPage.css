@@ -244,3 +244,19 @@
   font-size: var(--fs-sm);
   color: var(--text-secondary);
 }
+
+/* Sinema modu: oynatıcı içerik alanının tüm genişliğine yayılır, "Sıradaki videolar" alta iner.
+   Yükseklik ekrana sığacak kadar; video kutuda ortalanır (object-fit: contain) */
+.watch-layout.is-theater .watch-columns {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: none;
+}
+
+.watch-layout.is-theater .watch-page {
+  max-width: none;
+}
+
+.watch-layout.is-theater .watch-player {
+  aspect-ratio: auto;
+  height: min(calc(100cqi * 9 / 16), calc(100dvh - var(--navbar-height) - 96px));
+}
