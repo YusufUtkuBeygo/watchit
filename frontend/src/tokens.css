@@ -1,0 +1,153 @@
+/*
+  Tasarım değişkenleri (token) tek yerde. Bütün CSS bunları kullanır:
+  yeni CSS'te sabit renk, boşluk, yazı boyu, köşe ya da katman sayısı yazılmaz.
+
+  Tema <html data-theme="dark|light"> ile seçilir (index.html'deki küçük betik, src/theme.js).
+  Koyu tema varsayılan: betik çalışmasa da site koyu açılır.
+  Temaya göre değişmeyen ölçekler (boşluk, yazı, köşe, süre, katman) en alttaki :root'ta.
+*/
+
+/* ---- Renkler: koyu tema (varsayılan) ---- */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-color: #121212;          /* sayfa zemini */
+  --surface-color: #121212;     /* üst menü, sol menü */
+  --card-bg: #1a1a1a;           /* kartlar, paneller */
+  --elevated-bg: #1e1e1e;       /* açılır menü, pencere */
+  --input-bg: #181818;
+  --hover-color: #262626;
+  --border-color: #2e2e2e;
+  --border-strong: #3d3d3d;
+  --text-primary: #ececec;
+  --text-secondary: #9a9a9a;
+  --text-muted: #6e6e6e;
+  --pill-bg: #1f1f1f;
+  --pill-hover: #2a2a2a;
+  --pill-active-bg: #ececec;
+  --pill-active-text: #121212;
+  --accent: #f2c230;            /* sarı: ana düğme, seçili, rozet */
+  --accent-hover: #f7d25c;
+  --on-accent: #121212;         /* sarının üstündeki yazı */
+  --accent-text: #f2c230;       /* sarı yazı ve bağlantı */
+  --accent-soft: rgba(242, 194, 48, 0.12);
+  --accent-soft-strong: rgba(242, 194, 48, 0.24);
+  --focus: #f2c230;             /* klavye odak çerçevesi */
+  --danger: #d93a3f;
+  --danger-hover: #e5484d;
+  --danger-text: #ff7a7e;
+  --danger-border: #5c2324;
+  --success-text: #5bd08a;
+  --thumb-bg: #242424;          /* kapak resmi yokken */
+  --avatar-bg: #3a3a3a;
+  --avatar-text: #ececec;
+  --overlay: rgba(0, 0, 0, 0.7);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* ---- Renkler: açık tema ---- */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg-color: #f6f4ee;
+  --surface-color: #f6f4ee;
+  --card-bg: #ffffff;
+  --elevated-bg: #ffffff;
+  --input-bg: #ffffff;
+  --hover-color: #ece9e0;
+  --border-color: #e2dfd6;
+  --border-strong: #cfcbc0;
+  --text-primary: #141414;
+  --text-secondary: #5f5c55;
+  --text-muted: #8c8a84;
+  --pill-bg: #ece9e0;
+  --pill-hover: #e2ded3;
+  --pill-active-bg: #141414;
+  --pill-active-text: #f6f4ee;
+  --accent: #f2c230;
+  --accent-hover: #e5b21c;
+  --on-accent: #141414;
+  --accent-text: #8a6400;       /* açık zeminde sarı yazı okunmaz: koyu hardal */
+  --accent-soft: rgba(242, 194, 48, 0.18);
+  --accent-soft-strong: rgba(242, 194, 48, 0.35);
+  --focus: #141414;
+  --danger: #c9372c;
+  --danger-hover: #b42f25;
+  --danger-text: #b42318;
+  --danger-border: #f0c5c0;
+  --success-text: #1e7a45;
+  --thumb-bg: #e3dfd5;
+  --avatar-bg: #dcd8ce;
+  --avatar-text: #141414;
+  --overlay: rgba(20, 20, 20, 0.45);
+  --shadow: 0 8px 28px rgba(20, 20, 20, 0.12);
+  --shadow-sm: 0 1px 3px rgba(20, 20, 20, 0.08);
+  --shadow-md: 0 4px 16px rgba(20, 20, 20, 0.1);
+}
+
+/* ---- Temaya göre değişmeyenler ---- */
+:root {
+  /* Video ve kapak üstündeki parçalar: resim her iki temada da aynı, rozet de aynı kalır */
+  --player-bg: #000;                         /* oynatıcı ve önizleme zemini */
+  --badge-bg: rgba(0, 0, 0, 0.8);            /* kapak üstündeki süre / sayı rozeti */
+  --badge-text: #fff;
+  --progress-track: rgba(255, 255, 255, 0.3); /* kapak altındaki "kalınan yer" çubuğunun boşu */
+  --on-danger: #fff;                         /* kırmızı düğmenin yazısı */
+
+  /* Boşluk ölçeği (padding, margin, gap) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* Yazı boyu */
+  --fs-xs: 12px;    /* rozet, ipucu */
+  --fs-sm: 13px;    /* tarih, küçük bilgi */
+  --fs-base: 14px;  /* gövde metni, düğme */
+  --fs-md: 16px;    /* kart başlığı, giriş alanı */
+  --fs-lg: 18px;    /* bölüm başlığı */
+  --fs-xl: 20px;    /* video başlığı */
+  --fs-2xl: 24px;   /* sayfa başlığı */
+  --fs-3xl: 32px;   /* kanal adı */
+  --fs-4xl: 48px;   /* büyük baş harf */
+
+  /* Yazı kalınlığı */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* Köşe yuvarlaklığı */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;  /* düğme, çip: iki yanı tam yarım daire */
+  --radius-full: 50%;    /* avatar gibi daireler */
+
+  /* Hareket */
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 260ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Üst üste binme sırası (büyük olan üstte) */
+  --z-raised: 1;          /* kaydırırken yapışan pencere başlığı */
+  --z-navbar: 100;
+  --z-popover: 120;       /* "Kaydet" kutusu */
+  --z-dropdown: 150;      /* kullanıcı ve bildirim menüsü */
+  --z-drawer-backdrop: 155;
+  --z-drawer: 160;        /* dar ekranda sol menü */
+  --z-modal: 200;
+  --z-skip-link: 300;
+
+  /* Yerleşim */
+  --navbar-height: 56px;
+  --sidebar-width: 240px;
+}
