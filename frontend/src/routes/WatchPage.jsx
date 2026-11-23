@@ -227,7 +227,8 @@ function WatchPage() {
 
       <div className="watch-channel">
         {/* Avatar ve kanal adı kanal sayfasına götürür */}
-        <Link to={`/channel/${video.channelId}`} className="watch-channel-link">
+        {/* Yanındaki kanal adıyla aynı yere gider: ekran okuyucu ve Tab için tek bağlantı yeter */}
+        <Link to={`/channel/${video.channelId}`} className="watch-channel-link" aria-hidden="true" tabIndex={-1}>
           <Avatar className="watch-avatar" src={channel?.profilePictureUrl} name={channel?.channelName} />
         </Link>
         <div>

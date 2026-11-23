@@ -285,9 +285,12 @@
   background-color: var(--pill-bg);
 }
 
-.notification.unread .notification-text strong,
-.notification.unread .notification-text > span:first-child {
-  font-weight: var(--fw-semibold);
+.notification-text strong {
+  font-weight: var(--fw-medium);
+}
+
+.notification.unread .notification-text strong {
+  font-weight: var(--fw-bold);
 }
 
 .notification-text {
