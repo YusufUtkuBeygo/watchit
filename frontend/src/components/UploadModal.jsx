@@ -7,6 +7,7 @@ import { getMyChannel } from '../services/channelService';
 import { getAllCategories } from '../services/categoryService';
 import ChannelCreateForm from './ChannelCreateForm';
 import { LinesSkeleton } from './Skeleton';
+import useFocusTrap from '../hooks/useFocusTrap';
 import './UploadModal.css';
 
 //Pencere yalnız açıkken çizilir (Navbar karar verir), her açılışta durum sıfırdan başlar.
@@ -55,13 +56,10 @@ export default function UploadModal({ onClose }) {
       });
   }, []);
 
+  //Odak tuzağı: Tab pencerede döner, kapanınca odak "Oluştur" düğmesine döner.
   //Esc ile kapanır (yükleme sürerken değil: yarım kalmasın, kapat düğmesi de o sırada kapalı)
-  useEffect(() => {
-    if (isSubmitting) return;
-    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [isSubmitting, onClose]);
+  const boxRef = useRef(null);
+  useFocusTrap(boxRef, { active: true, onEscape: isSubmitting ? null : onClose });
 
   //Geçici adresler iş bitince bırakılır (yoksa tarayıcı belleğinde kalır)
   useEffect(() => {
@@ -174,10 +172,10 @@ export default function UploadModal({ onClose }) {
 
   return (
     <div className="upload-overlay">
-      <div className="upload-modal">
+      <div className="upload-modal" ref={boxRef} role="dialog" aria-modal="true" aria-labelledby="upload-title" tabIndex={-1}>
 
         <div className="upload-header">
-          <h2>{step === 'channel' ? 'Kanal Oluştur' : 'Video Yükle'}</h2>
+          <h2 id="upload-title">{step === 'channel' ? 'Kanal Oluştur' : 'Video Yükle'}</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Kapat" disabled={isSubmitting}>
             <X size={22} />
           </button>

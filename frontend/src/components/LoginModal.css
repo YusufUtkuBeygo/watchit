@@ -109,3 +109,8 @@
 .login-switch-btn:hover {
   text-decoration-color: var(--accent);
 }
+
+/* Pencerenin kendisi yalnız odak yedeği; çerçeve çizilmez */
+.login-modal:focus {
+  outline: none;
+}

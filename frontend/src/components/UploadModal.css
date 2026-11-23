@@ -216,3 +216,8 @@
   justify-content: center;
   text-decoration: none;
 }
+
+/* Pencerenin kendisi yalnız odak yedeği; çerçeve çizilmez */
+.upload-modal:focus {
+  outline: none;
+}

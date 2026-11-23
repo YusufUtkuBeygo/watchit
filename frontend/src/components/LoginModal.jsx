@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import useFocusTrap from '../hooks/useFocusTrap';
 import './LoginModal.css';
 
 //Backend'in alan hataları ({ alan: mesaj }) İngilizce gelebilir; kullanıcıya bunlar gösterilir
@@ -21,10 +22,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   //Kayıtta hangi alan hatalı: { username: '...', password: '...' }
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (!isOpen) return null;
-
-  const isRegister = mode === 'register';
+  const boxRef = useRef(null);
 
   const clearErrors = () => {
     setErrorMessage('');
@@ -39,6 +37,13 @@ const LoginModal = ({ isOpen, onClose }) => {
     clearErrors();
     onClose();
   };
+
+  //Açıkken: odak ilk alana gelir, Tab pencerede döner, Esc kapatır, kapanınca odak açan düğmeye döner
+  useFocusTrap(boxRef, { active: isOpen, onEscape: handleClose, initialFocus: 'input' });
+
+  if (!isOpen) return null;
+
+  const isRegister = mode === 'register';
 
   //Giriş <-> kayıt geçişi; yazılan e-posta kalsın, şifre silinsin
   const switchMode = () => {
@@ -100,9 +105,9 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="login-overlay">
-      <div className="login-modal">
+      <div className="login-modal" ref={boxRef} role="dialog" aria-modal="true" aria-labelledby="login-title" tabIndex={-1}>
         <div className="login-header">
-          <h2>{isRegister ? 'Hesap oluştur' : 'Giriş yap'}</h2>
+          <h2 id="login-title">{isRegister ? 'Hesap oluştur' : 'Giriş yap'}</h2>
           <button className="icon-btn" onClick={handleClose} aria-label="Kapat">
             <X size={22} />
           </button>
@@ -120,7 +125,6 @@ const LoginModal = ({ isOpen, onClose }) => {
                 minLength={3}
                 maxLength={50}
                 required
-                autoFocus
               />
               {fieldErrors.username && <span className="login-error">{fieldErrors.username}</span>}
             </label>
@@ -135,7 +139,6 @@ const LoginModal = ({ isOpen, onClose }) => {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
-              autoFocus={!isRegister}
             />
             {fieldErrors.email && <span className="login-error">{fieldErrors.email}</span>}
           </label>
