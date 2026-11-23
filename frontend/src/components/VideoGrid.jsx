@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import VideoCard from './VideoCard';
 import './VideoGrid.css';
 import { getAllVideos, getVideosByCategoryId } from '../services/videoService';
+import { VideoGridSkeleton } from './Skeleton';
 
 //Ana sayfadaki video ızgarası; kategori seçiliyse yalnız o kategorinin videoları
 function VideoGrid({ selectedCategory }) {
@@ -33,7 +34,7 @@ function VideoGrid({ selectedCategory }) {
     return () => { ignore = true; };
   }, [selectedCategory]);
 
-  if (status === 'loading') return <p className="grid-message">Yükleniyor…</p>;
+  if (status === 'loading') return <VideoGridSkeleton />;
   if (status === 'error') return <p className="grid-message">Videolar yüklenemedi. Biraz sonra tekrar dene.</p>;
   if (videos.length === 0) {
     return (

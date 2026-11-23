@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { getMyPlaylists, createPlaylist, getVisiblePlaylistVideos, sortEntries } from '../services/playlistService';
 import { getVideoById } from '../services/videoService';
 import Thumbnail from '../components/Thumbnail';
+import { PlaylistGridSkeleton } from '../components/Skeleton';
 import './PlaylistsPage.css';
 
 //Oynatma listelerim (/playlists): liste kartları + yeni liste oluşturma
@@ -86,7 +87,7 @@ function MyPlaylists() {
         </div>
       )}
 
-      {status === 'loading' && <p className="grid-message">Yükleniyor…</p>}
+      {status === 'loading' && <PlaylistGridSkeleton />}
       {status === 'error' && <p className="grid-message">Listeler yüklenemedi. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && playlists.length === 0 && !isCreating && (
         <p className="grid-message">

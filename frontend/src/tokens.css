@@ -39,6 +39,7 @@
   --danger-border: #5c2324;
   --success-text: #5bd08a;
   --thumb-bg: #242424;          /* kapak resmi yokken */
+  --skeleton-bg: #262626;       /* yükleniyor iskeleti */
   --avatar-bg: #3a3a3a;
   --avatar-text: #ececec;
   --overlay: rgba(0, 0, 0, 0.7);
@@ -89,6 +90,7 @@
   --danger-border: #f0c5c0;
   --success-text: #1e7a45;
   --thumb-bg: #e3dfd5;
+  --skeleton-bg: #e5e1d6;
   --avatar-bg: #dcd8ce;
   --avatar-text: #141414;
   --overlay: rgba(20, 20, 20, 0.45);

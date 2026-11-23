@@ -4,6 +4,7 @@ import { Lock, Globe, Pencil, Trash2, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import PlaylistForm from '../components/PlaylistForm';
 import VideoRow from '../components/VideoRow';
+import { RowListSkeleton } from '../components/Skeleton';
 import {
   getPlaylist, getPlaylistEntriesWithVideos, updatePlaylist, deletePlaylist, removePlaylistEntry,
 } from '../services/playlistService';
@@ -46,7 +47,7 @@ function PlaylistPage() {
     return () => { ignore = true; };
   }, [playlistId, user?.id]);
 
-  if (status === 'loading') return <p className="grid-message">Yükleniyor…</p>;
+  if (status === 'loading') return <div className="page"><RowListSkeleton label="Liste yükleniyor…" /></div>;
   if (status !== 'ready') {
     const texts = {
       notFound: ['Liste bulunamadı', 'Bu liste silinmiş ya da hiç olmamış olabilir.'],

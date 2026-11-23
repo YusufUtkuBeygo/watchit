@@ -9,6 +9,7 @@ import { getMyChannel } from '../services/channelService';
 import { getVideosByChannelId, deleteVideoById } from '../services/videoService';
 import { getTranscript } from '../services/transcriptService';
 import { formatCount, formatViews, timeAgo } from '../utils/format';
+import { RowListSkeleton } from '../components/Skeleton';
 import './ListPage.css';
 import './StudioPage.css';
 
@@ -118,7 +119,7 @@ function Studio() {
     refresh();
   };
 
-  if (status === 'loading') return <div className="page"><p className="grid-message">Yükleniyor…</p></div>;
+  if (status === 'loading') return <div className="page"><RowListSkeleton label="Stüdyo yükleniyor…" /></div>;
   if (status === 'error') return <div className="page"><p className="grid-message">Stüdyo yüklenemedi. Biraz sonra tekrar dene.</p></div>;
 
   if (status === 'noChannel') {

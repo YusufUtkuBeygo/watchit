@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { getCommentsByVideoId, createComment, deleteComment, updateComment } from '../services/commentService';
 import './CommentSection.css';
 import Avatar from './Avatar';
+import { CommentsSkeleton } from './Skeleton';
 
 //Yorum içeriği veritabanında en fazla 1000 karakter (comments.content varchar(1000))
 const MAX_LENGTH = 1000;
@@ -77,7 +78,7 @@ export default function CommentSection({ videoId }) {
         <p className="comments-hint">Yorum yapmak için giriş yap.</p>
       )}
 
-      {status === 'loading' && <p className="comments-hint">Yorumlar yükleniyor…</p>}
+      {status === 'loading' && <CommentsSkeleton />}
       {status === 'error' && <p className="comments-hint">Yorumlar yüklenemedi.</p>}
       {status === 'ready' && comments.length === 0 && (
         <p className="comments-hint">Henüz yorum yok. İlk yorumu sen yaz.</p>

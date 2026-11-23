@@ -5,6 +5,7 @@ import VideoRow from '../components/VideoRow';
 import { getLikedVideos } from '../services/videoService';
 import { unlikeVideo } from '../services/videoLikeService';
 import { formatViews } from '../utils/format';
+import { RowListSkeleton } from '../components/Skeleton';
 import './ListPage.css';
 
 //Beğendiğim videolar (/liked): en son beğenilen en üstte, satırdan beğeni kaldırılabilir
@@ -45,7 +46,7 @@ function LikedList() {
   return (
     <div className="page">
       <h1 className="page-title">Beğendiğim videolar</h1>
-      {status === 'loading' && <p className="grid-message">Yükleniyor…</p>}
+      {status === 'loading' && <RowListSkeleton label="Beğendiğin videolar yükleniyor…" />}
       {status === 'error' && <p className="grid-message">Liste yüklenemedi. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && videos.length === 0 && (
         <p className="grid-message">Henüz bir video beğenmedin. Beğendiklerin burada toplanır.</p>

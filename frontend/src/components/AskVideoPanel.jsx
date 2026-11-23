@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { askVideo, getTranscript, requestTranscript } from '../services/transcriptService';
+import { LinesSkeleton } from './Skeleton';
 import './AskVideoPanel.css';
 
 //Transkript hazırlanırken durum bu sıklıkla yeniden okunur
@@ -149,7 +150,7 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
   if (loadError) {
     body = <p className="ask-hint">Durum okunamadı. Sayfayı yenileyip tekrar dene.</p>;
   } else if (transcript == null) {
-    body = <p className="ask-hint">Yükleniyor…</p>;
+    body = <LinesSkeleton label="Soru-cevap durumu yükleniyor…" />;
   } else if (isWorking) {
     body = (
       <p className="ask-hint" role="status">

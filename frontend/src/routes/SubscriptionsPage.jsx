@@ -5,6 +5,7 @@ import Avatar from '../components/Avatar';
 import VideoCard from '../components/VideoCard';
 import { getMySubscribedChannels } from '../services/channelService';
 import { getVideosByChannelId } from '../services/videoService';
+import { VideoGridSkeleton } from '../components/Skeleton';
 import '../components/VideoGrid.css';
 import './SubscriptionsPage.css';
 
@@ -49,7 +50,7 @@ function SubscriptionsFeed() {
     return () => { ignore = true; };
   }, []);
 
-  if (status === 'loading') return <p className="grid-message">Yükleniyor…</p>;
+  if (status === 'loading') return <div className="page"><VideoGridSkeleton label="Abonelikler yükleniyor…" /></div>;
   if (status === 'error') return <p className="grid-message">Abonelikler yüklenemedi. Biraz sonra tekrar dene.</p>;
 
   if (channels.length === 0) {

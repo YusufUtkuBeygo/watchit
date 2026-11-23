@@ -9,6 +9,7 @@ import SubscribeButton from '../components/SubscribeButton';
 import Avatar from '../components/Avatar';
 import ChannelBanner from '../components/ChannelBanner';
 import VideoCard from '../components/VideoCard';
+import { ChannelSkeleton } from '../components/Skeleton';
 import '../components/VideoGrid.css';
 import './ChannelPage.css';
 
@@ -62,7 +63,7 @@ function ChannelPage() {
   }, [id]);
 
   if (status === 'loading') {
-    return <p className="channel-message">Yükleniyor…</p>;
+    return <ChannelSkeleton />;
   }
 
   if (status === 'notFound' || status === 'error') {

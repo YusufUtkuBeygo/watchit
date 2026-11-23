@@ -4,6 +4,7 @@ import RequireLogin from '../components/RequireLogin';
 import VideoRow from '../components/VideoRow';
 import { getWatchLater, removeFromWatchLater } from '../services/watchLaterService';
 import { formatViews } from '../utils/format';
+import { RowListSkeleton } from '../components/Skeleton';
 import './ListPage.css';
 
 //Daha sonra izle (/later): son eklenen en üstte, satırdan çıkarılabilir
@@ -44,7 +45,7 @@ function WatchLaterList() {
   return (
     <div className="page">
       <h1 className="page-title">Daha sonra izle</h1>
-      {status === 'loading' && <p className="grid-message">Yükleniyor…</p>}
+      {status === 'loading' && <RowListSkeleton label="Liste yükleniyor…" />}
       {status === 'error' && <p className="grid-message">Liste yüklenemedi. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && videos.length === 0 && (
         <p className="grid-message">Listen boş. İzleme sayfasındaki “Sonra izle” düğmesiyle video ekleyebilirsin.</p>

@@ -6,6 +6,7 @@ import { createVideo } from '../services/videoService';
 import { getMyChannel } from '../services/channelService';
 import { getAllCategories } from '../services/categoryService';
 import ChannelCreateForm from './ChannelCreateForm';
+import { LinesSkeleton } from './Skeleton';
 import './UploadModal.css';
 
 //Pencere yalnız açıkken çizilir (Navbar karar verir), her açılışta durum sıfırdan başlar.
@@ -184,7 +185,7 @@ export default function UploadModal({ onClose }) {
 
         <div className="upload-content">
 
-          {step === 'loading' && <p className="upload-hint">Yükleniyor…</p>}
+          {step === 'loading' && <LinesSkeleton lines={3} label="Kanal bilgisi yükleniyor…" />}
 
           {step === 'error' && <p className="upload-error">{errorMessage}</p>}
 

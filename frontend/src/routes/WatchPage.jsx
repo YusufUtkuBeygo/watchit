@@ -14,6 +14,7 @@ import SaveToPlaylist from '../components/SaveToPlaylist';
 import WatchLaterButton from '../components/WatchLaterButton';
 import AskVideoPanel from '../components/AskVideoPanel';
 import { formatViews } from '../utils/format';
+import { WatchSkeleton } from '../components/Skeleton';
 import './WatchPage.css';
 
 //Dönüştürme durumu bu aralıkla yeniden okunur (yalnız sahibi videosunu izlerken)
@@ -112,7 +113,7 @@ function WatchPage() {
   }, [id, ownerWatching, watchedStatus, video?.videoUrl]);
 
   if (status === 'loading') {
-    return <p className="watch-message">Yükleniyor…</p>;
+    return <WatchSkeleton />;
   }
 
   if (status === 'notFound' || status === 'error') {
