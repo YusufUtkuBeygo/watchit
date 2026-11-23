@@ -141,6 +141,7 @@
   .sidebar-hidden .sidebar {
     display: flex;
     z-index: var(--z-drawer);
+    overscroll-behavior: contain; /* çekmecenin sonuna gelince arkadaki sayfa kaymasın */
     transform: translateX(-100%);
     transition: transform var(--dur-base) var(--ease-out);
   }
