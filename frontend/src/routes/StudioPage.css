@@ -7,7 +7,7 @@
 
 .studio-stat {
   padding: 14px var(--space-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
 }

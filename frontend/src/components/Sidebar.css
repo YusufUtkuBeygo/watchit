@@ -16,7 +16,7 @@
 }
 .sidebar::-webkit-scrollbar-thumb {
   background: transparent;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-pill);
 }
 .sidebar:hover::-webkit-scrollbar-thumb {
   background: var(--border-strong);
@@ -31,7 +31,7 @@
   align-items: center;
   gap: var(--space-5);
   padding: 10px var(--space-3);
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   font-size: var(--fs-base);
   transition: background-color var(--dur-base);

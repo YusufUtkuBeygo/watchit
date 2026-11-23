@@ -17,7 +17,7 @@
   overflow-y: auto;
   background-color: var(--elevated-bg);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
 }
 
 /* Pencerenin kendisi yalnız odak yedeği (içinde alan yoksa); çerçeve çizilmez */
@@ -61,7 +61,7 @@
 .image-picker-preview {
   width: 120px;
   aspect-ratio: 16 / 9;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   overflow: hidden;
   background-color: var(--thumb-bg);
   color: var(--text-muted);

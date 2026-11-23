@@ -12,7 +12,7 @@
   width: 100%;
   aspect-ratio: 16 / 9;
   background-color: var(--player-bg);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -65,7 +65,7 @@
 
 .watch-description {
   background-color: var(--hover-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: var(--space-3);
   font-size: var(--fs-base);
   line-height: 1.5;
@@ -121,7 +121,7 @@
 .watch-processing {
   margin: var(--space-3) 0 0;
   padding: 10px var(--space-3);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--pill-bg);
   color: var(--text-secondary);
   font-size: var(--fs-base);
