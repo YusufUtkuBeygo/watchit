@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import RequireLogin from '../components/RequireLogin';
 import VideoRow from '../components/VideoRow';
 import { getWatchLater, removeFromWatchLater } from '../services/watchLaterService';
 import { formatViews } from '../utils/format';
 import { RowListSkeleton } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 import './ListPage.css';
 
 //Daha sonra izle (/later): son eklenen en üstte, satırdan çıkarılabilir
@@ -48,7 +50,12 @@ function WatchLaterList() {
       {status === 'loading' && <RowListSkeleton label="Liste yükleniyor…" />}
       {status === 'error' && <p className="grid-message">Liste yüklenemedi. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && videos.length === 0 && (
-        <p className="grid-message">Listen boş. İzleme sayfasındaki “Sonra izle” düğmesiyle video ekleyebilirsin.</p>
+        <EmptyState
+          icon={Clock}
+          title="Sonra izlenecek video yok"
+          text="Bir videoyu sonraya bırakmak için izleme sayfasındaki “Sonra izle” düğmesine bas."
+          action={<Link to="/" className="btn">Videolara göz at</Link>}
+        />
       )}
       <ul className="row-list">
         {videos.map((video) => (

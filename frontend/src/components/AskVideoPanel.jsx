@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, CircleAlert, FileText, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { askVideo, getTranscript, requestTranscript } from '../services/transcriptService';
 import { LinesSkeleton } from './Skeleton';
+import EmptyState from './EmptyState';
 import './AskVideoPanel.css';
 
 //Transkript hazırlanırken durum bu sıklıkla yeniden okunur
@@ -168,21 +169,29 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
   } else if (status !== 'READY') {
     const failed = status === 'FAILED';
     body = (
-      <div className="ask-state">
-        <p className="ask-hint">
-          {failed
-            ? (isOwner ? transcript.errorMessage || 'Transkript çıkarılamadı.' : 'Bu videoya şu an soru sorulamıyor.')
-            : (isOwner ? 'Bu videonun transkripti yok. Çıkarırsan izleyiciler videoya soru sorabilir.' : 'Bu videoya henüz soru sorulamıyor.')}
-        </p>
-        {isOwner && (
+      <EmptyState
+        compact
+        icon={failed ? CircleAlert : FileText}
+        title={failed ? 'Soru-cevap açılamadı' : 'Soru-cevap kapalı'}
+        text={failed
+          ? (isOwner ? transcript.errorMessage || 'Transkript çıkarılamadı. Yeniden denemeyi dene.' : 'Bu videoya şu an soru sorulamıyor. Daha sonra tekrar bak.')
+          : (isOwner ? 'Bu videonun transkripti yok. Çıkarırsan izleyiciler videoya soru sorabilir.' : 'Video sahibi transkript çıkarınca bu videoya soru sorabileceksin.')}
+        action={isOwner && (
           <button type="button" className="btn" onClick={handleRequest} disabled={isRequesting}>
             {isRequesting ? 'Başlatılıyor…' : failed ? 'Yeniden dene' : 'Transkript çıkar'}
           </button>
         )}
-      </div>
+      />
     );
   } else if (!user) {
-    body = <p className="ask-hint">Bu videoya soru sormak için giriş yap.</p>;
+    body = (
+      <EmptyState
+        compact
+        icon={LogIn}
+        title="Soru sormak için giriş yap"
+        text="Giriş yapınca videonun konuşmalarına dayanarak sorularını cevaplar, ilgili dakikayı gösterir."
+      />
+    );
   } else {
     body = (
       <>

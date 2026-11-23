@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Pencil } from 'lucide-react';
+import { Pencil, Clapperboard } from 'lucide-react';
 import { getChannelById, getMyChannel } from '../services/channelService';
 import { useAuth } from '../context/AuthContext';
 import ChannelEditModal from '../components/ChannelEditModal';
@@ -10,6 +10,7 @@ import Avatar from '../components/Avatar';
 import ChannelBanner from '../components/ChannelBanner';
 import VideoCard from '../components/VideoCard';
 import { ChannelSkeleton } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 import '../components/VideoGrid.css';
 import './ChannelPage.css';
 
@@ -101,7 +102,11 @@ function ChannelPage() {
 
       <h2 className="channel-section-title">Videolar</h2>
       {videos.length === 0 ? (
-        <p className="channel-empty">Bu kanalda henüz video yok.</p>
+        <EmptyState
+          icon={Clapperboard}
+          title="Bu kanalda henüz video yok"
+          text={myChannelId === channel.id ? 'İlk videonu yükle; kanalına gelenler burada görecek.' : 'Kanal video yükleyince burada görünür. Abone olursan haberin olur.'}
+        />
       ) : (
         <div className="video-grid">
           {videos.map((video) => (

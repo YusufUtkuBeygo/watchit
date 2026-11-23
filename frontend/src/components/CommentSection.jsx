@@ -4,6 +4,8 @@ import { getCommentsByVideoId, createComment, deleteComment, updateComment } fro
 import './CommentSection.css';
 import Avatar from './Avatar';
 import { CommentsSkeleton } from './Skeleton';
+import { MessageSquare } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 //Yorum içeriği veritabanında en fazla 1000 karakter (comments.content varchar(1000))
 const MAX_LENGTH = 1000;
@@ -69,7 +71,8 @@ export default function CommentSection({ videoId }) {
   return (
     <section className="comments">
       <h2 className="comments-title">
-        {status === 'ready' ? `${comments.length} yorum` : 'Yorumlar'}
+        Yorumlar
+        {status === 'ready' && comments.length > 0 && <span className="comments-count">{comments.length}</span>}
       </h2>
 
       {user ? (
@@ -81,7 +84,12 @@ export default function CommentSection({ videoId }) {
       {status === 'loading' && <CommentsSkeleton />}
       {status === 'error' && <p className="comments-hint">Yorumlar yüklenemedi.</p>}
       {status === 'ready' && comments.length === 0 && (
-        <p className="comments-hint">Henüz yorum yok. İlk yorumu sen yaz.</p>
+        <EmptyState
+          compact
+          icon={MessageSquare}
+          title="Henüz yorum yok"
+          text={user ? 'Video hakkında ne düşündüğünü ilk sen yaz.' : 'Giriş yapıp ilk yorumu sen yazabilirsin.'}
+        />
       )}
 
       <ul className="comments-list">

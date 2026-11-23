@@ -54,7 +54,6 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.channel-empty,
 .channel-message {
   color: var(--text-secondary);
 }

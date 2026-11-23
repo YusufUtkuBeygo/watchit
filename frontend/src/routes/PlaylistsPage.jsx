@@ -8,6 +8,7 @@ import { getMyPlaylists, createPlaylist, getVisiblePlaylistVideos, sortEntries }
 import { getVideoById } from '../services/videoService';
 import Thumbnail from '../components/Thumbnail';
 import { PlaylistGridSkeleton } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 import './PlaylistsPage.css';
 
 //Oynatma listelerim (/playlists): liste kartları + yeni liste oluşturma
@@ -90,9 +91,12 @@ function MyPlaylists() {
       {status === 'loading' && <PlaylistGridSkeleton />}
       {status === 'error' && <p className="grid-message">Listeler yüklenemedi. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && playlists.length === 0 && !isCreating && (
-        <p className="grid-message">
-          Henüz oynatma listen yok. İzleme sayfasındaki “Kaydet” düğmesiyle de liste oluşturabilirsin.
-        </p>
+        <EmptyState
+          icon={ListVideo}
+          title="Henüz oynatma listen yok"
+          text="Yeni bir liste oluştur ya da izleme sayfasındaki “Kaydet” düğmesiyle videoyu bir listeye ekle."
+          action={<button type="button" className="btn btn-primary" onClick={() => setIsCreating(true)}><Plus size={16} aria-hidden="true" /> Yeni liste</button>}
+        />
       )}
 
       <ul className="playlist-grid">

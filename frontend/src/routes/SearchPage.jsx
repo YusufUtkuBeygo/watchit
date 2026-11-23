@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { MAX_SEARCH_LENGTH, searchVideos } from '../services/videoService';
 import VideoCard from '../components/VideoCard';
 import { VideoGridSkeleton } from '../components/Skeleton';
+import { SearchX } from 'lucide-react';
+import EmptyState from '../components/EmptyState';
 import '../components/VideoGrid.css';
 
 //Arama sonuçları (/search?q=kelime): başlığında kelime geçen videolar
@@ -51,7 +53,11 @@ function SearchPage() {
       {status === 'loading' && <VideoGridSkeleton count={4} label="Aranıyor…" />}
       {status === 'error' && <p className="grid-message">Arama yapılamadı. Biraz sonra tekrar dene.</p>}
       {status === 'ready' && videos.length === 0 && (
-        <p className="grid-message">Bu aramayla eşleşen video yok.</p>
+        <EmptyState
+          icon={SearchX}
+          title="Sonuç bulunamadı"
+          text="Daha kısa ya da farklı kelimelerle aramayı dene; arama video başlıklarında yapılır."
+        />
       )}
       {status === 'ready' && videos.length > 0 && (
         <div className="video-grid">
