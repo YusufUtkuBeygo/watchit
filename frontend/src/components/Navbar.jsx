@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Menu, Search, Plus, LogOut, CircleUser, UserSquare2, Settings, History, ListVideo, Clapperboard, ThumbsUp } from 'lucide-react';
+import { Menu, Search, Plus, LogOut, CircleUser, UserSquare2, Settings, History, ListVideo, Clapperboard, ThumbsUp, Clock } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import UploadModal from './UploadModal';
 import LoginModal from './LoginModal';
@@ -162,6 +162,9 @@ function UserMenu({ user, onSignOut }) {
           </Link>
           <Link to="/playlists" className="dropdown-item" role="menuitem" onClick={close}>
             <ListVideo size={20} /> Oynatma listeleri
+          </Link>
+          <Link to="/later" className="dropdown-item" role="menuitem" onClick={close}>
+            <Clock size={20} /> Daha sonra izle
           </Link>
           <Link to="/liked" className="dropdown-item" role="menuitem" onClick={close}>
             <ThumbsUp size={20} /> Beğendiğim videolar

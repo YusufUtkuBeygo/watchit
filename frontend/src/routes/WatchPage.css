@@ -151,3 +151,19 @@
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
+
+/* "Sonra izle" düğmesi: listedeyse sarı yazı */
+.watch-later {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.watch-later-btn.is-saved {
+  color: var(--accent-text);
+}
+
+.watch-later-message {
+  font-size: 13px;
+  color: var(--text-secondary);
+}

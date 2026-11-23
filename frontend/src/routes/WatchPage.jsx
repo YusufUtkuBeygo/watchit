@@ -10,6 +10,7 @@ import LikeButton from '../components/LikeButton';
 import SubscribeButton from '../components/SubscribeButton';
 import VideoPlayer from '../components/VideoPlayer';
 import SaveToPlaylist from '../components/SaveToPlaylist';
+import WatchLaterButton from '../components/WatchLaterButton';
 import AskVideoPanel from '../components/AskVideoPanel';
 import { formatViews } from '../utils/format';
 import './WatchPage.css';
@@ -212,6 +213,7 @@ function WatchPage() {
             initialLiked={video.likedByMe}
           />
           <SaveToPlaylist key={`kaydet-${video.id}`} videoId={video.id} />
+          <WatchLaterButton key={`sonra-${video.id}`} videoId={video.id} initialSaved={video.savedForLater} />
           {isOwner && (
             <>
               <button className="btn" onClick={() => setIsEditing(true)}><Pencil size={16} /> Düzenle</button>
