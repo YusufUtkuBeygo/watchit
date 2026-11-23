@@ -19,6 +19,13 @@ export async function getVideosByChannelId(channelId) {
   return response.data;
 }
 
+//Giriş yapanın beğendiği videolar, en son beğenilen en üstte (giriş ister)
+export async function getLikedVideos()
+{
+  const response = await api.get('/videos/liked');
+  return response.data;
+}
+
 export async function getVideoById(id)
 {
   const response = await api.get(`/videos/${id}`);

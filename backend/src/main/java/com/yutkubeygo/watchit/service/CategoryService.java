@@ -8,6 +8,8 @@ import com.yutkubeygo.watchit.mapper.CategoryMapper;
 import com.yutkubeygo.watchit.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Sort;
+
 import java.util.List;
 
 @Service
@@ -37,7 +39,8 @@ public class CategoryService {
 
     public List<CategoryResponseDto> getAllCategories()
     {
-        return categoryMapper.toDtoList(categoryRepository.findAll());
+        //Sıra sabit olsun (id'ye göre): sırasız sorguda güncellenen satır listenin sonuna kayıyordu
+        return categoryMapper.toDtoList(categoryRepository.findAll(Sort.by("id")));
     }
 
     public CategoryResponseDto updateCategory(Long id,CategoryRequestDto categoryRequestDto)

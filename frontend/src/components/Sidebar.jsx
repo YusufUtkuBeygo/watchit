@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser } from 'lucide-react';
+import { Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser, Clapperboard, ThumbsUp } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { getAllCategories } from '../services/categoryService';
 import { getMyChannel, getMySubscriptions, SUBSCRIPTIONS_CHANGED } from '../services/channelService';
@@ -85,6 +85,10 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <span>Kanalınız</span>
               </NavLink>
             )}
+            <NavLink to="/studio" className="sidebar-item">
+              <Clapperboard size={24} />
+              <span>Stüdyo</span>
+            </NavLink>
             <NavLink to="/history" className="sidebar-item">
               <History size={24} />
               <span>Geçmiş</span>
@@ -92,6 +96,10 @@ const Sidebar = ({ isOpen, onClose }) => {
             <NavLink to="/playlists" className="sidebar-item">
               <ListVideo size={24} />
               <span>Oynatma listeleri</span>
+            </NavLink>
+            <NavLink to="/liked" className="sidebar-item">
+              <ThumbsUp size={24} />
+              <span>Beğendiğim videolar</span>
             </NavLink>
           </nav>
 

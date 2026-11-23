@@ -84,6 +84,13 @@ public class VideoController {
         return ResponseEntity.ok(videos);
     }
 
+    //Beğendiğim videolar (giriş ister: SecurityConfig'te açık /videos/** kuralından önce)
+    @GetMapping("/liked")
+    public ResponseEntity<List<VideoResponseDto>> getLikedVideos(@AuthenticationPrincipal Long userId)
+    {
+        return ResponseEntity.ok(videoService.getLikedVideos(userId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<VideoResponseDto> getVideoById(@PathVariable long id,@AuthenticationPrincipal Long userId)
     {
