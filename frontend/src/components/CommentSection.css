@@ -37,14 +37,6 @@
 .comment-avatar {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-full);
-  background-color: var(--avatar-bg);
-  color: var(--avatar-text);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: var(--fw-semibold);
-  flex-shrink: 0;
 }
 
 .comments-replies .comment-avatar {

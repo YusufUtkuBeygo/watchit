@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getCommentsByVideoId, createComment, deleteComment, updateComment } from '../services/commentService';
 import './CommentSection.css';
+import Avatar from './Avatar';
 
 //Yorum içeriği veritabanında en fazla 1000 karakter (comments.content varchar(1000))
 const MAX_LENGTH = 1000;
@@ -135,7 +136,7 @@ function CommentItem({ comment, canDelete, onDelete, onReply, onEdited }) {
 
   return (
     <div className="comment">
-      <div className="comment-avatar">{(comment.username || '?').charAt(0).toUpperCase()}</div>
+      <Avatar className="comment-avatar" name={comment.username} />
       <div className="comment-body">
         <div className="comment-meta">
           <span className="comment-author">{comment.username || 'Silinmiş kullanıcı'}</span>

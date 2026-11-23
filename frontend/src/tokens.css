@@ -45,6 +45,17 @@
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+
+  /* İsim renkleri (avatar baş harfi, kanal kapağı): koyu, topraksı zeminler + açık yazı.
+     utils/nameColor.js isme göre birini seçer */
+  --tone-1: #7a5a12;  --on-tone-1: #f6edd6;  /* hardal */
+  --tone-2: #8a3d1c;  --on-tone-2: #f7e6dc;  /* pas */
+  --tone-3: #5b5f20;  --on-tone-3: #eef0d6;  /* zeytin */
+  --tone-4: #3d5934;  --on-tone-4: #e3efdc;  /* yosun */
+  --tone-5: #7b2d29;  --on-tone-5: #f6e1de;  /* tuğla */
+  --tone-6: #5c4430;  --on-tone-6: #f1e6da;  /* toprak */
+  --tone-7: #77473f;  --on-tone-7: #f5e5e1;  /* kil */
+  --tone-8: #2f574e;  --on-tone-8: #ddeee9;  /* adaçayı */
 }
 
 /* ---- Renkler: açık tema ---- */
@@ -84,6 +95,16 @@
   --shadow: 0 8px 28px rgba(20, 20, 20, 0.12);
   --shadow-sm: 0 1px 3px rgba(20, 20, 20, 0.08);
   --shadow-md: 0 4px 16px rgba(20, 20, 20, 0.1);
+
+  /* İsim renkleri: açık temada yumuşak zemin + koyu yazı */
+  --tone-1: #f0dc9e;  --on-tone-1: #4a3500;
+  --tone-2: #efc6ae;  --on-tone-2: #5a2410;
+  --tone-3: #dfe0aa;  --on-tone-3: #3a3d0f;
+  --tone-4: #cadcbe;  --on-tone-4: #22381b;
+  --tone-5: #eebdb6;  --on-tone-5: #5c1d18;
+  --tone-6: #e2d0b8;  --on-tone-6: #45311c;
+  --tone-7: #eccbc4;  --on-tone-7: #55302b;
+  --tone-8: #c0dad2;  --on-tone-8: #1d3d36;
 }
 
 /* ---- Temaya göre değişmeyenler ---- */

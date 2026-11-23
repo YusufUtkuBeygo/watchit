@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { getMyChannel } from '../services/channelService';
 import { MAX_SEARCH_LENGTH } from '../services/videoService';
 import { initialOf } from '../utils/format';
+import { nameColor } from '../utils/nameColor';
 import './Navbar.css';
 
 //Üst çubuk: menü düğmesi + logo, arama, "Oluştur", bildirimler ve kullanıcı menüsü
@@ -141,6 +142,7 @@ function UserMenu({ user, onSignOut }) {
     <div className="user-menu" ref={menuRef}>
       <button
         className="user-avatar-btn"
+        style={nameColor(user.username)}
         onClick={() => setIsOpen((open) => !open)}
         aria-label="Hesap menüsü"
         aria-expanded={isOpen}

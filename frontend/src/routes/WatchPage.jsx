@@ -9,6 +9,7 @@ import CommentSection from '../components/CommentSection';
 import LikeButton from '../components/LikeButton';
 import SubscribeButton from '../components/SubscribeButton';
 import VideoPlayer from '../components/VideoPlayer';
+import Avatar from '../components/Avatar';
 import SaveToPlaylist from '../components/SaveToPlaylist';
 import WatchLaterButton from '../components/WatchLaterButton';
 import AskVideoPanel from '../components/AskVideoPanel';
@@ -213,11 +214,7 @@ function WatchPage() {
       <div className="watch-channel">
         {/* Avatar ve kanal adı kanal sayfasına götürür */}
         <Link to={`/channel/${video.channelId}`} className="watch-channel-link">
-          {channel?.profilePictureUrl ? (
-            <img className="watch-avatar" src={channel.profilePictureUrl} alt="" />
-          ) : (
-            <div className="watch-avatar" />
-          )}
+          <Avatar className="watch-avatar" src={channel?.profilePictureUrl} name={channel?.channelName} />
         </Link>
         <div>
           <Link to={`/channel/${video.channelId}`} className="watch-channel-name watch-channel-link">

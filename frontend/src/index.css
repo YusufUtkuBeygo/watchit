@@ -39,6 +39,29 @@ ul {
   list-style: none;
 }
 
+/* Ortak avatar (Avatar.jsx): daire, resim ya da isim renginde baş harf.
+   Boyutu ve yazı boyunu kullanan sınıf verir (.vc-avatar, .watch-avatar...) */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: var(--avatar-bg);
+  color: var(--avatar-text);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  user-select: none;
+}
+
+.avatar > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* Common utility classes */
 .icon-btn {
   display: flex;

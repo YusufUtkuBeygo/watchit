@@ -147,8 +147,9 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
-  background-color: var(--accent);
-  color: var(--on-accent);
+  /* renk isimden gelir (Navbar.jsx, nameColor) */
+  background-color: var(--avatar-bg);
+  color: var(--avatar-text);
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
 }

@@ -1,0 +1,39 @@
+.channel-banner {
+  display: block;
+  width: 100%;
+  aspect-ratio: 6 / 1;
+  border-radius: var(--radius-xl);
+  object-fit: cover;
+}
+
+/* Varsayılan kapak: kanal renginde zemin, üstünde seyrek nokta deseni (resim değil, CSS)
+   ve sağa yaslanmış, kapaktan taşan büyük baş harf */
+.channel-banner-default {
+  container-type: inline-size; /* baş harfin boyu kapağın genişliğine göre (cqi) */
+  position: relative;
+  overflow: hidden;
+  background-color: var(--banner-bg);
+  background-image: radial-gradient(color-mix(in srgb, var(--banner-fg) 18%, transparent) 1.5px, transparent 1.6px);
+  background-size: 18px 18px;
+  color: var(--banner-fg);
+}
+
+.channel-banner-initial {
+  position: absolute;
+  right: 6%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: clamp(96px, 18cqi, 240px);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  opacity: 0.35;
+}
+
+/* Telefonda 6:1 kapak çok ince kalıyor: biraz daha yüksek, köşesi biraz daha küçük */
+@media (max-width: 600px) {
+  .channel-banner {
+    aspect-ratio: 4 / 1;
+    border-radius: var(--radius-lg);
+  }
+}

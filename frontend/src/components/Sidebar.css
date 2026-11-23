@@ -85,22 +85,7 @@
 .sub-avatar {
   width: 24px;
   height: 24px;
-  border-radius: var(--radius-full);
-  background-color: var(--avatar-bg);
-  color: var(--avatar-text);
   font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.sub-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .sub-name {
@@ -109,7 +94,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 
 .sidebar-item:focus-visible {
   outline: 2px solid var(--focus);

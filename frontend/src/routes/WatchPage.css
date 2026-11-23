@@ -102,10 +102,7 @@
 .watch-avatar {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-full);
-  background-color: var(--avatar-bg);
-  object-fit: cover;
-  flex-shrink: 0;
+  font-size: var(--fs-md);
 }
 
 .watch-channel-name {

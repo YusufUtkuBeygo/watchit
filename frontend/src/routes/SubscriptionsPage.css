@@ -24,21 +24,7 @@
 .sub-channel-avatar {
   width: 80px;
   height: 80px;
-  border-radius: var(--radius-full);
-  background-color: var(--avatar-bg);
-  color: var(--avatar-text);
   font-size: var(--fs-3xl);
-  font-weight: var(--fw-semibold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.sub-channel-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .sub-channel-name {
