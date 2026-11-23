@@ -163,6 +163,9 @@
   --radius-pill: 999px;  /* bütün düğmeler, çipler, arama kutusu */
   --radius-full: 50%;    /* avatar gibi daireler */
 
+  /* Kart başlığının fareyle üstüne gelince aldığı renk: ana yazı rengine biraz sarı karışır (tam sarı değil, 3a) */
+  --title-hover: color-mix(in srgb, var(--text-primary) 80%, var(--accent));
+
   /* Hareket */
   --dur-fast: 120ms;
   --dur-base: 180ms;

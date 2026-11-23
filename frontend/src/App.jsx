@@ -16,6 +16,8 @@ import AccountPage from './routes/AccountPage';
 import StudioPage from './routes/StudioPage';
 import LikedPage from './routes/LikedPage';
 import WatchLaterPage from './routes/WatchLaterPage';
+//En son: bileşen stillerinin üstüne yazan mikro etkileşimler
+import './interactions.css';
 
 //Geniş ekran mı? (CSS'teki 1000px sınırıyla aynı)
 const isWideScreen = () => window.matchMedia('(min-width: 1001px)').matches;

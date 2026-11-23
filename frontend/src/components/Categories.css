@@ -19,11 +19,14 @@
   white-space: nowrap;
   font-size: var(--fs-base);
   font-weight: var(--fw-medium);
-  transition: background-color var(--dur-base);
+  transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
 }
 
-.category-chip:hover {
-  background-color: var(--pill-hover);
+/* Fareyle gezilen cihazda; dokunmatik ekranda vurgu takılı kalmasın */
+@media (hover: hover) {
+  .category-chip:hover {
+    background-color: var(--pill-hover);
+  }
 }
 
 .category-chip.active {

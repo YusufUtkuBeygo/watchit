@@ -1,0 +1,48 @@
+/*
+  Mikro etkileşimler (yalnız CSS). Bilerek az yerde:
+  - video kartı ve "Sıradaki videolar" satırı: kapak içte hafif büyür, başlık rengi ısınır
+  - düğmeler: basınca hafifçe içe göçer
+  Hover vurguları yalnız fareli cihazda (@media (hover: hover)); "hareketi azalt" açıksa
+  hiçbir şey büyüyüp küçülmez. Süreler tokens.css'ten.
+  App.jsx'te en son yüklenir; ":root" öneki bileşen CSS'lerindeki aynı adlı kuralları ezer.
+*/
+
+/* Kapak resmi: büyüme yumuşak olsun */
+.thumb-img {
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.video-title,
+.related-video-title {
+  transition: color var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .video-card:hover .video-title,
+  .related-item:hover .related-video-title {
+    color: var(--title-hover);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .video-card:hover .thumb-img,
+  .related-item:hover .thumb-img {
+    transform: scale(1.03);
+  }
+}
+
+/* Düğmeler: basılınca içe göçme (dokunmatikte de geri bildirim olsun diye hover'a bağlı değil) */
+@media (prefers-reduced-motion: no-preference) {
+  :root :is(.btn, .create-btn, .login-btn, .like-btn, .subscribe-btn, .category-chip, .ask-chip,
+    .login-submit, .upload-submit, .comment-submit, .comment-cancel, .icon-btn, .user-avatar-btn) {
+    transition:
+      background-color var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+
+  :root :is(.btn, .create-btn, .login-btn, .like-btn, .subscribe-btn, .category-chip, .ask-chip,
+    .login-submit, .upload-submit, .comment-submit, .comment-cancel, .icon-btn, .user-avatar-btn):active:not(:disabled) {
+    transform: scale(0.97);
+  }
+}
