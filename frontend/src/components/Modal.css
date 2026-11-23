@@ -20,6 +20,11 @@
   border-radius: var(--radius-lg);
 }
 
+/* Pencerenin kendisi yalnız odak yedeği (içinde alan yoksa); çerçeve çizilmez */
+.modal:focus {
+  outline: none;
+}
+
 .modal-wide {
   max-width: 600px;
 }

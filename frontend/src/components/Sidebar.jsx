@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser, Clapperboard, ThumbsUp, ChevronDown, ChevronUp, ChevronRight, Clock } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { getAllCategories } from '../services/categoryService';
@@ -7,6 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import Avatar from './Avatar';
 import ThemeToggle from './ThemeToggle';
 import LoginModal from './LoginModal';
+import useFocusTrap from '../hooks/useFocusTrap';
+import useMediaQuery from '../hooks/useMediaQuery';
 import './Sidebar.css';
 
 //Abonelikler listesinde ilk bu kadar kanal görünür, gerisi "Daha fazla göster" ile açılır
@@ -21,6 +23,12 @@ const Sidebar = ({ isOpen, onClose }) => {
   const [myChannelId, setMyChannelId] = useState(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [showAllSubscriptions, setShowAllSubscriptions] = useState(false);
+  const asideRef = useRef(null);
+
+  //Dar ekranda (CSS'teki 1000px sınırı) menü içeriğin üstüne açılan bir çekmecedir:
+  //açıkken odak içinde kalır, Esc kapatır; kapalıyken ekran dışında durur ve odaklanamaz (inert)
+  const isDrawer = useMediaQuery('(max-width: 1000px)');
+  useFocusTrap(asideRef, { active: isDrawer && isOpen, onEscape: onClose });
 
   useEffect(() => {
     getAllCategories()
@@ -64,7 +72,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     <>
     {/* Dar ekranda menü açıkken arkadaki karartma; tıklayınca kapanır */}
     {isOpen && <div className="sidebar-backdrop" onClick={onClose} aria-hidden="true" />}
-    <aside className={`sidebar ${isOpen ? 'open' : ''}`} aria-label="Ana menü">
+    <aside
+      id="ana-menu"
+      ref={asideRef}
+      className={`sidebar ${isOpen ? 'open' : ''}`}
+      aria-label="Ana menü"
+      inert={isDrawer && !isOpen}
+    >
       <nav className="sidebar-section">
         {/* NavLink: adres eşleşince kendiliğinden "active" sınıfını ekler */}
         <NavLink to="/" end className={() => `sidebar-item ${location.pathname === '/' && !activeCategory ? 'active' : ''}`}>

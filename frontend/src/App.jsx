@@ -33,7 +33,7 @@ function App() {
   return (
     <div className={`app-container ${isSidebarOpen ? '' : 'sidebar-hidden'}`}>
       <a href="#icerik" className="skip-link">İçeriğe geç</a>
-      <Navbar onMenuClick={toggleSidebar} />
+      <Navbar onMenuClick={toggleSidebar} isMenuOpen={isSidebarOpen} />
       <div className="main-content">
         <Sidebar isOpen={isSidebarOpen} onClose={closeSidebarOnSmallScreen} />
         <main id="icerik" tabIndex={-1} className={`content-area ${isSidebarOpen ? 'with-sidebar' : ''}`}>
