@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Menu, Search, Plus, LogOut, CircleUser, UserSquare2, Settings, History, ListVideo } from 'lucide-react';
+import { Menu, Search, Plus, LogOut, CircleUser, UserSquare2, Settings, History, ListVideo, Clapperboard, ThumbsUp } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import UploadModal from './UploadModal';
 import LoginModal from './LoginModal';
@@ -154,11 +154,17 @@ function UserMenu({ user, onSignOut }) {
               <UserSquare2 size={20} /> Kanalım
             </Link>
           )}
+          <Link to="/studio" className="dropdown-item" role="menuitem" onClick={close}>
+            <Clapperboard size={20} /> Stüdyo
+          </Link>
           <Link to="/history" className="dropdown-item" role="menuitem" onClick={close}>
             <History size={20} /> Geçmiş
           </Link>
           <Link to="/playlists" className="dropdown-item" role="menuitem" onClick={close}>
             <ListVideo size={20} /> Oynatma listeleri
+          </Link>
+          <Link to="/liked" className="dropdown-item" role="menuitem" onClick={close}>
+            <ThumbsUp size={20} /> Beğendiğim videolar
           </Link>
           <Link to="/account" className="dropdown-item" role="menuitem" onClick={close}>
             <Settings size={20} /> Hesap ayarları

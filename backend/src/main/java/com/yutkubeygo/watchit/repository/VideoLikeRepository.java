@@ -14,5 +14,7 @@ public interface VideoLikeRepository extends JpaRepository<VideoLike,Long> {
         Optional<VideoLike> findByUserIdAndVideoId(Long userId, Long videoId);
         //Kullanıcının kendi beğenileri (beğeni listesi gizli: yalnız sahibi görür)
         List<VideoLike> findByUserId(Long userId);
+        //Beğendiğim videolar sayfası: en son beğenilen en üstte (aynı anda beğenilenlerde sonra eklenen önce)
+        List<VideoLike> findByUserIdOrderByCreatedAtDescIdDesc(Long userId);
 
 }

@@ -77,6 +77,15 @@ public class VideoService {
         return videoMapper.toDtoList(videos);
     }
 
+    //Giriş yapan kullanıcının beğendiği videolar, en son beğenilen en üstte
+    public List<VideoResponseDto> getLikedVideos(Long userId)
+    {
+        List<Video> videos = videoLikeRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId).stream()
+                .map(VideoLike::getVideo)
+                .toList();
+        return videoMapper.toDtoList(videos);
+    }
+
     //Kanalın videoları; kanal yoksa null (controller 404 döner)
     public List<VideoResponseDto> getVideosByChannelId(Long channelId)
     {

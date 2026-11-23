@@ -37,7 +37,11 @@ export function initialOf(name) {
 //Bölünmeyen boşluk: sayı ile "görüntülenme" ayrı satırlara düşmesin
 const NBSP = String.fromCharCode(160);
 
+//Kısa sayı: 1250 -> "1,3 B" (Stüdyo'daki sayılar, görüntülenme)
+export function formatCount(count) {
+  return new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 1 }).format(count ?? 0);
+}
+
 export function formatViews(count) {
-  const n = count ?? 0;
-  return `${new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 1 }).format(n)}${NBSP}görüntülenme`;
+  return `${formatCount(count)}${NBSP}görüntülenme`;
 }
