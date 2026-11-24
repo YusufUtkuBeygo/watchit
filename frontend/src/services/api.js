@@ -18,4 +18,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+//Backend "e-postanı doğrula" derse (403 EMAIL_NOT_VERIFIED) uygulamaya haber verilir: doğrulama penceresi açılır.
+//Hata yine çağırana gider; çağıran isterse kendi mesajını da gösterir.
+export const EMAIL_NOT_VERIFIED_EVENT = 'watchit:email-not-verified';
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 403 && error.response.data
+        && error.response.data.error === 'EMAIL_NOT_VERIFIED') {
+      window.dispatchEvent(new CustomEvent(EMAIL_NOT_VERIFIED_EVENT));
+    }
+    return Promise.reject(error);
+  },
+);
+
 export default api;
