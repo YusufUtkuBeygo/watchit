@@ -175,3 +175,41 @@
   text-align: left;
   font-size: inherit;
 }
+
+/* Alt bilgi: küçük, soluk bağlantılar (YouTube'daki gibi yan yana, sığmayan alta geçer) */
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5) var(--space-6);
+}
+
+.sidebar-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.sidebar-footer-links a {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+}
+
+@media (hover: hover) {
+  .sidebar-footer-links a:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+  }
+}
+
+.sidebar-footer-links a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+.sidebar-copyright {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+}

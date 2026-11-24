@@ -22,6 +22,13 @@ import CoursesPage from './routes/CoursesPage';
 import ClipsPage from './routes/ClipsPage';
 import ClipPage from './routes/ClipPage';
 import DownloadsPage from './routes/DownloadsPage';
+import TrendingPage from './routes/TrendingPage';
+import ShortsPage from './routes/ShortsPage';
+import SettingsPage from './routes/SettingsPage';
+import NotificationsPage from './routes/NotificationsPage';
+import HelpPage from './routes/HelpPage';
+import FeedbackPage from './routes/FeedbackPage';
+import InfoPage from './routes/InfoPage';
 import VerifyEmailBanner from './components/VerifyEmailBanner';
 //En son: bileşen stillerinin üstüne yazan mikro etkileşimler
 import './interactions.css';
@@ -76,6 +83,15 @@ function App() {
             <Route path="/clips" element={<ClipsPage />} />
             <Route path="/clip/:id" element={<ClipPage />} />
             <Route path="/downloads" element={<DownloadsPage />} />
+            <Route path="/trending" element={<TrendingPage />} />
+            <Route path="/shorts" element={<ShortsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/help" element={<HelpPage />} />
+            <Route path="/feedback" element={<FeedbackPage />} />
+            <Route path="/about" element={<InfoPage page="about" />} />
+            <Route path="/terms" element={<InfoPage page="terms" />} />
+            <Route path="/privacy" element={<InfoPage page="privacy" />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>

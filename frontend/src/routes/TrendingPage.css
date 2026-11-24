@@ -1,0 +1,19 @@
+/* Popüler sayfası: başlıktaki simge ve satırların solundaki sıra numarası */
+.title-icon {
+  vertical-align: -3px;
+  color: var(--accent-text);
+}
+
+.trending-list {
+  list-style: none;
+}
+
+.trending-rank {
+  flex: 0 0 2.5ch;
+  align-self: center;
+  text-align: center;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}

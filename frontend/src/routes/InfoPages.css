@@ -1,0 +1,129 @@
+/* Ayarlar, Yardım, Geri bildirim, Bildirim geçmişi, Hakkında/Şartlar/Gizlilik: okunur genişlikte tek sütun */
+.info-page {
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.info-page p {
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.settings-heading {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.settings-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-options input,
+.settings-section input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+.settings-select {
+  max-width: 240px;
+}
+
+.settings-actions {
+  justify-content: flex-start;
+}
+
+.muted-text {
+  color: var(--text-secondary);
+}
+
+.text-link {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Yardım: açılır sorular */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.faq-item summary {
+  cursor: pointer;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  list-style-position: inside;
+}
+
+.faq-item summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.faq-item p {
+  margin-top: var(--space-3);
+  color: var(--text-secondary);
+}
+
+/* Bildirim geçmişi */
+.notification-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.notification-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--card-bg);
+}
+
+.notification-row.is-unread {
+  background-color: var(--accent-soft);
+}
+
+.notification-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--fs-base);
+  overflow-wrap: anywhere;
+}
+
+.notification-text small {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.notification-actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
