@@ -52,6 +52,17 @@ services:
     depends_on:
       - watchit_storage
 
+  # 4. MAILPIT (yalnız geliştirme için sahte e-posta sunucusu)
+  # Spring maili SMTP ile buraya gönderir; mail kimseye iletilmez, http://localhost:8025'te görünür.
+  # Yayında bunun yerine gerçek bir servis (Brevo/Resend) kullanılır; kod aynı kalır, yalnız bağlantı ayarı değişir.
+  watchit_mail:
+    image: axllent/mailpit:v1.33.1
+    container_name: mailpit
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web arayüzü
+    restart: unless-stopped
+
 # Verilerin silinmemesi için oluşturduğumuz kalıcı kasalar (Hortumlar)
 volumes:
   postgres_kasa:

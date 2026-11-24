@@ -37,6 +37,15 @@ public class User {
     private String email;
     private String password;
 
+    //E-postası doğrulandı mı (V18). Doğrulanmamış hesap siteyi gezer ama video yükleyemez, yorum yazamaz.
+    //Yeni hesap false başlar; kayıtta gönderilen 6 haneli kod girilince true olur.
+    @Column(nullable = false)
+    private boolean emailVerified = false;
+
+    //Şifre en son ne zaman değişti. JwtAuthFilter bundan ÖNCE verilmiş giriş anahtarlarını (JWT) reddeder:
+    //şifre değişince ya da sıfırlanınca bütün eski oturumlar kapanır. Hiç değişmediyse boş.
+    private LocalDateTime passwordChangedAt;
+
     //Kullanıcının sahip olduğu kanalları listelemek için kullanılır
     //Foreign key Channel tablosunda
     @OneToMany(mappedBy = "owner")

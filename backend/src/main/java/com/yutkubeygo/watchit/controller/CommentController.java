@@ -1,5 +1,7 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.service.EmailVerificationService;
+
 import com.yutkubeygo.watchit.dto.CommentRequestDto;
 import com.yutkubeygo.watchit.dto.CommentResponseDto;
 import com.yutkubeygo.watchit.entity.Comment;
@@ -16,9 +18,12 @@ import java.util.List;
 @RequestMapping("/comments")
 public class CommentController {
     private final CommentService commentService;
+    //E-postası doğrulanmamış hesap bu işi yapamaz (403 EMAIL_NOT_VERIFIED)
+    private final EmailVerificationService emailVerificationService;
 
-    public CommentController(CommentService commentService) {
+    public CommentController(CommentService commentService, EmailVerificationService emailVerificationService) {
         this.commentService = commentService;
+        this.emailVerificationService = emailVerificationService;
     }
 
 
@@ -59,6 +64,7 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<CommentResponseDto> createComment(@AuthenticationPrincipal Long userId, @Valid @RequestBody CommentRequestDto commentRequestDto)
     {
+        emailVerificationService.requireVerified(userId);
         CommentResponseDto comment = commentService.createComment(userId,commentRequestDto);
 
         //Servis null döndüyse istekteki kullanıcı ya da video bulunamamıştır

@@ -1,5 +1,7 @@
 package com.yutkubeygo.watchit.controller;
 
+import java.util.Map;
+
 import com.yutkubeygo.watchit.dto.LoginRequestDto;
 import com.yutkubeygo.watchit.dto.LoginResponseDto;
 import com.yutkubeygo.watchit.dto.PasswordChangeRequestDto;
@@ -79,14 +81,16 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);//200 OK+Güncel veri
     }
 
-    //Şifre değiştirme: şu anki şifre yanlışsa 403, çok yanlış denemede 429, başarılıysa gövdesiz 204
+    //Şifre değiştirme: şu anki şifre yanlışsa 403, çok yanlış denemede 429.
+    //Başarılıysa 200 + yeni token: eski oturumların hepsi (bu dahil) geçersiz olur, frontend yeni token'a geçer.
     @PutMapping("/me/password")
-    public ResponseEntity<Void> changePassword(@Valid @RequestBody PasswordChangeRequestDto request, @AuthenticationPrincipal Long userId)
+    public ResponseEntity<Map<String, String>> changePassword(@Valid @RequestBody PasswordChangeRequestDto request, @AuthenticationPrincipal Long userId)
     {
-        if(!userService.changePassword(userId, request))
+        String newToken = userService.changePassword(userId, request);
+        if(newToken == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.ok(Map.of("token", newToken));
     }
 
     @DeleteMapping("/me")

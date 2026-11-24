@@ -11,6 +11,8 @@ public class UserResponseDto {
     private Long id;
     private String username;
     private String email;
+    //Frontend "e-postanı doğrula" uyarısını buna göre gösterir
+    private boolean emailVerified;
 
 
 }

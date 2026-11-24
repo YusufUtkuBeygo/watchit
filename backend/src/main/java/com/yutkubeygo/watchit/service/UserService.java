@@ -15,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import  org.springframework.stereotype.Service;
 
+import com.yutkubeygo.watchit.repository.EmailTokenRepository;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 import java.util.Locale;
 
 
@@ -31,6 +34,10 @@ public class UserService {
     private final JwtService jwtService;
 
     private final LoginAttemptService loginAttemptService;
+
+    private final EmailVerificationService emailVerificationService;
+
+    private final EmailTokenRepository emailTokenRepository;
 
 //    public UserService(UserRepository userRepository, UserMapper userMapper) {
 //        this.userRepository = userRepository;
@@ -56,6 +63,8 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         //Nesne oluşturulduktan sonra dto'ya çevirip return etmek için savedUser' atıyoruz elimizdeklieri
         User savedUser=userRepository.save(user);
+        //Yeni hesap doğrulanmamış başlar: e-postaya 6 haneli kod gider (arka planda; gönderilemese de kayıt olur)
+        emailVerificationService.sendCodeQuietly(savedUser);
         //dto nesnesini return ediyoruz içeriğini biz ayarladıkS
         return userMapper.toDto(savedUser);
     }
@@ -103,30 +112,38 @@ public class UserService {
             return null;
 
         String newEmail = normalizeEmail(newUser.getEmail());
-        if(!newEmail.equals(user.getEmail()))
+        boolean emailChanged = !newEmail.equals(user.getEmail());
+        if(emailChanged)
             checkCurrentPassword(user, newUser.getCurrentPassword());
 
         user.setUsername(newUser.getUsername().trim());
         user.setEmail(newEmail);
+        //Yeni adresin gerçekten bu kişiye ait olduğu bilinmiyor: yeniden doğrulanana kadar doğrulanmamış
+        if(emailChanged)
+            user.setEmailVerified(false);
 
         User savedUser=userRepository.save(user);
+        if(emailChanged)
+            emailVerificationService.sendCodeQuietly(savedUser);
 
         return userMapper.toDto(savedUser);
     }
 
-    //Şifre değiştirme: şu anki şifre doğru olmalı. Kullanıcı yoksa false (404).
-    public boolean changePassword(Long id, PasswordChangeRequestDto request)
+    //Şifre değiştirme: şu anki şifre doğru olmalı. Kullanıcı yoksa null (404).
+    //Şifre değişince bütün eski oturumlar kapanır (passwordChangedAt); bu oturum kopmasın diye yeni token döner.
+    public String changePassword(Long id, PasswordChangeRequestDto request)
     {
         User user=userRepository.findById(id).orElse(null);
 
         if(user==null)
-            return false;
+            return null;
 
         checkCurrentPassword(user, request.getCurrentPassword());
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordChangedAt(LocalDateTime.now());
         userRepository.save(user);
-        return true;
+        return jwtService.generateToken(user);
     }
 
     //Şu anki şifreyi doğrular. Girişteki sayaç kullanılır: token'ı çalan biri burada şifre tahmini de yapamasın.
@@ -144,11 +161,15 @@ public class UserService {
         loginAttemptService.recordSuccess(user.getEmail());
     }
 
+    //Hesabı siler. Kodlar önce açıkça silinir: veritabanı ON DELETE CASCADE ile zaten silerdi, ama aynı işlem içinde
+    //Hibernate'in hafızasında bir kod kaydı kalmışsa "sahibi silinmiş kayıt" diye işlemi durdururdu.
+    @Transactional
     public boolean deleteUserById(Long id)
     {
       if(!userRepository.existsById(id))
           return false;
 
+      emailTokenRepository.deleteByUserId(id);
       userRepository.deleteById(id);
       return true;
     }

@@ -1,6 +1,7 @@
 package com.yutkubeygo.watchit.controller;
 
 import com.yutkubeygo.watchit.entity.User;
+import com.yutkubeygo.watchit.repository.UserRepository;
 import com.yutkubeygo.watchit.service.JwtService;
 import com.yutkubeygo.watchit.service.QuestionService;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -21,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //POST /videos/{id}/questions: giriş ister, boş ya da 500 karakterden uzun soru 400 (servise hiç gidilmez).
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class QuestionEndpointTest {
 
     @Autowired
@@ -32,11 +35,18 @@ class QuestionEndpointTest {
     @Autowired
     private JwtService jwtService;
 
-    //Uygulamanın kendi JwtService'iyle üretilmiş geçerli token (kullanıcı id 5)
+    @Autowired
+    private UserRepository userRepository;
+
+    //Uygulamanın kendi JwtService'iyle üretilmiş geçerli token. Kullanıcı gerçekten kaydedilir:
+    //JwtAuthFilter artık var olmayan (silinmiş) hesabın token'ını kabul etmiyor. @Transactional ile geri alınır.
     private String bearer()
     {
         User user = new User();
-        user.setId(5L);
+        user.setUsername("soru_testi");
+        user.setEmail("soru_testi@test.local");
+        user.setPassword("x");
+        userRepository.saveAndFlush(user);
         return "Bearer " + jwtService.generateToken(user);
     }
 

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import io.jsonwebtoken.security.Keys;
+import java.time.Instant;
 import java.util.Date;
 @Service
 public class JwtService {
@@ -40,12 +41,21 @@ public class JwtService {
 
     public Long extractUserId (String token)
     {
+        return parse(token).userId();
+    }
+
+    //Token'ı doğrular (imza + süre) ve iki bilgiyi verir: kimin (sub) ve ne zaman verildiği (iat).
+    //iat, şifre değişince eski token'ları reddetmek için gerekiyor (JwtAuthFilter).
+    public record TokenInfo(Long userId, Instant issuedAt) {}
+
+    public TokenInfo parse(String token)
+    {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return Long.parseLong(claims.getSubject());
+        return new TokenInfo(Long.parseLong(claims.getSubject()), claims.getIssuedAt().toInstant());
     }
 
 
