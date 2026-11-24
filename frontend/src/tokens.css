@@ -46,6 +46,7 @@
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --ambient-opacity: 0.55;      /* sinematik ışığın gücü (koyu zeminde belirgin) */
 
   /* İsim renkleri (avatar baş harfi, kanal kapağı): koyu, topraksı zeminler + açık yazı.
      utils/nameColor.js isme göre birini seçer */
@@ -97,6 +98,7 @@
   --shadow: 0 8px 28px rgba(20, 20, 20, 0.12);
   --shadow-sm: 0 1px 3px rgba(20, 20, 20, 0.08);
   --shadow-md: 0 4px 16px rgba(20, 20, 20, 0.1);
+  --ambient-opacity: 0.32;      /* açık zeminde daha hafif */
 
   /* İsim renkleri: açık temada yumuşak zemin + koyu yazı */
   --tone-1: #f0dc9e;  --on-tone-1: #4a3500;
@@ -125,7 +127,7 @@
   --player-track: rgba(255, 255, 255, 0.28); /* zaman ve ses çubuğunun boşu */
   --player-buffer: rgba(255, 255, 255, 0.45);
   --player-hover: rgba(255, 255, 255, 0.14); /* düğme ve menü satırı vurgusu */
-  --player-menu-bg: #1c1c1c;                 /* ayarlar menüsü ve ipucu zemini (düz, saydam değil) */
+  --player-menu-bg: rgba(24, 24, 24, 0.9);   /* ayarlar menüsü ve ipucu zemini: hafif saydam, bulanıklık yok */
   --player-menu-border: #333;
 
   /* Boşluk ölçeği (padding, margin, gap) */

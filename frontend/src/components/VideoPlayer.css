@@ -8,6 +8,9 @@
   display: block;
   width: 100%;
   height: 100%;
+  /* köşeler dış kutudan (.watch-player); taşan video ve denetimler kırpılır */
+  border-radius: inherit;
+  overflow: hidden;
   background-color: var(--player-bg);
   color: var(--on-player);
   font-family: inherit;
@@ -318,14 +321,17 @@
   position: relative;
   box-sizing: border-box;
   width: var(--media-menu-width);
-  min-width: 220px;
-  height: var(--media-menu-height);
+  min-width: 300px;
+  max-width: min(360px, var(--media-menu-available-width, 360px));
+  /* +2px: Video.js'in ölçtüğü boy kenarlıkları içermiyor; yoksa 2 px taşar ve gereksiz kaydırma çubuğu çıkar */
+  height: calc(var(--media-menu-height) + 2px);
   max-height: var(--media-menu-available-height, none);
   margin: 0;
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--player-menu-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
+  /* koyu, hafif saydam; bulanıklık (backdrop-filter) bilerek yok */
   background-color: var(--player-menu-bg);
   color: var(--on-player);
   box-shadow: var(--shadow-md);
@@ -339,7 +345,10 @@
   align-content: start;
   gap: 2px;
   padding: var(--space-2);
-  overflow: auto;
+  /* yalnız ekran alçakken dikey kaydırma; ince, koyu çubuk */
+  overflow: hidden auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--player-track) transparent;
   outline: none;
   translate: 0 0;
   transition: translate var(--dur-base) var(--ease-out);
@@ -366,19 +375,119 @@
   }
 }
 
+/* Telefonda oynatıcı alçak: menü oynatıcının üstüne sığmıyor, ekranın altından açılan panel olur (YouTube gibi).
+   Video.js konumu satır içi stille (anchor) veriyor; burada !important ile ezilir */
+@media (max-width: 600px) {
+  .vp-menu {
+    top: auto !important;
+    right: max(var(--space-2), env(safe-area-inset-right)) !important;
+    bottom: max(var(--space-2), env(safe-area-inset-bottom)) !important;
+    left: max(var(--space-2), env(safe-area-inset-left)) !important;
+    translate: none !important;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    max-height: min(70vh, 480px);
+  }
+
+  .vp-menu::backdrop {
+    background-color: var(--overlay);
+  }
+}
+
 .vp-menu-item {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   width: 100%;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 var(--space-3);
   border-radius: var(--radius-md);
   color: inherit;
   font-size: var(--fs-base);
   text-align: left;
+  white-space: nowrap;
   cursor: pointer;
   outline: none;
+}
+
+/* Satır düzeni: simge | ad | değer + ok (ya da anahtar) */
+.vp-menu-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.vp-menu-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vp-menu-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  color: var(--on-player-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vp-menu-item[data-disabled],
+.vp-menu-item[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.55;
+}
+
+/* Alt menüde seçili satır: sarı onay işareti; onay işaretine yer ayrılır, satırlar kaymaz */
+.vp-menu-radio {
+  padding-left: var(--space-4);
+}
+
+.vp-menu-note {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--on-player-muted);
+  white-space: normal;
+}
+
+/* Açma/kapama anahtarı */
+.vp-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background-color: var(--player-track);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.vp-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background-color: var(--on-player);
+  transition: translate var(--dur-fast) var(--ease-out);
+}
+
+.vp-switch.is-on {
+  background-color: var(--accent);
+}
+
+.vp-switch.is-on .vp-switch-knob {
+  translate: 16px 0;
+  background-color: var(--on-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vp-switch,
+  .vp-switch-knob {
+    transition: none;
+  }
 }
 
 .vp-menu-item[data-highlighted],
@@ -391,6 +500,7 @@
 }
 
 .vp-menu-back {
+  gap: var(--space-2);
   font-weight: var(--fw-semibold);
 }
 
@@ -404,7 +514,7 @@
 
 .vp-menu-check {
   display: inline-flex;
-  margin-left: auto;
+  flex-shrink: 0;
   color: var(--accent);
 }
 
@@ -412,6 +522,40 @@
   height: 1px;
   margin: var(--space-1) 0;
   background-color: var(--player-menu-border);
+}
+
+/* ---- Kısa bildirim (uyku zamanlayıcısı) ---- */
+.vp-toast-area {
+  position: absolute;
+  top: var(--space-4);
+  left: 50%;
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+.vp-toast {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background-color: var(--player-menu-bg);
+  color: var(--on-player);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+/* ---- Sinematik ışık: oynatıcı kutusunun arkasında, kenarlardan taşan yumuşak renk ---- */
+.vp-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  filter: blur(56px) saturate(1.35);
+  opacity: var(--ambient-opacity);
+  pointer-events: none;
+  transition: opacity var(--dur-slow) var(--ease-out);
 }
 
 /* ---- Yükleniyor halkası ---- */
