@@ -63,11 +63,14 @@
   container: watch-player / inline-size;
   /* Dakikaya tıklayınca buraya kaydırılır; üstteki sabit menünün altında kalmasın */
   scroll-margin-top: calc(var(--navbar-height) + var(--space-3));
+  /* Sinematik ışık (.vp-ambient) bu kutunun arkasında ve kenarlarından taşar: kutu kendi katmanını açar,
+     taşmayı kırpmaz; köşeleri oynatıcı (.vp) kendisi kırpar */
+  position: relative;
+  isolation: isolate;
   width: 100%;
   aspect-ratio: 16 / 9;
   background-color: var(--player-bg);
   border-radius: var(--radius-lg);
-  overflow: hidden;
 }
 
 .watch-player video {
