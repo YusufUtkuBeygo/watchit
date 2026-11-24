@@ -32,6 +32,15 @@ function processingBadge(status) {
   return null;
 }
 
+//Çoklu kalite (HLS): hazırsa izleyici bağlantısına göre 240p-720p arasında geçer; değilse tek MP4 oynar
+function hlsBadge(video) {
+  if (video.hlsUrl) return { text: 'Çoklu kalite', tone: 'accent' };
+  const status = video.hlsStatus;
+  if (status === 'PENDING' || status === 'PROCESSING') return { text: 'Kaliteler hazırlanıyor', tone: 'muted' };
+  if (status === 'FAILED') return { text: 'Tek kalite', tone: 'muted', hint: 'Çoklu kaliteye çevrilemedi; video tek kalitede oynuyor.' };
+  return null;
+}
+
 function transcriptBadge(transcript) {
   const status = transcript?.status;
   if (status === 'READY') return { text: 'Soru-cevap açık', tone: 'accent' };
@@ -44,7 +53,8 @@ function transcriptBadge(transcript) {
 function isWorking(video) {
   const p = video.processingStatus;
   const t = video.transcript?.status;
-  return p === 'PENDING' || p === 'PROCESSING' || t === 'PENDING' || t === 'PROCESSING';
+  const h = video.hlsStatus;
+  return p === 'PENDING' || p === 'PROCESSING' || t === 'PENDING' || t === 'PROCESSING' || h === 'PENDING' || h === 'PROCESSING';
 }
 
 function Studio() {
@@ -162,7 +172,7 @@ function Studio() {
       ) : (
         <ul className="row-list">
           {videos.map((video) => {
-            const badges = [processingBadge(video.processingStatus), transcriptBadge(video.transcript)].filter(Boolean);
+            const badges = [processingBadge(video.processingStatus), hlsBadge(video), transcriptBadge(video.transcript)].filter(Boolean);
             return (
               <li key={video.id}>
                 <VideoRow

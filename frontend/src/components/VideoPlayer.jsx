@@ -6,6 +6,7 @@ import {
   Controls,
   createPlayer,
   FullscreenButton,
+  Gesture,
   Hotkey,
   I18nProvider,
   Menu,
@@ -85,8 +86,9 @@ function clock(seconds) {
 //Video.js 10: oynatıcının durumu (oynuyor mu, ses, altyazı, kalite...) bu "player" içinde tutulur
 const { Player, usePlayer } = createPlayer({ features: videoFeatures });
 
-//HLS gelince videoUrl .m3u8 olacak: o zaman hls.js tabanlı bileşen yüklenir (yalnız gerektiğinde indirilir),
-//kalite menüsü ve "Otomatik" kalite kendiliğinden çalışır. Şimdi tek MP4 var; kalite menüsü görünmez.
+//Video çoklu kaliteye (HLS) çevrildiyse cevapta hlsUrl (.m3u8) gelir: o zaman hls.js tabanlı bileşen yüklenir
+//(yalnız gerektiğinde indirilir), kalite menüsü ve "Otomatik" kalite kendiliğinden çalışır.
+//hlsUrl yoksa (henüz hazır değil, eski video) tek MP4 oynar; kalite menüsü "tek kalite" der.
 const HlsJsVideo = lazy(() =>
   import('@videojs/react/media/hlsjs-video').then((module) => ({ default: module.HlsJsVideo })));
 const isHlsUrl = (url) => /\.m3u8(\?|$)/i.test(url || '');
@@ -509,6 +511,14 @@ function Skin({ children, marks, duration, theater, onToggleTheater, settings, t
       <Hotkey target="document" keys="i" action="togglePictureInPicture" />
       <Hotkey target="document" keys="0-9" action="seekToPercent" />
 
+      {/* Fare/dokunma (YouTube düzeni): videoya tıklamak oynat-durdur, çift tık tam ekran.
+          Telefonda tek dokunuş kontrolleri gösterir, sağa/sola çift dokunuş 10 sn ileri/geri */}
+      <Gesture type="tap" pointer="mouse" action="togglePaused" />
+      <Gesture type="doubletap" pointer="mouse" action="toggleFullscreen" />
+      <Gesture type="tap" pointer="touch" action="toggleControls" />
+      <Gesture type="doubletap" pointer="touch" region="left" action="seekStep" value={-10} />
+      <Gesture type="doubletap" pointer="touch" region="right" action="seekStep" value={10} />
+
       <StatusAnnouncer />
     </Container>
   );
@@ -522,6 +532,19 @@ function Skin({ children, marks, duration, theater, onToggleTheater, settings, t
 //theater / onToggleTheater: sinema modu (izleme sayfasını geniş düzene alır; T tuşu da açar/kapatır)
 export default function VideoPlayer({ video, onError, exposeRef, marks = [], theater = false, onToggleTheater }) {
   const { user } = useAuth();
+  //Kaynak ilk açılışta seçilir ve sabit kalır: izlerken arka planda HLS hazır olursa oynatıcı yarıda kesilmesin
+  const [hlsSource] = useState(video.hlsUrl || null);
+  //HLS açılamazsa (bozuk liste, ağ) MP4'e düşülür; ikisi de açılmazsa sayfa "oynatılamadı" der
+  const [hlsFailed, setHlsFailed] = useState(false);
+  const source = hlsSource && !hlsFailed ? hlsSource : video.videoUrl;
+  const handleMediaError = useCallback(() => {
+    if (source === hlsSource && hlsSource) {
+      console.warn('HLS açılamadı, MP4 oynatılıyor.');
+      setHlsFailed(true);
+    } else if (onError) {
+      onError();
+    }
+  }, [source, hlsSource, onError]);
   //Gerçek <video> öğesi: Video.js bileşeni ref'i doğrudan ona verir, aşağıdaki işler yerel olaylarla çalışır.
   //State'te de tutulur: HLS bileşeni sonradan (tembel) yüklenince işler o öğeyle yeniden kurulsun
   const playerRef = useRef(null);
@@ -543,6 +566,26 @@ export default function VideoPlayer({ video, onError, exposeRef, marks = [], the
     exposeRef.current = mediaEl;
     return () => { exposeRef.current = null; };
   }, [exposeRef, mediaEl]);
+
+  //Güvenlik ağı: oynatıcı kalkınca (başka sayfaya geçiş) ya da video öğesi değişince (HLS bileşeni yüklendi,
+  //geliştirmede kod yenilendi) eski öğe durdurulup susturulur. Sayfadan kopmuş bir öğe çalmaya devam ederse
+  //ses gelir ama ne düğmesi görünür ne susturulabilir.
+  useEffect(() => {
+    if (!mediaEl) return undefined;
+    return () => {
+      //Yalnız öğe gerçekten sayfadan kalktıysa: geliştirmede React efektleri bir kez sökülüp yeniden kurar
+      //(StrictMode), o sırada öğe yerinde durur ve dokunulmaz
+      setTimeout(() => {
+        if (mediaEl.isConnected) return;
+        try {
+          mediaEl.pause();
+          mediaEl.muted = true;
+        } catch {
+          //Öğe zaten kapanmış olabilir
+        }
+      }, 0);
+    };
+  }, [mediaEl]);
 
   //T: sinema modu (Video.js'in hazır eylemleri arasında yok; yazı alanlarında çalışmaz)
   useEffect(() => {
@@ -775,7 +818,7 @@ export default function VideoPlayer({ video, onError, exposeRef, marks = [], the
   const track = captions && (
     <track kind="subtitles" src={captions.url} srcLang={captions.language} label={captions.label} />
   );
-  const mediaProps = { ref: attachMedia, src: video.videoUrl, autoPlay: true, playsInline: true, onError };
+  const mediaProps = { ref: attachMedia, src: source, autoPlay: true, playsInline: true, onError: handleMediaError };
 
   return (
     <>
@@ -793,7 +836,7 @@ export default function VideoPlayer({ video, onError, exposeRef, marks = [], the
         settings={settings}
         toast={toast}
       >
-        {isHlsUrl(video.videoUrl) ? (
+        {isHlsUrl(source) ? (
           <Suspense fallback={null}>
             <HlsJsVideo {...mediaProps} className="vp-media">{track}</HlsJsVideo>
           </Suspense>

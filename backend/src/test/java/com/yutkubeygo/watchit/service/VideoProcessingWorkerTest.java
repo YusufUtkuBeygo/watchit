@@ -37,6 +37,7 @@ class VideoProcessingWorkerTest {
     @Mock private VideoProcessingClient client;
     @Mock private FileService fileService;
     @Mock private TranscriptService transcriptService;
+    @Mock private HlsService hlsService;
     @InjectMocks private VideoProcessingWorker worker;
 
     private Video video;
@@ -78,6 +79,8 @@ class VideoProcessingWorkerTest {
 
         verify(fileService).deleteOwnFile(OLD);
         verify(transcriptService).start(video);
+        //Çoklu kalite yeni dosyadan sıraya girer
+        verify(hlsService).start(1L);
         assertThat(tempFile).doesNotExist();
     }
 

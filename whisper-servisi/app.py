@@ -9,6 +9,7 @@ başlangıç/bitiş saniyeleriyle döndürür.
 (saniyeler), değilse yeniden kodlanır (dakikalar). Dönüşmüş dosya cevap olarak döner; MinIO'ya Spring yazar
 (bu servis MinIO şifresini bilmez, yalnız herkese açık adresten okur).
 
+/hls: videoyu çoklu kalite HLS'ye çevirir (720/480/360/240p, 4 sn'lik parçalar + master.m3u8); hepsi tek zip döner.
 Her iş türünden aynı anda tek video işlenir (kilit): işlemci boğulmasın, sıradakiler bekler.
 """
 import json
@@ -19,6 +20,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import zipfile
 
 import requests
 from fastapi import FastAPI, HTTPException
@@ -197,6 +199,102 @@ def transcode(request: TranscribeRequest):
                 "X-Duration": str(round(duration, 2)),
                 "X-Width": str(out_video.get("width", "")),
                 "X-Height": str(out_video.get("height", "")),
+                "X-Seconds-Taken": str(taken),
+            }, background=BackgroundTask(shutil.rmtree, tmp, True))
+        except Exception:
+            shutil.rmtree(tmp, True)
+            raise
+
+
+# HLS kalite basamakları: (yükseklik, görüntü bit hızı, ses bit hızı). Kaynaktan büyük basamak üretilmez.
+# Bit hızları YouTube'un önerdiği aralıkların altında: okul/ev bağlantısında takılmadan oynasın.
+HLS_LADDER = [(720, 2800, 128), (480, 1400, 128), (360, 800, 96), (240, 400, 64)]
+HLS_SEGMENT_SECONDS = int(os.getenv("HLS_SEGMENT_SECONDS", "4"))
+
+
+def hls_variants(source_height: int) -> list[tuple[int, int, int]]:
+    """Kaynağın yüksekliğine göre üretilecek basamaklar. Çok küçük video tek basamak (kendi boyu) olur."""
+    variants = [v for v in HLS_LADDER if v[0] <= source_height]
+    if not variants:
+        # 240'tan küçük: kendi yüksekliğinde (çift sayıya yuvarlanmış) tek basamak
+        variants = [(max(2, source_height - source_height % 2), 300, 64)]
+    return variants
+
+
+@app.post("/hls")
+def hls(request: TranscribeRequest):
+    """Videoyu HLS'ye çevirir: her kalite için 4 sn'lik parçalar + parça listesi (index.m3u8) ve
+    hepsini anlatan ana liste (master.m3u8). Oynatıcı bağlantı hızına göre kaliteler arasında geçer.
+    Hepsi tek bir zip olarak döner (sıkıştırmasız: video zaten sıkışık); MinIO'ya Spring yazar."""
+    with transcode_lock:
+        started = time.time()
+        tmp = tempfile.mkdtemp()
+        try:
+            source = os.path.join(tmp, "kaynak")
+            out_dir = os.path.join(tmp, "hls")
+            os.makedirs(out_dir)
+            download(request.url, source)
+
+            info = probe(source)
+            streams = info.get("streams", [])
+            video = next((s for s in streams if s.get("codec_type") == "video"), None)
+            audio = next((s for s in streams if s.get("codec_type") == "audio"), None)
+            if video is None:
+                raise HTTPException(status_code=422, detail="Dosyada görüntü yok.")
+
+            variants = hls_variants(int(video.get("height") or 0))
+            n = len(variants)
+
+            # Tek ffmpeg: görüntü n kopyaya bölünür, her kopya kendi yüksekliğine ölçeklenir ve kodlanır
+            split = f"[0:v]split={n}" + "".join(f"[v{i}]" for i in range(n))
+            scales = ";".join(f"[v{i}]scale=-2:{h}[v{i}o]" for i, (h, _, _) in enumerate(variants))
+            args = ["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-i", source,
+                    "-filter_complex", f"{split};{scales}"]
+            stream_map = []
+            for i, (h, vbit, abit) in enumerate(variants):
+                args += ["-map", f"[v{i}o]",
+                         f"-c:v:{i}", "libx264", f"-b:v:{i}", f"{vbit}k",
+                         f"-maxrate:v:{i}", f"{int(vbit * 1.07)}k", f"-bufsize:v:{i}", f"{int(vbit * 1.5)}k"]
+                if audio is not None:
+                    args += ["-map", "0:a:0", f"-c:a:{i}", "aac", f"-b:a:{i}", f"{abit}k", f"-ac:a:{i}", "2"]
+                    stream_map.append(f"v:{i},a:{i},name:{h}p")
+                else:
+                    stream_map.append(f"v:{i},name:{h}p")
+            # Anahtar kare her 2 sn'de ve sahne değişiminde araya fazladan konmaz: bütün kalitelerde parçalar
+            # aynı saniyelerde başlar, oynatıcı kalite değiştirirken atlama olmaz
+            args += ["-preset", X264_PRESET, "-pix_fmt", "yuv420p", "-sc_threshold", "0",
+                     "-force_key_frames", "expr:gte(t,n_forced*2)",
+                     "-f", "hls", "-hls_time", str(HLS_SEGMENT_SECONDS), "-hls_playlist_type", "vod",
+                     "-hls_flags", "independent_segments", "-hls_segment_type", "mpegts",
+                     "-hls_segment_filename", os.path.join(out_dir, "%v", "seg_%03d.ts"),
+                     "-master_pl_name", "master.m3u8",
+                     "-var_stream_map", " ".join(stream_map),
+                     os.path.join(out_dir, "%v", "index.m3u8")]
+
+            result = subprocess.run(args, capture_output=True, text=True)
+            master = os.path.join(out_dir, "master.m3u8")
+            if result.returncode != 0 or not os.path.exists(master):
+                log.warning("ffmpeg (HLS) hata verdi: %s", result.stderr[-500:])
+                raise HTTPException(status_code=422, detail="Video HLS'ye çevrilemedi.")
+            os.remove(source)
+
+            # Klasör sıkıştırmasız zip'e: içindeki yollar (master.m3u8, 720p/index.m3u8, 720p/seg_000.ts) aynen kalır
+            archive = os.path.join(tmp, "hls.zip")
+            total = 0
+            with zipfile.ZipFile(archive, "w", zipfile.ZIP_STORED) as zf:
+                for root, _, files in os.walk(out_dir):
+                    for name in sorted(files):
+                        path = os.path.join(root, name)
+                        total += os.path.getsize(path)
+                        zf.write(path, os.path.relpath(path, out_dir))
+
+            duration = float(info.get("format", {}).get("duration") or 0)
+            taken = round(time.time() - started, 1)
+            heights = ",".join(str(h) for h, _, _ in variants)
+            log.info("HLS bitti: %.0f sn video, kaliteler %s, %.1f MB, %.1f sn sürdü", duration, heights, total / 1e6, taken)
+            return FileResponse(archive, media_type="application/zip", headers={
+                "X-Variants": heights,
+                "X-Duration": str(round(duration, 2)),
                 "X-Seconds-Taken": str(taken),
             }, background=BackgroundTask(shutil.rmtree, tmp, True))
         except Exception:

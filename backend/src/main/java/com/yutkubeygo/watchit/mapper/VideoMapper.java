@@ -25,6 +25,8 @@ public interface VideoMapper {
     @Mapping(target = "likeCount", ignore = true)
     @Mapping(target = "likedByMe", ignore = true)
     @Mapping(target = "savedForLater", ignore = true)
+    //Eskimiş (başka dosyadan üretilmiş) HLS adresi verilmez: Video.usableHlsUrl() karar verir
+    @Mapping(target = "hlsUrl", expression = "java(video.usableHlsUrl())")
     VideoResponseDto toDto(Video video);
     //Liste halinde isteklerin returnleri için ResponseDto nesnelerinden oluşan bir liste return eder
     List<VideoResponseDto> toDtoList(List<Video>  videoResponseDtoList);
