@@ -37,4 +37,17 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    //Mailler ayrı kuyrukta: video dönüştürme ya da transkript beklerken kayıt kodu gecikmesin
+    @Bean(name = "mailExecutor")
+    public Executor mailExecutor()
+    {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(1000);
+        executor.setThreadNamePrefix("mail-");
+        executor.initialize();
+        return executor;
+    }
 }

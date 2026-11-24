@@ -72,11 +72,13 @@ export default function useFocusTrap(ref, { active, onEscape, initialFocus } = {
     document.addEventListener('keydown', handleKey);
     return () => {
       document.removeEventListener('keydown', handleKey);
+      //Bu kapanırken üstünde başka pencere açıldıysa (ör. kayıt bitti → doğrulama penceresi) odağı ona bırak
+      const wasTop = stack[stack.length - 1] === trap;
       stack.splice(stack.indexOf(trap), 1);
       //Odak hâlâ kutunun içindeyse (ya da sayfada kaybolduysa) açan öğeye dönsün
       const focusNow = document.activeElement;
       const lostFocus = !focusNow || focusNow === document.body || box.contains(focusNow);
-      if (lostFocus && opener && opener.isConnected && typeof opener.focus === 'function') {
+      if (wasTop && lostFocus && opener && opener.isConnected && typeof opener.focus === 'function') {
         opener.focus({ preventScroll: true });
       }
     };

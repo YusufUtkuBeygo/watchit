@@ -29,6 +29,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-flyway'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	//E-posta gönderme (JavaMailSender, SMTP): doğrulama kodu ve şifre sıfırlama bağlantısı
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'io.minio:minio:8.5.7'
 	//Yapay zekâ: Gemini (embedding + sohbet modeli) ve pgvector (vektör araması)

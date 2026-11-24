@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { forgotPassword } from '../services/authService';
 import useFocusTrap from '../hooks/useFocusTrap';
 import './LoginModal.css';
 
@@ -11,7 +12,7 @@ const FIELD_MESSAGES = {
   password: 'Şifre 8-72 karakter olmalı.',
 };
 
-//Giriş ve kayıt aynı pencerede: mode 'login' ya da 'register'
+//Giriş, kayıt ve şifremi unuttum aynı pencerede: mode 'login', 'register' ya da 'forgot'
 const LoginModal = ({ isOpen, onClose }) => {
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState('login');
@@ -22,6 +23,8 @@ const LoginModal = ({ isOpen, onClose }) => {
   //Kayıtta hangi alan hatalı: { username: '...', password: '...' }
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  //Şifremi unuttum: istek gönderildi mi (cevap e-posta kayıtlı olsun olmasın aynı)
+  const [resetSent, setResetSent] = useState(false);
   const boxRef = useRef(null);
 
   const clearErrors = () => {
@@ -31,6 +34,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleClose = () => {
     setMode('login');
+    setResetSent(false);
     setUsername('');
     setEmail('');
     setPassword('');
@@ -44,12 +48,37 @@ const LoginModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const isRegister = mode === 'register';
+  const isForgot = mode === 'forgot';
 
   //Giriş <-> kayıt geçişi; yazılan e-posta kalsın, şifre silinsin
   const switchMode = () => {
     setMode(isRegister ? 'login' : 'register');
     setPassword('');
     clearErrors();
+  };
+
+  //Şifremi unuttum <-> giriş
+  const goTo = (nextMode) => {
+    setMode(nextMode);
+    setPassword('');
+    setResetSent(false);
+    clearErrors();
+  };
+
+  //Bağlantı iste: sunucu her zaman aynı cevabı verir, biz de her zaman aynı mesajı gösteririz
+  const handleForgot = async (e) => {
+    e.preventDefault();
+    clearErrors();
+    setIsSubmitting(true);
+    try {
+      await forgotPassword(email.trim());
+      setResetSent(true);
+    } catch (error) {
+      const status = error.response ? error.response.status : null;
+      setErrorMessage(status === 400 ? 'Geçerli bir e-posta gir.' : 'Sunucuya ulaşılamadı. Biraz sonra tekrar deneyin.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleLoginError = (error) => {
@@ -107,12 +136,38 @@ const LoginModal = ({ isOpen, onClose }) => {
     <div className="login-overlay">
       <div className="login-modal" ref={boxRef} role="dialog" aria-modal="true" aria-labelledby="login-title" tabIndex={-1}>
         <div className="login-header">
-          <h2 id="login-title">{isRegister ? 'Hesap oluştur' : 'Giriş yap'}</h2>
+          <h2 id="login-title">{isForgot ? 'Şifremi unuttum' : isRegister ? 'Hesap oluştur' : 'Giriş yap'}</h2>
           <button className="icon-btn" onClick={handleClose} aria-label="Kapat">
             <X size={22} />
           </button>
         </div>
 
+        {isForgot ? (
+          <form className="login-form" onSubmit={handleForgot}>
+            {resetSent ? (
+              <p className="login-info" role="status">
+                Bu e-posta kayıtlıysa şifre sıfırlama bağlantısı gönderdik. Gelen kutunu ve gereksiz (spam) klasörünü kontrol et.
+                Bağlantı 30 dakika geçerli.
+              </p>
+            ) : (
+              <>
+                <p className="login-info">Hesabının e-postasını yaz, şifreni sıfırlaman için bir bağlantı gönderelim.</p>
+                <label className="login-label">
+                  E-posta
+                  <input type="email" className="login-input" value={email} onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email" spellCheck={false} required />
+                </label>
+                {errorMessage && <p className="login-error">{errorMessage}</p>}
+                <button type="submit" className="login-submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Gönderiliyor…' : 'Bağlantı gönder'}
+                </button>
+              </>
+            )}
+            <p className="login-switch">
+              <button type="button" className="login-switch-btn" onClick={() => goTo('login')}>Girişe dön</button>
+            </p>
+          </form>
+        ) : (
         <form className="login-form" onSubmit={handleSubmit}>
           {isRegister && (
             <label className="login-label">
@@ -138,6 +193,7 @@ const LoginModal = ({ isOpen, onClose }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
+              spellCheck={false}
               required
             />
             {fieldErrors.email && <span className="login-error">{fieldErrors.email}</span>}
@@ -161,6 +217,12 @@ const LoginModal = ({ isOpen, onClose }) => {
             {fieldErrors.password && <span className="login-error">{fieldErrors.password}</span>}
           </label>
 
+          {!isRegister && (
+            <button type="button" className="login-switch-btn login-forgot" onClick={() => goTo('forgot')}>
+              Şifremi unuttum
+            </button>
+          )}
+
           {errorMessage && <p className="login-error">{errorMessage}</p>}
 
           <button type="submit" className="login-submit" disabled={isSubmitting}>
@@ -176,6 +238,7 @@ const LoginModal = ({ isOpen, onClose }) => {
             </button>
           </p>
         </form>
+        )}
       </div>
     </div>
   );

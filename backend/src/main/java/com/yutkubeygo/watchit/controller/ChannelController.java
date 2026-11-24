@@ -1,5 +1,7 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.service.EmailVerificationService;
+
 import com.yutkubeygo.watchit.dto.ChannelRequestDto;
 import com.yutkubeygo.watchit.dto.ChannelResponseDto;
 import com.yutkubeygo.watchit.service.ChannelService;
@@ -16,15 +18,19 @@ import java.util.List;
 public class ChannelController {
 
     private final ChannelService channelService;
+    //E-postası doğrulanmamış hesap bu işi yapamaz (403 EMAIL_NOT_VERIFIED)
+    private final EmailVerificationService emailVerificationService;
 
-    public ChannelController(ChannelService channelService) {
+    public ChannelController(ChannelService channelService, EmailVerificationService emailVerificationService) {
         this.channelService = channelService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     //Veri tabanına yeni eleman(kanal) eklemek için createChannel servisini kullanıyoruz
     @PostMapping
     public ResponseEntity<ChannelResponseDto> createChannel(@Valid @RequestBody ChannelRequestDto request,@AuthenticationPrincipal Long userId)
     {
+        emailVerificationService.requireVerified(userId);
         ChannelResponseDto channel = channelService.createChannel(request,userId);
 
         //Servis null döndüyse istekteki owner (kullanıcı) bulunamamıştır

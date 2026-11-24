@@ -1,5 +1,7 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.service.EmailVerificationService;
+
 import com.yutkubeygo.watchit.dto.VideoRequestDto;
 import com.yutkubeygo.watchit.dto.VideoResponseDto;
 import com.yutkubeygo.watchit.service.VideoService;
@@ -18,15 +20,19 @@ import java.util.List;
 public class VideoController {
 
     private final VideoService videoService;
+    //E-postası doğrulanmamış hesap bu işi yapamaz (403 EMAIL_NOT_VERIFIED)
+    private final EmailVerificationService emailVerificationService;
 
-    public VideoController(VideoService videoService) {
+    public VideoController(VideoService videoService, EmailVerificationService emailVerificationService) {
         this.videoService = videoService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     //db'ye yeni eleman eklenecek/post edilecek
     @PostMapping
     public ResponseEntity<VideoResponseDto> createVideo(@Valid @RequestBody VideoRequestDto videoRequestDto,@AuthenticationPrincipal Long userId)
     {
+        emailVerificationService.requireVerified(userId);
         VideoResponseDto video = videoService.createVideo(videoRequestDto,userId);
 
         //Servis null döndüyse istekteki kanal ya da kategori bulunamamıştır

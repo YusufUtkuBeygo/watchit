@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        //Şifresini unutan giriş yapamaz: sıfırlama isteği ve yeni şifre girişsiz açık (doğrulama ve tekrar gönderme giriş ister)
+                        .requestMatchers(HttpMethod.POST, "/auth/forgot-password", "/auth/reset-password").permitAll()
                         //Kendi kanalım giriş ister; alttaki açık /channels/** kuralından önce gelmeli (ilk uyan kural geçerli)
                         .requestMatchers(HttpMethod.GET, "/channels/me").authenticated()
                         //Beğendiğim videolar da kişiye özel; aynı sebeple açık /videos/** kuralından önce

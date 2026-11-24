@@ -35,6 +35,7 @@ class UserServicePasswordTest {
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtService jwtService;
     @Mock private LoginAttemptService loginAttemptService;
+    @Mock private EmailVerificationService emailVerificationService;
 
     @InjectMocks
     private UserService userService;
@@ -74,9 +75,12 @@ class UserServicePasswordTest {
     void correctPasswordChangesPassword()
     {
         when(passwordEncoder.encode("yeni-sifre-123")).thenReturn("YENI-HASH");
+        when(jwtService.generateToken(user)).thenReturn("YENI-TOKEN");
 
-        assertThat(userService.changePassword(1L, passwordChange("dogru-sifre"))).isTrue();
+        //Şifre değişince yeni token döner ve değişme zamanı yazılır (eski oturumlar kapansın diye)
+        assertThat(userService.changePassword(1L, passwordChange("dogru-sifre"))).isEqualTo("YENI-TOKEN");
         assertThat(user.getPassword()).isEqualTo("YENI-HASH");
+        assertThat(user.getPasswordChangedAt()).isNotNull();
         verify(loginAttemptService).recordSuccess("ayse@test.local");
     }
 
@@ -102,11 +106,11 @@ class UserServicePasswordTest {
     }
 
     @Test
-    void missingUserReturnsFalse()
+    void missingUserReturnsNull()
     {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThat(userService.changePassword(99L, passwordChange("dogru-sifre"))).isFalse();
+        assertThat(userService.changePassword(99L, passwordChange("dogru-sifre"))).isNull();
     }
 
     @Test

@@ -17,6 +17,8 @@ import AccountPage from './routes/AccountPage';
 import StudioPage from './routes/StudioPage';
 import LikedPage from './routes/LikedPage';
 import WatchLaterPage from './routes/WatchLaterPage';
+import ResetPasswordPage from './routes/ResetPasswordPage';
+import VerifyEmailBanner from './components/VerifyEmailBanner';
 //En son: bileşen stillerinin üstüne yazan mikro etkileşimler
 import './interactions.css';
 
@@ -51,6 +53,7 @@ function App() {
         <Sidebar isOpen={isSidebarOpen} onClose={closeDrawer} isDrawer={isDrawer} />
         <main id="icerik" tabIndex={-1} className={`content-area ${!isDrawer && isPinnedOpen ? 'with-sidebar' : ''}`}>
           {/* Adrese göre hangi sayfanın çizileceği burada seçilir */}
+          <VerifyEmailBanner />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/watch/:id" element={<WatchPage />} />
@@ -64,6 +67,7 @@ function App() {
             <Route path="/studio" element={<StudioPage />} />
             <Route path="/liked" element={<LikedPage />} />
             <Route path="/later" element={<WatchLaterPage />} />
+            <Route path="/sifre-sifirla" element={<ResetPasswordPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>

@@ -46,6 +46,13 @@ public class GlobalExceptionHandler {
     }
 
     //Servis "bu kayıt senin değil" dediğinde gövdesiz 403 döner
+    //E-posta doğrulanmamış: 403, gövdede sebebi (frontend doğrulama penceresini açsın diye)
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    public ResponseEntity<Map<String, String>> handleEmailNotVerified()
+    {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "EMAIL_NOT_VERIFIED"));
+    }
+
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Void> handleForbidden()
     {
