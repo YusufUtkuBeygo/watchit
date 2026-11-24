@@ -12,6 +12,7 @@ public class PlaylistResponseDto {
     private String title;
     private String description;
     private Boolean isPublic;
+    private Boolean isCourse;
     private Long ownerId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

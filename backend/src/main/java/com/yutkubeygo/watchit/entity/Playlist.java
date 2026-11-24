@@ -26,6 +26,10 @@ public class Playlist {
 
     private Boolean isPublic;
 
+    //Kurs olarak işaretli mi (V19). Kurs her zaman herkese açıktır: PlaylistService bunu zorlar
+    @Column(nullable = false)
+    private Boolean isCourse = false;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

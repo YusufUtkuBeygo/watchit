@@ -42,6 +42,8 @@ public class SecurityConfig {
                         //Herkese açık oynatma listeleri girişsiz de okunur (karar 19 Ekim).
                         //Gizli liste: servis sahibi kontrol eder, girişsiz istekte userId null olduğu için 403 döner
                         .requestMatchers(HttpMethod.GET, "/playlists/**", "/playlistvideos/**").permitAll()
+                        //Kurs listesi ve tek klip (paylaşılan bağlantı) girişsiz okunur; /clips (kliplerim) giriş ister
+                        .requestMatchers(HttpMethod.GET, "/courses", "/clips/*").permitAll()
                         //API dokümanı (Swagger) herkese açık; uçların kendisi yine kendi kurallarına tabi
                         .requestMatchers(HttpMethod.GET, "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         //Kategori ekleme/değiştirme/silme kimseye açık değil (rol sistemi yok, kategoriler veritabanından yönetilir)

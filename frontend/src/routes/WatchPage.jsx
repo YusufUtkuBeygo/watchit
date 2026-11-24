@@ -11,6 +11,8 @@ import SubscribeButton from '../components/SubscribeButton';
 import Avatar from '../components/Avatar';
 import SaveToPlaylist from '../components/SaveToPlaylist';
 import WatchLaterButton from '../components/WatchLaterButton';
+import ClipButton from '../components/ClipButton';
+import DownloadButton from '../components/DownloadButton';
 import AskVideoPanel from '../components/AskVideoPanel';
 import RelatedVideos from '../components/RelatedVideos';
 import { formatViews } from '../utils/format';
@@ -261,6 +263,9 @@ function WatchPage() {
           />
           <SaveToPlaylist key={`kaydet-${video.id}`} videoId={video.id} />
           <WatchLaterButton key={`sonra-${video.id}`} videoId={video.id} initialSaved={video.savedForLater} />
+          {/* Klip başlangıcı oynatıcının o anki saniyesinden alınır */}
+          <ClipButton key={`klip-${video.id}`} video={video} getCurrentTime={() => playerRef.current?.currentTime || 0} />
+          <DownloadButton key={`indir-${video.id}`} video={video} />
           {isOwner && (
             <>
               <button className="btn" onClick={() => setIsEditing(true)}><Pencil size={16} /> Düzenle</button>

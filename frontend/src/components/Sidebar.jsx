@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser, Clapperboard, ThumbsUp, ChevronDown, ChevronUp, ChevronRight, Clock } from 'lucide-react';
+import {
+  Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser, ThumbsUp, ChevronDown, ChevronUp, ChevronRight, Clock,
+  SquarePlay, Download, Scissors, GraduationCap, Gamepad2, Music2, Cpu, Trophy, Rocket, Leaf, Film, Landmark, Laugh,
+} from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { getAllCategories } from '../services/categoryService';
 import { getMyChannel, getMySubscriptions, SUBSCRIPTIONS_CHANGED } from '../services/channelService';
@@ -12,6 +15,22 @@ import './Sidebar.css';
 
 //Abonelikler listesinde ilk bu kadar kanal görünür, gerisi "Daha fazla göster" ile açılır
 const SUBSCRIPTION_LIMIT = 7;
+//Keşfet bölümünde ilk bu kadar kategori görünür (YouTube gibi), gerisi "Daha fazla göster" ile
+const EXPLORE_LIMIT = 4;
+
+//Kategori adına göre ikon; listede olmayan yeni bir kategori # ile görünür
+const CATEGORY_ICONS = {
+  'Eğitim': GraduationCap,
+  'Oyun': Gamepad2,
+  'Müzik': Music2,
+  'Teknoloji': Cpu,
+  'Spor': Trophy,
+  'Bilim ve Uzay': Rocket,
+  'Doğa': Leaf,
+  'Film ve Animasyon': Film,
+  'Tarih': Landmark,
+  'Komedi': Laugh,
+};
 
 //Sol menü. isOpen: açık mı (App tutar), onClose: çekmeceyi kapatmak için,
 //isDrawer: çekmece hâli mi (dar ekran ya da izleme sayfası; App karar verir)
@@ -23,6 +42,9 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
   const [myChannelId, setMyChannelId] = useState(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [showAllSubscriptions, setShowAllSubscriptions] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  //Siz bölümünde Kurslar ve Klipler "Daha fazla göster"in altında (YouTube düzeni)
+  const [showMoreYou, setShowMoreYou] = useState(false);
   const asideRef = useRef(null);
 
   //Çekmece hâlinde açıkken odak içinde kalır, Esc kapatır; kapalıyken ekran dışında durur ve odaklanamaz (inert)
@@ -94,16 +116,15 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
       {user ? (
         <>
           <nav className="sidebar-section" aria-label="Siz">
-            <h3 className="section-title">Siz</h3>
-            {myChannelId && (
-              <NavLink to={`/channel/${myChannelId}`} className="sidebar-item">
-                <UserSquare2 size={24} />
-                <span>Kanalınız</span>
-              </NavLink>
-            )}
-            <NavLink to="/studio" className="sidebar-item">
-              <Clapperboard size={24} />
-              <span>Stüdyo</span>
+            <h3 className="section-title">
+              <Link to="/account" className="section-title-link">
+                Siz <ChevronRight size={18} aria-hidden="true" />
+              </Link>
+            </h3>
+            {/* Kanalı yoksa Stüdyo'ya gider: orada kanal açma formu çıkar */}
+            <NavLink to={myChannelId ? `/channel/${myChannelId}` : '/studio'} className="sidebar-item" end>
+              <UserSquare2 size={24} />
+              <span>Kanalınız</span>
             </NavLink>
             <NavLink to="/history" className="sidebar-item">
               <History size={24} />
@@ -121,6 +142,36 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
               <ThumbsUp size={24} />
               <span>Beğendiğim videolar</span>
             </NavLink>
+            <NavLink to="/studio" className="sidebar-item">
+              <SquarePlay size={24} />
+              <span>Videolarınız</span>
+            </NavLink>
+            <NavLink to="/downloads" className="sidebar-item">
+              <Download size={24} />
+              <span>İndirilenler</span>
+            </NavLink>
+            {/* Açıkken ya da o sayfalardan birindeyken görünür: seçili satır gizli kalmasın */}
+            {(showMoreYou || ['/courses', '/clips'].includes(location.pathname)) && (
+              <>
+                <NavLink to="/courses" className="sidebar-item">
+                  <GraduationCap size={24} />
+                  <span>Kurslar</span>
+                </NavLink>
+                <NavLink to="/clips" className="sidebar-item">
+                  <Scissors size={24} />
+                  <span>Klipler</span>
+                </NavLink>
+              </>
+            )}
+            <button
+              type="button"
+              className="sidebar-item sidebar-more"
+              onClick={() => setShowMoreYou((open) => !open)}
+              aria-expanded={showMoreYou}
+            >
+              {showMoreYou ? <ChevronUp size={24} aria-hidden="true" /> : <ChevronDown size={24} aria-hidden="true" />}
+              <span>{showMoreYou ? 'Daha az göster' : 'Daha fazla göster'}</span>
+            </button>
           </nav>
 
           {subscriptions.length > 0 && (
@@ -165,18 +216,34 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
 
       <div className="sidebar-divider"></div>
 
-      <nav className="sidebar-section" aria-label="Kategoriler">
-        <h3 className="section-title">Kategoriler</h3>
-        {categories.map((category) => (
-          <Link
-            to={`/?category=${category.id}`}
-            className={`sidebar-item ${activeCategory === String(category.id) ? 'active' : ''}`}
-            key={category.id}
+      <nav className="sidebar-section" aria-label="Keşfet">
+        <h3 className="section-title">Keşfet</h3>
+        {/* Kapalıyken ilk birkaçı + (aşağıda kalsa bile) seçili kategori görünür */}
+        {categories.filter((c, i) => showAllCategories || i < EXPLORE_LIMIT || String(c.id) === activeCategory).map((category) => {
+          const Icon = CATEGORY_ICONS[category.name] || Hash;
+          return (
+            <Link
+              to={`/?category=${category.id}`}
+              className={`sidebar-item ${activeCategory === String(category.id) ? 'active' : ''}`}
+              aria-current={activeCategory === String(category.id) ? 'page' : undefined}
+              key={category.id}
+            >
+              <Icon size={24} aria-hidden="true" />
+              <span>{category.name}</span>
+            </Link>
+          );
+        })}
+        {categories.length > EXPLORE_LIMIT && (
+          <button
+            type="button"
+            className="sidebar-item sidebar-more"
+            onClick={() => setShowAllCategories((open) => !open)}
+            aria-expanded={showAllCategories}
           >
-            <Hash size={24} />
-            <span>{category.name}</span>
-          </Link>
-        ))}
+            {showAllCategories ? <ChevronUp size={24} aria-hidden="true" /> : <ChevronDown size={24} aria-hidden="true" />}
+            <span>{showAllCategories ? 'Daha az göster' : 'Daha fazla göster'}</span>
+          </button>
+        )}
       </nav>
 
       <div className="sidebar-theme">

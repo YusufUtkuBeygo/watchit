@@ -202,6 +202,18 @@ a:focus-visible {
   font-size: var(--fs-base);
 }
 
+/* Alanın altındaki açıklama satırı (ör. klipte "0:12 – 0:27 arası") */
+.field-hint {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Kaydırıcılar (klip süresi) tema rengini alır */
+input[type="range"] {
+  accent-color: var(--accent);
+}
+
 .input {
   width: 100%;
   min-height: 40px;

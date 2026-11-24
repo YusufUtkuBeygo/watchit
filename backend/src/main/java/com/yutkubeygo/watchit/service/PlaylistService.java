@@ -34,6 +34,7 @@ public class PlaylistService {
 
         Playlist playlist = playlistMapper.toEntity(playlistRequestDto);
         playlist.setOwner(user);
+        applyCourseRule(playlist, playlistRequestDto);
         return playlistMapper.toDto(playlistRepository.save(playlist));
     }
 
@@ -52,6 +53,7 @@ public class PlaylistService {
         playlist.setTitle(playlistRequestDto.getTitle());
         playlist.setDescription(playlistRequestDto.getDescription());
         playlist.setIsPublic(playlistRequestDto.getIsPublic());
+        applyCourseRule(playlist, playlistRequestDto);
 
         return playlistMapper.toDto(playlistRepository.save(playlist));
     }
@@ -91,4 +93,14 @@ public class PlaylistService {
         return true;
     }
 
+
+    //Kurs işareti boş gelirse "kurs değil" (sütun NOT NULL). Kurs, Kurslar sayfasında herkese görünür:
+    //gizli bir kurs çelişki olur, o yüzden kurs işaretlenince liste herkese açık yapılır
+    private void applyCourseRule(Playlist playlist, PlaylistRequestDto request)
+    {
+        boolean course = Boolean.TRUE.equals(request.getIsCourse());
+        playlist.setIsCourse(course);
+        if(course)
+            playlist.setIsPublic(true);
+    }
 }

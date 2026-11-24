@@ -4,6 +4,7 @@ import com.yutkubeygo.watchit.entity.WatchHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,5 +16,8 @@ public interface WatchHistoryRepository extends JpaRepository<WatchHistory,Long>
     List<WatchHistory> findByVideoId(Long videoId);
     // Kullanıcının geçmişini son izleme tarihine göre azalan (yeniden eskiye) sıralar
     List<WatchHistory> findByUserIdOrderByLastWatchedAtDesc(Long userId);
+
+    //Kurs ilerlemesi: bu videolardan kaçını izlemiş (geçmişte kaydı olan)
+    long countByUserIdAndVideoIdIn(Long userId, Collection<Long> videoIds);
 
 }
