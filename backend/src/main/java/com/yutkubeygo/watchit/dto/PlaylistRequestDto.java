@@ -15,5 +15,6 @@ public class PlaylistRequestDto {
     @Size(max = 255)
     private String description;
     private Boolean isPublic;
+    private Boolean isCourse;
 
 }

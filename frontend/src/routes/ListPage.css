@@ -92,3 +92,10 @@ a.row-meta:hover {
     font-size: var(--fs-base);
   }
 }
+
+/* Sayfa başlığının altındaki kısa açıklama (ör. İndirilenler) */
+.page-note {
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}

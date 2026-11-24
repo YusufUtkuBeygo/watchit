@@ -1,0 +1,70 @@
+/* Tek klip sayfası: üstte oynatıcı, altında bilgi. Geniş ekranda okunur genişlikte ortalanır */
+.clip-page {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.clip-player {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: #000;
+}
+
+.clip-player video {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.clip-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.clip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background-color: var(--accent-soft);
+  color: var(--text-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.clip-title {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.clip-meta,
+.clip-source {
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.clip-source a {
+  color: var(--text-primary);
+}
+
+.clip-source a:hover {
+  text-decoration: underline;
+}
+
+.clip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}

@@ -65,3 +65,26 @@
   max-width: 520px;
   width: 100%;
 }
+
+/* Kurslar sayfası: bölüm başlıkları ve kartın altındaki "Kursa başla" düğmesi */
+.course-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-7);
+}
+
+.section-heading {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.course-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.course-start {
+  align-self: flex-start;
+}

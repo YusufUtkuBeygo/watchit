@@ -12,4 +12,7 @@ import java.util.List;
 public interface PlaylistRepository extends JpaRepository<Playlist,Long> {
     List<Playlist> findByIsPublicTrueOrOwnerId(Long ownerId);
 
+    //Kurslar sayfası: herkese açık kurs listeleri, en son güncellenen önce
+    List<Playlist> findByIsCourseTrueAndIsPublicTrueOrderByUpdatedAtDescIdDesc();
+
 }

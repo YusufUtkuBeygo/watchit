@@ -18,6 +18,10 @@ import StudioPage from './routes/StudioPage';
 import LikedPage from './routes/LikedPage';
 import WatchLaterPage from './routes/WatchLaterPage';
 import ResetPasswordPage from './routes/ResetPasswordPage';
+import CoursesPage from './routes/CoursesPage';
+import ClipsPage from './routes/ClipsPage';
+import ClipPage from './routes/ClipPage';
+import DownloadsPage from './routes/DownloadsPage';
 import VerifyEmailBanner from './components/VerifyEmailBanner';
 //En son: bileşen stillerinin üstüne yazan mikro etkileşimler
 import './interactions.css';
@@ -68,6 +72,10 @@ function App() {
             <Route path="/liked" element={<LikedPage />} />
             <Route path="/later" element={<WatchLaterPage />} />
             <Route path="/sifre-sifirla" element={<ResetPasswordPage />} />
+            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/clips" element={<ClipsPage />} />
+            <Route path="/clip/:id" element={<ClipPage />} />
+            <Route path="/downloads" element={<DownloadsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
