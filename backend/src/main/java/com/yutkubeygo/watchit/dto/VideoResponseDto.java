@@ -16,6 +16,10 @@ public class VideoResponseDto {
     private Integer durationInSeconds;
     //PENDING / PROCESSING / READY / FAILED; eski videolarda null
     private String processingStatus;
+    //Çoklu kalite ana listesi (master.m3u8). Yalnız hazır ve şu anki dosyadan üretilmişse dolu; boşsa oynatıcı videoUrl'i (MP4) kullanır
+    private String hlsUrl;
+    //PENDING / PROCESSING / READY / FAILED; eski videolarda boş
+    private String hlsStatus;
     private LocalDateTime createdAt;
     private Long likeCount;
     private Long viewCount;

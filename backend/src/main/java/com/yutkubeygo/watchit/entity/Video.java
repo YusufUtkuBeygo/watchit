@@ -39,6 +39,22 @@ public class Video {
     @Column(length = 500)
     private String processingError;
 
+    //Çoklu kalite (HLS, V20). hlsSourceUrl: HLS'nin üretildiği dosya; videoUrl'den farklıysa HLS eskimiştir, kullanılmaz
+    private String hlsUrl;
+    private String hlsSourceUrl;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private VideoProcessingStatus hlsStatus;
+    @Column(length = 500)
+    private String hlsError;
+
+    //Oynatıcıya verilebilecek HLS adresi: hazır ve şu anki dosyadan üretilmişse, yoksa null (MP4 oynar)
+    public String usableHlsUrl()
+    {
+        return hlsStatus == VideoProcessingStatus.READY && hlsUrl != null && java.util.Objects.equals(hlsSourceUrl, videoUrl)
+                ? hlsUrl : null;
+    }
+
     //Videonun hangi kanala ait olduğu bilgisi tuturlur
     //Bir kanalda birden çok video bulunuabilir ama bir videonun tek bir kanalı olabilir
     //Collab video özelliği için sonradan revize edilebilir

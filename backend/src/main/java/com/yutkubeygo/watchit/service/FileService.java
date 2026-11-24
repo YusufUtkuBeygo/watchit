@@ -6,11 +6,17 @@ import io.minio.http.Method;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.minio.messages.Item;
+
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 @Service
 public class FileService {
@@ -136,6 +142,102 @@ public class FileService {
         catch(Exception e)
         {
             throw new IllegalStateException("Dosya silinemedi: " + e.getMessage(), e);
+        }
+    }
+
+    //HLS paketindeki dosya adları: yalnız harf, rakam, alt çizgi, tire, nokta ve klasör çizgisi (ör. 720p/seg_000.ts).
+    //Zip'in içindeki ad "../../baska-dosya" olsaydı kovada başka bir dosyanın üstüne yazabilirdi (zip slip);
+    //medya servisi bizim servisimiz ama gelen veriye yine de güvenmiyoruz
+    private static final Pattern HLS_ENTRY = Pattern.compile("[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*\\.(m3u8|ts|m4s|mp4)");
+
+    //HLS paketini (zip) MinIO'ya açar: her dosya hls/<uuid>/ altına, zip'teki yoluyla. Ana listenin adresini döner.
+    //Yarıda hata olursa yüklenenler silinir: yarım paket oynatıcıyı bozar
+    public String uploadHlsPackage(Path zip)
+    {
+        String prefix = "hls/" + UUID.randomUUID() + "/";
+        try(ZipFile zipFile = new ZipFile(zip.toFile()))
+        {
+            prepareBucket();
+            boolean hasMaster = false;
+            for(ZipEntry entry : java.util.Collections.list(zipFile.entries()))
+            {
+                if(entry.isDirectory())
+                    continue;
+                String name = entry.getName();
+                if(!HLS_ENTRY.matcher(name).matches() || name.contains(".."))
+                    throw new IllegalStateException("HLS paketinde geçersiz dosya adı: " + name);
+                hasMaster |= name.equals("master.m3u8");
+                //ZipFile boyutu zip'in içindekiler listesinden okur: dosyayı diske açmadan doğrudan yüklenebilir
+                try(InputStream in = zipFile.getInputStream(entry))
+                {
+                    minioClient.putObject(PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(prefix + name)
+                            .stream(in, entry.getSize(), -1)
+                            .contentType(hlsContentType(name))
+                            .build());
+                }
+            }
+            if(!hasMaster)
+                throw new IllegalStateException("HLS paketinde master.m3u8 yok.");
+            return minioUrl + "/" + bucketName + "/" + prefix + "master.m3u8";
+        }
+        catch(Exception e)
+        {
+            deleteFolderQuietly(prefix);
+            throw new IllegalStateException("HLS paketi depoya yazılamadı: " + e.getMessage(), e);
+        }
+    }
+
+    //Oynatıcı listeyi ve parçaları içerik tipine bakarak tanır (Safari'nin kendi HLS'si özellikle)
+    private static String hlsContentType(String name)
+    {
+        if(name.endsWith(".m3u8")) return "application/vnd.apple.mpegurl";
+        if(name.endsWith(".ts")) return "video/mp2t";
+        if(name.endsWith(".m4s")) return "video/iso.segment";
+        return "video/mp4";
+    }
+
+    //Bir HLS paketinin bütün dosyalarını siler (adres: .../hls/<uuid>/master.m3u8). Yalnız bizim hls/ klasörümüz.
+    public void deleteHlsPackage(String masterUrl)
+    {
+        if(masterUrl == null || !isOwnFileUrl(masterUrl))
+            return;
+        String key = masterUrl.substring((minioUrl + "/" + bucketName + "/").length());
+        if(!key.startsWith("hls/") || !key.endsWith("/master.m3u8"))
+            return;
+        String prefix = key.substring(0, key.length() - "master.m3u8".length());
+        //"hls/" tek başına kalmasın: yanlışlıkla bütün HLS klasörü silinmesin
+        if(prefix.length() <= "hls/".length())
+            return;
+        deleteFolder(prefix);
+    }
+
+    private void deleteFolder(String prefix)
+    {
+        try
+        {
+            for(Result<Item> result : minioClient.listObjects(ListObjectsArgs.builder()
+                    .bucket(bucketName).prefix(prefix).recursive(true).build()))
+            {
+                minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(result.get().objectName()).build());
+            }
+        }
+        catch(Exception e)
+        {
+            throw new IllegalStateException("HLS klasörü silinemedi: " + e.getMessage(), e);
+        }
+    }
+
+    private void deleteFolderQuietly(String prefix)
+    {
+        try
+        {
+            deleteFolder(prefix);
+        }
+        catch(Exception ignored)
+        {
+            //Yükleme zaten başarısız; geride kalan parça sahipsiz kalır
         }
     }
 }

@@ -27,14 +27,16 @@ public class VideoProcessingWorker {
     private final VideoProcessingClient client;
     private final FileService fileService;
     private final TranscriptService transcriptService;
+    private final HlsService hlsService;
 
     public VideoProcessingWorker(VideoRepository videoRepository, VideoProcessingClient client,
-                                 FileService fileService, TranscriptService transcriptService)
+                                 FileService fileService, TranscriptService transcriptService, HlsService hlsService)
     {
         this.videoRepository = videoRepository;
         this.client = client;
         this.fileService = fileService;
         this.transcriptService = transcriptService;
+        this.hlsService = hlsService;
     }
 
     @Async("videoProcessingExecutor")
@@ -74,6 +76,8 @@ public class VideoProcessingWorker {
 
             //Transkript hemen sıraya girer (sayfa "transkript yok" görmesin), sonra eski dosya silinir
             startTranscript(videoId, newUrl);
+            //Çoklu kalite (HLS) yeni dosyadan; aynı sırada, bu işten sonra çalışır
+            startHls(videoId);
             //Eski dosya artık kullanılmıyor (başka bir video da onu göstermiyorsa) silinir
             if(!videoRepository.existsByVideoUrl(sourceUrl))
                 deleteOldFile(sourceUrl);
@@ -92,8 +96,22 @@ public class VideoProcessingWorker {
                 deleteTempFile(result);
         }
 
-        //Dönüştürülemedi: transkript orijinal dosyadan çıkarılır (soru-cevap yine çalışsın)
+        //Dönüştürülemedi: transkript orijinal dosyadan çıkarılır (soru-cevap yine çalışsın).
+        //HLS de denenir: HLS her kaliteyi zaten baştan kodladığı için tarayıcının açamadığı biçimi de çevirebilir
         startTranscript(videoId, sourceUrl);
+        startHls(videoId);
+    }
+
+    private void startHls(Long videoId)
+    {
+        try
+        {
+            hlsService.start(videoId);
+        }
+        catch(Exception e)
+        {
+            log.warn("HLS başlatılamadı: video {}: {}", videoId, e.getMessage());
+        }
     }
 
     //Yalnız video hâlâ bu dosyayı gösteriyorsa (bu arada değiştiyse yeni iş kendi transkriptini başlatır)

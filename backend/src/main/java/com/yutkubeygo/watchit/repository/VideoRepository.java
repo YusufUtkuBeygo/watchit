@@ -74,4 +74,48 @@ public interface VideoRepository extends JpaRepository<Video,Long> {
     int failProcessing(@Param("id") Long id, @Param("url") String url, @Param("status") VideoProcessingStatus status,
                        @Param("error") String error);
 
+    //--- HLS (çoklu kalite) ---
+
+    List<Video> findByHlsStatusIn(List<VideoProcessingStatus> statuses);
+
+    //Eski videolar: dosyası olan, dönüştürmesi sürmeyen ve HLS'si hiç sıraya girmemiş ya da eskimiş (başka dosyadan üretilmiş)
+    //olanlar. FAILED olanlar kendiliğinden yeniden denenmez.
+    @Query("""
+            SELECT v FROM Video v
+            WHERE v.videoUrl IS NOT NULL
+              AND (v.processingStatus IS NULL OR v.processingStatus IN :doneStatuses)
+              AND (v.hlsStatus IS NULL OR (v.hlsStatus = :ready AND (v.hlsSourceUrl IS NULL OR v.hlsSourceUrl <> v.videoUrl)))
+            ORDER BY v.id
+            """)
+    List<Video> findHlsBackfillCandidates(@Param("doneStatuses") List<VideoProcessingStatus> doneStatuses,
+                                          @Param("ready") VideoProcessingStatus ready);
+
+    //Sıraya al: kaynak dosya hangisiyse o yazılır; işçi yalnız bu dosya hâlâ geçerliyse çalışır
+    @Modifying
+    @Transactional
+    @Query("UPDATE Video v SET v.hlsStatus = :status, v.hlsError = null WHERE v.id = :id")
+    int queueHls(@Param("id") Long id, @Param("status") VideoProcessingStatus status);
+
+    //İşi üstlen: yalnız hâlâ sıradaysa (PENDING -> PROCESSING)
+    @Modifying
+    @Transactional
+    @Query("UPDATE Video v SET v.hlsStatus = :to WHERE v.id = :id AND v.hlsStatus = :from")
+    int changeHlsStatus(@Param("id") Long id, @Param("from") VideoProcessingStatus from, @Param("to") VideoProcessingStatus to);
+
+    //HLS hazır: yalnız video hâlâ aynı dosyayı gösteriyorsa (bu arada dosya değiştiyse 0, sonuç atılır)
+    @Modifying
+    @Transactional
+    @Query("""
+            UPDATE Video v SET v.hlsUrl = :hlsUrl, v.hlsSourceUrl = :sourceUrl, v.hlsStatus = :status, v.hlsError = null
+            WHERE v.id = :id AND v.videoUrl = :sourceUrl
+            """)
+    int finishHls(@Param("id") Long id, @Param("sourceUrl") String sourceUrl, @Param("hlsUrl") String hlsUrl,
+                  @Param("status") VideoProcessingStatus status);
+
+    //HLS üretilemedi: video MP4'ten oynamaya devam eder
+    @Modifying
+    @Transactional
+    @Query("UPDATE Video v SET v.hlsStatus = :status, v.hlsError = :error WHERE v.id = :id AND v.videoUrl = :sourceUrl")
+    int failHls(@Param("id") Long id, @Param("sourceUrl") String sourceUrl, @Param("status") VideoProcessingStatus status,
+                @Param("error") String error);
 }
