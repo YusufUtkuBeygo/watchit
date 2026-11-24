@@ -323,7 +323,8 @@
   width: var(--media-menu-width);
   min-width: 300px;
   max-width: min(360px, var(--media-menu-available-width, 360px));
-  height: var(--media-menu-height);
+  /* +2px: Video.js'in ölçtüğü boy kenarlıkları içermiyor; yoksa 2 px taşar ve gereksiz kaydırma çubuğu çıkar */
+  height: calc(var(--media-menu-height) + 2px);
   max-height: var(--media-menu-available-height, none);
   margin: 0;
   padding: 0;
@@ -371,6 +372,26 @@
   .vp-menu,
   .vp-menu-content {
     transition: none;
+  }
+}
+
+/* Telefonda oynatıcı alçak: menü oynatıcının üstüne sığmıyor, ekranın altından açılan panel olur (YouTube gibi).
+   Video.js konumu satır içi stille (anchor) veriyor; burada !important ile ezilir */
+@media (max-width: 600px) {
+  .vp-menu {
+    top: auto !important;
+    right: max(var(--space-2), env(safe-area-inset-right)) !important;
+    bottom: max(var(--space-2), env(safe-area-inset-bottom)) !important;
+    left: max(var(--space-2), env(safe-area-inset-left)) !important;
+    translate: none !important;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    max-height: min(70vh, 480px);
+  }
+
+  .vp-menu::backdrop {
+    background-color: var(--overlay);
   }
 }
 
