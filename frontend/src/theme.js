@@ -51,3 +51,24 @@ export function onThemeChange(onChange) {
   window.addEventListener(THEME_EVENT, handle);
   return () => window.removeEventListener(THEME_EVENT, handle);
 }
+
+//Ayarlar sayfası için: kullanıcının seçimi 'light' / 'dark', hiç seçmediyse 'system'
+export function getThemeChoice() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved === 'light' || saved === 'dark' ? saved : 'system';
+  } catch {
+    return 'system';
+  }
+}
+
+//"Sistem ayarını izle": seçim silinir, bilgisayarın o anki açık/koyu ayarı uygulanır
+export function resetThemeToSystem() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    //silinemedi: yine de sistem ayarı uygulanır
+  }
+  const light = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  apply(light ? 'light' : 'dark');
+}

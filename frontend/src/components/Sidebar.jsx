@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Home, UserSquare2, History, ListVideo, Hash, Users, CircleUser, ThumbsUp, ChevronDown, ChevronUp, ChevronRight, Clock,
   SquarePlay, Download, Scissors, GraduationCap, Gamepad2, Music2, Cpu, Trophy, Rocket, Leaf, Film, Landmark, Laugh,
+  Smartphone, Flame, Settings, Flag, CircleHelp, MessageSquareWarning, Clapperboard,
 } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { getAllCategories } from '../services/categoryService';
@@ -15,8 +16,14 @@ import './Sidebar.css';
 
 //Abonelikler listesinde ilk bu kadar kanal görünür, gerisi "Daha fazla göster" ile açılır
 const SUBSCRIPTION_LIMIT = 7;
-//Keşfet bölümünde ilk bu kadar kategori görünür (YouTube gibi), gerisi "Daha fazla göster" ile
-const EXPLORE_LIMIT = 4;
+//Keşfet'in her zaman görünen satırları (YouTube'daki Müzik, Filmler, Oyun, Spor gibi).
+//category: o adlı kategorinin ana sayfadaki listesine gider; diğer kategoriler "Daha fazla göster"in altında
+const EXPLORE_MAIN = [
+  { label: 'Müzik', category: 'Müzik' },
+  { label: 'Filmler', category: 'Film ve Animasyon' },
+  { label: 'Oyun', category: 'Oyun' },
+  { label: 'Spor', category: 'Spor' },
+];
 
 //Kategori adına göre ikon; listede olmayan yeni bir kategori # ile görünür
 const CATEGORY_ICONS = {
@@ -87,6 +94,9 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
 
   //Seçili kategori adresten okunur (ana sayfada /?category=2)
   const activeCategory = location.pathname === '/' ? new URLSearchParams(location.search).get('category') : null;
+  //Keşfet'in sabit satırlarında olmayan kategoriler ("Daha fazla göster" altında)
+  const mainNames = EXPLORE_MAIN.map((e) => e.category);
+  const otherCategories = categories.filter((c) => !mainNames.includes(c.name));
 
   return (
     <>
@@ -104,6 +114,10 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
         <NavLink to="/" end className={() => `sidebar-item ${location.pathname === '/' && !activeCategory ? 'active' : ''}`}>
           <Home size={24} />
           <span>Ana Sayfa</span>
+        </NavLink>
+        <NavLink to="/shorts" className="sidebar-item">
+          <Smartphone size={24} />
+          <span>Kısa videolar</span>
         </NavLink>
         <NavLink to="/subscriptions" className="sidebar-item">
           <Users size={24} />
@@ -218,22 +232,28 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
 
       <nav className="sidebar-section" aria-label="Keşfet">
         <h3 className="section-title">Keşfet</h3>
-        {/* Kapalıyken ilk birkaçı + (aşağıda kalsa bile) seçili kategori görünür */}
-        {categories.filter((c, i) => showAllCategories || i < EXPLORE_LIMIT || String(c.id) === activeCategory).map((category) => {
-          const Icon = CATEGORY_ICONS[category.name] || Hash;
-          return (
-            <Link
-              to={`/?category=${category.id}`}
-              className={`sidebar-item ${activeCategory === String(category.id) ? 'active' : ''}`}
-              aria-current={activeCategory === String(category.id) ? 'page' : undefined}
-              key={category.id}
-            >
-              <Icon size={24} aria-hidden="true" />
-              <span>{category.name}</span>
-            </Link>
-          );
+        <NavLink to="/trending" className="sidebar-item">
+          <Flame size={24} aria-hidden="true" />
+          <span>Popüler</span>
+        </NavLink>
+        {EXPLORE_MAIN.map(({ label, category }) => {
+          const match = categories.find((c) => c.name === category);
+          if (!match) return null;
+          const Icon = CATEGORY_ICONS[category] || Hash;
+          return <CategoryLink key={match.id} category={match} label={label} Icon={Icon} activeCategory={activeCategory} />;
         })}
-        {categories.length > EXPLORE_LIMIT && (
+        <NavLink to="/courses" className="sidebar-item">
+          <GraduationCap size={24} aria-hidden="true" />
+          <span>Kurslar</span>
+        </NavLink>
+        {/* Diğer kategoriler: kapalıyken yalnız seçili olan (aşağıda kalsa bile) görünür */}
+        {otherCategories
+          .filter((c) => showAllCategories || String(c.id) === activeCategory)
+          .map((category) => (
+            <CategoryLink key={category.id} category={category} label={category.name}
+              Icon={CATEGORY_ICONS[category.name] || Hash} activeCategory={activeCategory} />
+          ))}
+        {otherCategories.length > 0 && (
           <button
             type="button"
             className="sidebar-item sidebar-more"
@@ -246,6 +266,65 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
         )}
       </nav>
 
+      <div className="sidebar-divider"></div>
+
+      {/* YouTube'daki "YouTube'dan daha fazla" bölümünün karşılığı: sitenin ayrı araçları */}
+      <nav className="sidebar-section" aria-label="WatchIt'ten daha fazla">
+        <h3 className="section-title">WatchIt'ten daha fazla</h3>
+        <NavLink to="/studio" className="sidebar-item">
+          <Clapperboard size={24} aria-hidden="true" />
+          <span>WatchIt Stüdyo</span>
+        </NavLink>
+        <NavLink to="/courses" className="sidebar-item">
+          <GraduationCap size={24} aria-hidden="true" />
+          <span>WatchIt Kurslar</span>
+        </NavLink>
+        <NavLink to="/clips" className="sidebar-item">
+          <Scissors size={24} aria-hidden="true" />
+          <span>WatchIt Klipler</span>
+        </NavLink>
+      </nav>
+
+      <div className="sidebar-divider"></div>
+
+      <nav className="sidebar-section" aria-label="Ayarlar ve yardım">
+        <NavLink to="/settings" className="sidebar-item">
+          <Settings size={24} aria-hidden="true" />
+          <span>Ayarlar</span>
+        </NavLink>
+        <NavLink to="/notifications" className="sidebar-item">
+          <Flag size={24} aria-hidden="true" />
+          <span>Bildirim geçmişi</span>
+        </NavLink>
+        <NavLink to="/help" className="sidebar-item">
+          <CircleHelp size={24} aria-hidden="true" />
+          <span>Yardım</span>
+        </NavLink>
+        {/* Hangi sayfadayken yazıldığı geri bildirime eklensin */}
+        <NavLink to="/feedback" state={{ from: location.pathname + location.search }} className="sidebar-item">
+          <MessageSquareWarning size={24} aria-hidden="true" />
+          <span>Geri bildirim gönder</span>
+        </NavLink>
+      </nav>
+
+      <div className="sidebar-divider"></div>
+
+      {/* Alt bilgi (YouTube'daki Hakkında, Şartlar, Gizlilik... satırları) */}
+      <footer className="sidebar-footer">
+        <nav className="sidebar-footer-links" aria-label="Site bilgileri">
+          <Link to="/about">Hakkında</Link>
+          <Link to="/about">Nasıl çalışır?</Link>
+          <Link to="/help">Yardım</Link>
+          <Link to="/feedback">Bize ulaşın</Link>
+        </nav>
+        <nav className="sidebar-footer-links" aria-label="Yasal">
+          <Link to="/terms">Şartlar</Link>
+          <Link to="/privacy">Gizlilik</Link>
+          <Link to="/terms">Politika ve Güvenlik</Link>
+        </nav>
+        <p className="sidebar-copyright">© 2026 WatchIt</p>
+      </footer>
+
       <div className="sidebar-theme">
         <div className="sidebar-divider"></div>
         <div className="sidebar-section">
@@ -257,5 +336,20 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
     </>
   );
 };
+
+//Keşfet'teki tek kategori satırı: ana sayfanın o kategoriye süzülmüş hâline gider
+function CategoryLink({ category, label, Icon, activeCategory }) {
+  const active = activeCategory === String(category.id);
+  return (
+    <Link
+      to={`/?category=${category.id}`}
+      className={`sidebar-item ${active ? 'active' : ''}`}
+      aria-current={active ? 'page' : undefined}
+    >
+      <Icon size={24} aria-hidden="true" />
+      <span>{label}</span>
+    </Link>
+  );
+}
 
 export default Sidebar;
