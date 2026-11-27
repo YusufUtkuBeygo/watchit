@@ -316,7 +316,7 @@ function WatchPage() {
     <RelatedVideos key={`sira-${video.id}`} video={video} />
     <div className="watch-comments">
       {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
-      <CommentSection key={video.id} videoId={video.id} />
+      <CommentSection key={video.id} videoId={video.id} isVideoOwner={isOwner} />
     </div>
     </div>
     </div>

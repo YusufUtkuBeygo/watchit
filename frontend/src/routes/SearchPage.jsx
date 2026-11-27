@@ -41,7 +41,7 @@ function SearchPage() {
         <EmptyState
           icon={SearchX}
           title="Sonuç bulunamadı"
-          text="Daha kısa ya da farklı kelimelerle aramayı dene; arama video başlıklarında yapılır."
+          text="Daha kısa ya da farklı kelimelerle aramayı dene; arama video başlığı, açıklaması ve kanal adında yapılır."
         />
       )}
       {status === 'ready' && videos.length > 0 && (

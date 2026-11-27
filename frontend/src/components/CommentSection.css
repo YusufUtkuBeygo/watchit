@@ -161,3 +161,48 @@
   font-size: var(--fs-sm);
   color: var(--danger-text);
 }
+
+/* Sıralama seçimi (En yeni / En beğenilen) */
+.comments-sort {
+  align-self: flex-start;
+  margin-top: calc(var(--space-2) * -1);
+}
+
+.comments-sort select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-sm);
+}
+
+/* Video sahibinin sabitlediği yorumun üstündeki not */
+.comment-pinned {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.comment-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.comment-like.is-liked {
+  color: var(--accent-text);
+}
+
+.comment-like-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}

@@ -2,7 +2,6 @@ package com.yutkubeygo.watchit.controller;
 
 import com.yutkubeygo.watchit.dto.PageResponseDto;
 import com.yutkubeygo.watchit.util.Paging;
-import org.springframework.data.domain.Sort;
 import com.yutkubeygo.watchit.service.EmailVerificationService;
 
 import com.yutkubeygo.watchit.dto.CommentRequestDto;
@@ -56,13 +55,18 @@ public class CommentController {
 
 
     @GetMapping
-    //GET /comments?videoId=5&page=0&size=20: en yeni üst yorumlar + cevapları
+    //GET /comments?videoId=5&sort=new|top&page=0&size=20: üst yorumlar + cevapları (sabitlenmiş ilk sayfada en üstte)
+    //Açık uç; giriş yapılmışsa her yorumda likedByMe dolar
     public ResponseEntity<PageResponseDto<CommentResponseDto>> getCommentsByVideoId(@RequestParam Long videoId,
+                                                                                    @RequestParam(required = false) String sort,
                                                                                     @RequestParam(required = false) Integer page,
-                                                                                    @RequestParam(required = false) Integer size)
+                                                                                    @RequestParam(required = false) Integer size,
+                                                                                    @AuthenticationPrincipal Long userId)
     {
-        PageResponseDto<CommentResponseDto> comments = commentService.getCommentsByVideoId(videoId,
-                Paging.of(page, size, Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"))));
+        if(sort != null && !sort.equals("new") && !sort.equals("top"))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        PageResponseDto<CommentResponseDto> comments = commentService.getCommentsByVideoId(videoId, sort, userId,
+                Paging.of(page, size));
         if(comments == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         return ResponseEntity.ok(comments);
@@ -88,5 +92,24 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    //Video sahibi yorumu sabitler: PUT /comments/{id}/pin ; kaldırır: DELETE /comments/pin?videoId=5
+    //204, 404 (yorum/video yok), 403 (video sahibi değil), 400 (cevap yorumu sabitlenemez)
+    @PutMapping("/{id}/pin")
+    public ResponseEntity<Void> pin(@PathVariable Long id, @AuthenticationPrincipal Long userId)
+    {
+        CommentResponseDto comment = commentService.getCommentById(id);
+        if(comment == null || !commentService.pinComment(comment.getVideoId(), id, userId))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/pin")
+    public ResponseEntity<Void> unpin(@RequestParam Long videoId, @AuthenticationPrincipal Long userId)
+    {
+        if(!commentService.pinComment(videoId, null, userId))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.noContent().build();
     }
 }

@@ -10,9 +10,10 @@ import EmptyState from './EmptyState';
 
 //Ana sayfadaki video ızgarası; kategori seçiliyse yalnız o kategorinin videoları
 function VideoGrid({ selectedCategory }) {
-  //Sayfa sayfa (24'er); kategori değişince liste baştan yüklenir
+  //Sayfa sayfa (24'er); kategori değişince liste baştan yüklenir.
+  //sort=foryou: "Senin için" (abone olduğun kanallar, ilgilendiğin kategoriler, popülerlik ve yenilik; izlediklerin geride)
   const list = usePagedList(
-    (page) => getVideos({ categoryId: selectedCategory || undefined, page }),
+    (page) => getVideos({ categoryId: selectedCategory || undefined, sort: 'foryou', page }),
     `grid-${selectedCategory ?? 'all'}`,
   );
   const { items: videos, status } = list;

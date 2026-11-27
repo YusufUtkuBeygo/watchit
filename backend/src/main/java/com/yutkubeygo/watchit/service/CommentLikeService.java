@@ -94,4 +94,12 @@ public class CommentLikeService {
         return true;
     }
 
+
+    //Benim bu yoruma beğenim varsa siler; yoksa false
+    public boolean unlike(Long commentId, Long userId)
+    {
+        return commentLikeRepository.findByUserIdAndCommentId(userId, commentId)
+                .map(like -> { commentLikeRepository.delete(like); return true; })
+                .orElse(false);
+    }
 }

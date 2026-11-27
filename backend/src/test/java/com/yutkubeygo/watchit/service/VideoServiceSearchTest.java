@@ -39,17 +39,17 @@ class VideoServiceSearchTest {
     {
         assertThat(videoService.searchVideos("   ", PAGE).items()).isEmpty();
         assertThat(videoService.searchVideos("", PAGE).hasNext()).isFalse();
-        verify(videoRepository, never()).searchByTitle(anyString(), any(Pageable.class));
+        verify(videoRepository, never()).search(anyString(), any(Pageable.class));
     }
 
     @Test
     void searchTextIsTrimmedAndEscaped()
     {
-        when(videoRepository.searchByTitle(anyString(), any(Pageable.class))).thenReturn(Page.empty(PAGE));
+        when(videoRepository.search(anyString(), any(Pageable.class))).thenReturn(Page.empty(PAGE));
 
         videoService.searchVideos("  %100_kod  ", PAGE);
 
-        verify(videoRepository).searchByTitle(eq("\\%100\\_kod"), eq(PAGE));
+        verify(videoRepository).search(eq("\\%100\\_kod"), eq(PAGE));
     }
 
     @Test

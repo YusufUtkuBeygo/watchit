@@ -58,7 +58,8 @@ public class VideoController {
     }
 
     //Video listesi, sayfa sayfa (?page=0&size=24; size en fazla 50). Süzgeçler isteğe bağlı ve birlikte kullanılabilir:
-    //channelId (kanalın videoları), categoryId, maxDuration (kısa videolar, saniye), sort=new|popular.
+    //channelId (kanalın videoları), categoryId, maxDuration (kısa videolar, saniye), sort=new|popular|foryou.
+    //sort=foryou: ana sayfa önerisi (kişiye göre puan; girişsizde popülerlik + yenilik), yalnız categoryId ile birlikte kullanılır.
     //search verilirse başlıkta arar (100 karakterden uzunsa 400; arama kendi sıralamasını kullanır).
     //Olmayan kanal ya da kategori 404, geçersiz sayfa/sıralama 400.
     @GetMapping
@@ -68,8 +69,14 @@ public class VideoController {
                                                                           @RequestParam(required = false) Integer maxDuration,
                                                                           @RequestParam(required = false) String sort,
                                                                           @RequestParam(required = false) Integer page,
-                                                                          @RequestParam(required = false) Integer size)
+                                                                          @RequestParam(required = false) Integer size,
+                                                                          @AuthenticationPrincipal Long userId)
     {
+        if("foryou".equals(sort))
+        {
+            PageResponseDto<VideoResponseDto> page1 = videoService.listForYou(userId, categoryId, Paging.of(page, size));
+            return page1 == null ? ResponseEntity.status(HttpStatus.NOT_FOUND).build() : ResponseEntity.ok(page1);
+        }
         if(search != null)
         {
             if(search.length()>100)

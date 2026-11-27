@@ -30,15 +30,29 @@ public interface VideoRepository extends JpaRepository<Video,Long>, JpaSpecifica
     //Bütün videolar, en yeni en üstte
     List<Video> findAllByOrderByCreatedAtDesc();
 
-    //Başlıkta arama, Türkçe harf ve büyük/küçük harf fark etmez: "istanbul", "ISTANBUL", "İstanbul" hepsi eşleşir; en yeni en üstte.
-    //Hazır IgnoreCase upper() kullanıyor ve İ/i'yi eşleştiremiyor, bu yüzden elle yazılmış SQL (nativeQuery).
+    //Arama: başlıkta, açıklamada ya da kanal adında geçenler. Türkçe harf ve büyük/küçük harf fark etmez
+    //("istanbul", "ISTANBUL", "İstanbul" hepsi eşleşir). Hazır IgnoreCase upper() kullanıyor ve İ/i'yi eşleştiremiyor: elle SQL.
     //unaccent: İ/I/ı -> i, ş -> s, ç -> c... (V10). text içindeki %, _ ve \ önceden kaçırılmış olmalı (VideoService.searchVideos).
-
-    //Sayfalı: sayfa için toplam da sayılır (countQuery); sıralamaya id eklendi, aynı saniyede yüklenenler sayfalar arasında kaymasın
-    @Query(value = "SELECT * FROM videos WHERE lower(unaccent(title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\' ORDER BY created_at DESC, id DESC",
-            countQuery = "SELECT count(*) FROM videos WHERE lower(unaccent(title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'",
+    //Sıralama: başlıkta geçenler önce, sonra kanal adında, sonra yalnız açıklamada; her grupta en yeni üstte.
+    //Sayfalı: toplam da sayılır (countQuery); id son sıralama, aynı saniyede yüklenenler sayfalar arasında kaymasın
+    @Query(value = """
+            SELECT v.* FROM videos v JOIN channels c ON c.id = v.channel_id
+            WHERE lower(unaccent(v.title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+               OR lower(unaccent(coalesce(v.description, ''))) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+               OR lower(unaccent(c.channel_name)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+            ORDER BY CASE WHEN lower(unaccent(v.title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\' THEN 0
+                          WHEN lower(unaccent(c.channel_name)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\' THEN 1
+                          ELSE 2 END,
+                     v.created_at DESC, v.id DESC
+            """,
+            countQuery = """
+            SELECT count(*) FROM videos v JOIN channels c ON c.id = v.channel_id
+            WHERE lower(unaccent(v.title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+               OR lower(unaccent(coalesce(v.description, ''))) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+               OR lower(unaccent(c.channel_name)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+            """,
             nativeQuery = true)
-    Page<Video> searchByTitle(@Param("text") String text, Pageable pageable);
+    Page<Video> search(@Param("text") String text, Pageable pageable);
 
     @Modifying
     @Transactional
@@ -58,6 +72,40 @@ public interface VideoRepository extends JpaRepository<Video,Long>, JpaSpecifica
     //Silinecek kapak ya da HLS paketi başka bir videoda da kullanılıyor mu (StorageCleanupService)
     boolean existsByThumbnailUrl(String thumbnailUrl);
     boolean existsByHlsUrl(String hlsUrl);
+
+    //"Senin için" sıralaması: her videoya puan verilir, büyükten küçüğe. Basit ve açıklanabilir bir formül (makine öğrenmesi yok):
+    //  + ln(1 + görüntülenme)              popüler olan biraz öne (logaritma: 10 bin izlenen, 100 izlenenin 100 katı değil ~2 katı puan alır)
+    //  + 3   abone olduğum kanalsa
+    //  + 0,6 x (o kategoride izlediğim video sayısı, en fazla 5)   ilgi alanım
+    //  - yaş (gün) / 14                     her iki haftada 1 puan düşer: yeni videolar öne
+    //  - 5 bitirdiysem, - 1,5 yarım bıraktıysam (zaten gördüm)
+    //  - 3 kendi videomsa
+    //Girişsizde (userId null) kişisel kısımlar 0 olur: popülerlik + yenilik kalır. categoryId verilirse yalnız o kategori.
+    @Query(value = """
+            SELECT v.* FROM videos v
+            JOIN channels ch ON ch.id = v.channel_id
+            LEFT JOIN subscriptions s ON s.channel_id = v.channel_id AND s.subscriber_id = CAST(:userId AS bigint)
+            LEFT JOIN watch_history_log h ON h.video_id = v.id AND h.user_id = CAST(:userId AS bigint)
+            LEFT JOIN (SELECT wv.category, count(*) AS cnt FROM watch_history_log w JOIN videos wv ON wv.id = w.video_id
+                       WHERE w.user_id = CAST(:userId AS bigint) GROUP BY wv.category) interest ON interest.category = v.category
+            WHERE CAST(:categoryId AS bigint) IS NULL OR v.category = CAST(:categoryId AS bigint)
+            ORDER BY ( ln(1 + v.view_count)
+                     + CASE WHEN s.id IS NOT NULL THEN 3 ELSE 0 END
+                     + LEAST(coalesce(interest.cnt, 0), 5) * 0.6
+                     - EXTRACT(EPOCH FROM (now() - v.created_at)) / 86400.0 / 14
+                     - CASE WHEN h.is_completed THEN 5 WHEN h.id IS NOT NULL THEN 1.5 ELSE 0 END
+                     - CASE WHEN ch.owner_id = CAST(:userId AS bigint) THEN 3 ELSE 0 END ) DESC,
+                     v.id DESC
+            """,
+            countQuery = "SELECT count(*) FROM videos v WHERE CAST(:categoryId AS bigint) IS NULL OR v.category = CAST(:categoryId AS bigint)",
+            nativeQuery = true)
+    Page<Video> findForYou(@Param("userId") Long userId, @Param("categoryId") Long categoryId, Pageable pageable);
+
+    //Yorumu sabitle (commentId null: sabiti kaldır)
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE videos SET pinned_comment_id = :commentId WHERE id = :id", nativeQuery = true)
+    int setPinnedComment(@Param("id") Long videoId, @Param("commentId") Long commentId);
 
     //Videoyu tek DELETE ile siler; yorumlar, beğeniler, transkript, klipler... veritabanında zincirle gider (ON DELETE CASCADE).
     //Neden delete(video) değil: o yol Hibernate'in hafızasındaki bağlı kayıtları (ör. aynı işlemde yüklenmiş bir yorum) da

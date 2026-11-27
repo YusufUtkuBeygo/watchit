@@ -27,6 +27,7 @@ class VideoListQueryTest {
     @Autowired private ChannelRepository channelRepository;
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private SubscriptionRepository subscriptionRepository;
+    @Autowired private WatchHistoryRepository watchHistoryRepository;
 
     private Channel channel;
     private Category category;
@@ -127,5 +128,40 @@ class VideoListQueryTest {
         subscriptionRepository.saveAndFlush(subscription);
 
         assertThat(page(VideoSpecs.subscribedBy(viewer.getId()), 0, 10, VideoService.NEWEST).getTotalElements()).isEqualTo(5);
+    }
+
+    @Test
+    void forYouPutsSubscribedChannelAboveAndWatchedBelow()
+    {
+        //Bu testin kanalındaki en popüler video (5 görüntülenme): abone olunca kanal +3 puan alır
+        Subscription subscription = new Subscription();
+        subscription.setSubscriber(viewer);
+        subscription.setChannel(channel);
+        subscriptionRepository.saveAndFlush(subscription);
+
+        java.util.List<Long> mine = videoRepository.findForYou(viewer.getId(), category.getId(), PageRequest.of(0, 50)).stream()
+                .filter(v -> v.getChannel().getId() == channel.getId()).map(Video::getId).toList();
+        assertThat(mine).hasSize(5);
+        Long top = mine.getFirst();
+
+        //En üstteki videoyu bitirince (-5) artık ilk sırada değil
+        com.yutkubeygo.watchit.entity.WatchHistory h = new com.yutkubeygo.watchit.entity.WatchHistory();
+        h.setUser(viewer);
+        h.setVideo(videoRepository.findById(top).orElseThrow());
+        h.setIsCompleted(true);
+        h.setWatchedSeconds(30);
+        h.setLastWatchedAt(java.time.LocalDateTime.now());
+        watchHistoryRepository.saveAndFlush(h);
+
+        java.util.List<Long> after = videoRepository.findForYou(viewer.getId(), category.getId(), PageRequest.of(0, 50)).stream()
+                .filter(v -> v.getChannel().getId() == channel.getId()).map(Video::getId).toList();
+        assertThat(after.getFirst()).isNotEqualTo(top);
+        assertThat(after.getLast()).isEqualTo(top);
+    }
+
+    @Test
+    void forYouWorksWithoutLogin()
+    {
+        assertThat(videoRepository.findForYou(null, null, PageRequest.of(0, 5)).getTotalElements()).isEqualTo(videoRepository.count());
     }
 }

@@ -41,6 +41,11 @@ public class Video {
 
     //Çoklu kalite (HLS, V20). hlsSourceUrl: HLS'nin üretildiği dosya; videoUrl'den farklıysa HLS eskimiştir, kullanılmaz
     private String hlsUrl;
+
+    //Sahibinin sabitlediği yorum (V24). Yalnız VideoRepository.setPinnedComment yazar (updatable = false):
+    //videonun başka bir alanı kaydedilirken eski değerle ezilmesin
+    @Column(name = "pinned_comment_id", insertable = false, updatable = false)
+    private Long pinnedCommentId;
     private String hlsSourceUrl;
     @Enumerated(EnumType.STRING)
     @Column(length = 20)

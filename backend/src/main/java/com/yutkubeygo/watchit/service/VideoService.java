@@ -92,6 +92,8 @@ public class VideoService {
             return NEWEST;
         if(sort.equals("popular"))
             return POPULAR;
+        if(sort.equals("foryou"))
+            return Sort.unsorted();    //sıralamayı sorgu kendisi yapar (listForYou)
         throw new BadRequestException();
     }
 
@@ -106,6 +108,14 @@ public class VideoService {
         Specification<Video> spec = VideoSpecs.allOf(
                 VideoSpecs.inChannel(channelId), VideoSpecs.inCategory(categoryId), VideoSpecs.maxDuration(maxDuration));
         return toPage(videoRepository.findAll(spec, pageable));
+    }
+
+    //"Senin için" (ana sayfa): kişiye göre puanlı sıralama (VideoRepository.findForYou). Kategori yoksa null (404)
+    public PageResponseDto<VideoResponseDto> listForYou(Long userId, Long categoryId, Pageable pageable)
+    {
+        if(categoryId != null && !categoryRepository.existsById(categoryId))
+            return null;
+        return toPage(videoRepository.findForYou(userId, categoryId, pageable));
     }
 
     //Abonelik akışı: abone olduğum kanalların videoları, en yeni en üstte (eskiden tarayıcı her kanalı ayrı ayrı çekiyordu)
@@ -272,13 +282,13 @@ public class VideoService {
 
     }
 
-    //Başlıkta arama; metin boşsa veritabanına gitmeden boş sayfa
+    //Başlık, açıklama ve kanal adında arama; metin boşsa veritabanına gitmeden boş sayfa
     public PageResponseDto<VideoResponseDto> searchVideos(String searchText, Pageable pageable)
     {
         String textK=searchText.trim();
         if(textK.isBlank())
             return new PageResponseDto<>(List.of(), pageable.getPageNumber(), pageable.getPageSize(), false, 0);
-        return toPage(videoRepository.searchByTitle(escapeLike(textK), pageable));
+        return toPage(videoRepository.search(escapeLike(textK), pageable));
     }
 
     //LIKE'ta % (her şey) ve _ (tek karakter) joker; kullanıcı yazdıysa düz karakter olarak aransın diye önüne \ konur.

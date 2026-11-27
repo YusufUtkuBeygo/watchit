@@ -16,6 +16,9 @@ public interface CommentMapper {
     @Mapping(source = "video.id", target="videoId")
     @Mapping(source = "parentComment.id", target="parentCommentId")
     @Mapping(source = "user.username", target="username")
+    @Mapping(target = "likeCount", ignore = true)
+    @Mapping(target = "likedByMe", ignore = true)
+    @Mapping(target = "pinned", ignore = true)
     CommentResponseDto toDto(Comment comment);
     List<CommentResponseDto> toDtoList(List<Comment> comments);
     //Request DTO'sunda olmayan alanlar (id, ilişkiler, tarihler) serviste ya da veritabanında dolar

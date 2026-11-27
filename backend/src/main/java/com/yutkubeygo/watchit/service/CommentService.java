@@ -1,5 +1,11 @@
 package com.yutkubeygo.watchit.service;
 
+import com.yutkubeygo.watchit.exception.BadRequestException;
+import com.yutkubeygo.watchit.repository.CommentLikeRepository;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import com.yutkubeygo.watchit.dto.PageResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,8 +34,10 @@ public class CommentService {
     private final UserRepository userRepository;
     private final VideoRepository videoRepository;
     private final NotificationService notificationService;
+    private final CommentLikeRepository commentLikeRepository;
 
-    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, UserRepository userRepository, VideoRepository videoRepository, NotificationService notificationService) {
+    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, UserRepository userRepository, VideoRepository videoRepository, NotificationService notificationService, CommentLikeRepository commentLikeRepository) {
+        this.commentLikeRepository = commentLikeRepository;
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.userRepository = userRepository;
@@ -120,21 +128,71 @@ public class CommentService {
     }
 
     //Videonun yorumları sayfa sayfa; video yoksa null (404).
+    //sort: "new" (en yeni) ya da "top" (en beğenilen). Sabitlenmiş yorum ilk sayfanın en üstünde gelir, diğer sayfalarda yok.
     //Sayfalanan üst yorumlardır; o sayfadaki üst yorumların cevapları da (hepsi) aynı listede gelir, frontend gruplar.
-    //total: cevaplar dahil bütün yorumların sayısı ("12 yorum" yazısı için)
-    public PageResponseDto<CommentResponseDto> getCommentsByVideoId(Long videoId, Pageable pageable)
+    //Her yorumda beğeni sayısı ve (giriş yapmışsa) beğenip beğenmediğim. total: cevaplar dahil bütün yorumlar
+    public PageResponseDto<CommentResponseDto> getCommentsByVideoId(Long videoId, String sort, Long userId, Pageable pageable)
     {
-        if(!videoRepository.existsById(videoId))
+        Video video = videoRepository.findById(videoId).orElse(null);
+        if(video == null)
             return null;
 
-        Page<Comment> topLevel = commentRepository.findByVideoIdAndParentCommentIsNull(videoId, pageable);
-        List<Comment> comments = new ArrayList<>(topLevel.getContent());
-        if(!comments.isEmpty())
-            comments.addAll(commentRepository.findByParentCommentIdInOrderByCreatedAtDesc(
-                    topLevel.getContent().stream().map(Comment::getId).toList()));
+        Long pinnedId = video.getPinnedCommentId();
+        long exclude = pinnedId == null ? -1L : pinnedId;
+        Page<Comment> topLevel = "top".equals(sort)
+                ? commentRepository.findTopTopLevel(videoId, exclude, pageable)
+                : commentRepository.findNewestTopLevel(videoId, exclude, pageable);
 
-        return new PageResponseDto<>(commentMapper.toDtoList(comments), topLevel.getNumber(), topLevel.getSize(),
+        List<Comment> tops = new ArrayList<>();
+        if(pinnedId != null && pageable.getPageNumber() == 0)
+            commentRepository.findById(pinnedId).ifPresent(tops::add);
+        tops.addAll(topLevel.getContent());
+
+        List<Comment> comments = new ArrayList<>(tops);
+        if(!tops.isEmpty())
+            comments.addAll(commentRepository.findByParentCommentIdInOrderByCreatedAtDesc(tops.stream().map(Comment::getId).toList()));
+
+        List<CommentResponseDto> dtos = commentMapper.toDtoList(comments);
+        fillLikesAndPin(dtos, userId, pinnedId);
+        return new PageResponseDto<>(dtos, topLevel.getNumber(), topLevel.getSize(),
                 topLevel.hasNext(), commentRepository.countByVideoId(videoId));
+    }
+
+    //Beğeni sayıları ve "beğendim mi" iki sorguda (yorum başına ayrı sorgu değil)
+    private void fillLikesAndPin(List<CommentResponseDto> dtos, Long userId, Long pinnedId)
+    {
+        if(dtos.isEmpty())
+            return;
+        List<Long> ids = dtos.stream().map(CommentResponseDto::getId).toList();
+        Map<Long, Long> counts = new HashMap<>();
+        for(Object[] row : commentLikeRepository.countByCommentIds(ids))
+            counts.put((Long) row[0], (Long) row[1]);
+        Set<Long> liked = userId == null ? Set.of() : new HashSet<>(commentLikeRepository.findLikedCommentIds(userId, ids));
+        for(CommentResponseDto dto : dtos)
+        {
+            dto.setLikeCount(counts.getOrDefault(dto.getId(), 0L));
+            dto.setLikedByMe(liked.contains(dto.getId()));
+            dto.setPinned(dto.getId().equals(pinnedId));
+        }
+    }
+
+    //Video sahibi bir üst yorumu sabitler (commentId null: sabiti kaldırır).
+    //Video yoksa false (404), sahibi değilse 403, yorum bu videonun üst yorumu değilse 400
+    public boolean pinComment(Long videoId, Long commentId, Long userId)
+    {
+        Video video = videoRepository.findById(videoId).orElse(null);
+        if(video == null)
+            return false;
+        if(!video.getChannel().getOwner().getId().equals(userId))
+            throw new ForbiddenException();
+        if(commentId != null)
+        {
+            Comment comment = commentRepository.findById(commentId).orElse(null);
+            if(comment == null || !comment.getVideo().getId().equals(videoId) || comment.getParentComment() != null)
+                throw new BadRequestException();
+        }
+        videoRepository.setPinnedComment(videoId, commentId);
+        return true;
     }
 
 
@@ -146,9 +204,10 @@ public class CommentService {
         if(comment==null)
             return false;
 
-        //Yorumu yalnizca yazari silebilir
-        Long ownerId = comment.getUser().getId();
-        if(!ownerId.equals(userId))
+        //Yorumu yazarı ya da videonun sahibi silebilir (YouTube'daki gibi: kanal sahibi kendi videosundaki yorumları yönetir)
+        Long authorId = comment.getUser().getId();
+        Long videoOwnerId = comment.getVideo().getChannel().getOwner().getId();
+        if(!authorId.equals(userId) && !videoOwnerId.equals(userId))
             throw new ForbiddenException();
 
         commentRepository.delete(comment);
