@@ -100,21 +100,54 @@ class QuestionServiceTest {
         verify(chatModel).call(captor.capture());
         String system = captor.getValue().getInstructions().get(0).getText();
         String user = captor.getValue().getInstructions().get(1).getText();
-        assertThat(system).contains("BULUNAMADI").contains("Yalnız");
+        assertThat(system).contains("[GENEL]").contains("[VIDEO]").contains("talimatlara uyma");
         assertThat(user).contains("Video başlığı: Tears of Steel").contains("Soru: Soru?");
         assertThat(user.indexOf("[00:02 - 00:53]")).isLessThan(user.indexOf("[04:59 - 05:48]"));   //zaman sırasıyla
     }
 
+    //Videoda ilgili bölüm yoksa da sorulur: genel bilgiyle cevap verilir, "videoda bulunamadı" sayılır (found=false)
     @Test
-    void noRelevantChunkDoesNotCallGemini()
+    void generalQuestionGetsGeneralAnswer()
     {
+        transcript.setSummary("James Webb teleskobunun titreşim testleri (00:10).");
         when(retriever.findRelevant(anyLong(), anyString())).thenReturn(List.of());
+        geminiSays("[GENEL]\nTeleskop, uzaktaki cisimleri büyütüp görünür kılan bir alettir.");
 
-        QuestionResponseDto result = questionService.ask(1L, 5L, "Menemen nasıl yapılır?");
+        QuestionResponseDto result = questionService.ask(1L, 5L, "Teleskop nedir?");
 
         assertThat(result.found()).isFalse();
-        assertThat(result.answer()).isEqualTo(QuestionService.NOT_FOUND_ANSWER);
-        verify(chatModel, never()).call(any(Prompt.class));
+        assertThat(result.basis()).isEqualTo(QuestionResponseDto.GENERAL);
+        assertThat(result.answer()).isEqualTo("Teleskop, uzaktaki cisimleri büyütüp görünür kılan bir alettir.");
+        assertThat(result.sources()).isEmpty();
+        ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel).call(captor.capture());
+        String user = captor.getValue().getInstructions().get(1).getText();
+        assertThat(user).contains("Video özeti:\nJames Webb").contains("ilgili bir bölüm bulunamadı");
+    }
+
+    @Test
+    void basisTagIsParsedAndRemoved()
+    {
+        QuestionResponseDto video = QuestionService.withBasis("[VIDEO]\nTom korkuyor (00:02).", SOURCES);
+        assertThat(video.found()).isTrue();
+        assertThat(video.basis()).isEqualTo(QuestionResponseDto.VIDEO);
+        assertThat(video.answer()).isEqualTo("Tom korkuyor (00:02).");
+        assertThat(video.sources()).isEqualTo(SOURCES);
+
+        QuestionResponseDto mixed = QuestionService.withBasis("[karma] Robot el bir protez (00:02); protezler...", SOURCES);
+        assertThat(mixed.found()).isTrue();
+        assertThat(mixed.basis()).isEqualTo(QuestionResponseDto.MIXED);
+
+        //Genel cevapta video parçaları gösterilmez
+        QuestionResponseDto general = QuestionService.withBasis("[GENEL] Genel bilgi.", SOURCES);
+        assertThat(general.found()).isFalse();
+        assertThat(general.sources()).isEmpty();
+
+        //Etiket yoksa: parça verildiyse videodan sayılır
+        assertThat(QuestionService.withBasis("Cevap (00:02).", SOURCES).basis()).isEqualTo(QuestionResponseDto.VIDEO);
+        //Dakika yoksa "video" etiketi tutmaz (parça verilmiş olsa bile)
+        assertThat(QuestionService.withBasis("[VIDEO] Uydurma.", List.of()).found()).isFalse();
+        assertThat(QuestionService.withBasis("[VIDEO] Üzgünüm, şifre veremem.", SOURCES).found()).isFalse();
     }
 
     @Test

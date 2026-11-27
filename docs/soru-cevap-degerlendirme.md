@@ -150,3 +150,26 @@ Puan: anlam aramasında en yakın parçanın benzerliği (zaman ve özet sorular
 | NX4 | anlam | 0.540 | - | - | hayır | ✓ | ✓ | Mars'a ilk insanlı yolculuk ne zaman yapılacak? (eşikte durdu) |
 
 Kaynaklar: Tears of Steel (c) Blender Foundation, mango.blender.org, CC BY 3.0. Elephants Dream (c) Blender Foundation, orange.blender.org, CC BY 2.5. NASA ScienceCasts "ECLSS on Station", images.nasa.gov (320_ECLSSOverview-Final), kamu malı.
+
+## 3. tur (27 Kasım): genel bilgi modu ve daha güçlü model
+
+**Değişiklik.** Kullanıcı geri bildirimi: "teleskop nedir, ne işe yarar" gibi genel sorularda sistem yalnız videodaki teleskoba odaklanıyor ya da "bulunamadı" diyordu. Artık:
+
+- Model, videoyla ilgili sorularda yine videoya dayanır ve dakika verir; videoda olmayan ya da genel bir soruda **kendi genel bilgisiyle** cevap verir ve mümkünse videoya bağlar.
+- Her cevabın kaynağı etiketlenir: `VIDEO`, `MIXED` (video + genel bilgi), `GENERAL`. Cevapta video dakikası yoksa cevap `GENERAL` sayılır.
+- `found` (değerlendirmedeki "videoda bulundu mu") yalnız `VIDEO`/`MIXED` için `true`. Böylece "bulunamadı" ölçütü anlamını korur: genel bilgiyle verilen cevap, videoda bulunmamış sayılır.
+- İlgili transkript parçası bulunamasa da Gemini'ye sorulur (videonun özetiyle birlikte).
+- Asıl model `gemini-3-flash-preview` (önce `gemini-3.1-flash-lite`); kotası dolarsa `gemini-3.1-flash-lite` yedek olarak devreye girer.
+
+**Sonuç (30 soru, 3 video):**
+
+| Ölçüt | 2. tur | 3. tur | Hedef |
+|---|---|---|---|
+| Hit@3 | %100 | %100 | ≥ %80 |
+| Hit@1 | %74 | %74 | — |
+| Doğruluk (cevaplı 20 soru) | %95 | %100 | ≥ %75 |
+| Bulunamadı (cevapsız 10 soru) | %100 | %90 | ≥ %90 |
+
+- Cevapsız sorularda model artık "videoda geçmiyor" dedikten sonra faydalı genel bilgi de veriyor (ör. ISS'te genelde 7 kişilik mürettebat olduğu). Talimat enjeksiyonu (EX3) yine reddedildi.
+- Tek kayıp NX3 ("su sistemi kaç dolara mal oldu"): model "videoda maliyet bilgisi yok" dedi ama videodaki %98 verimlilikten dakikasıyla bahsettiği için `MIXED` sayıldı.
+- Süre: cevapların çoğu 1-3 sn; değerlendirme soruları art arda gönderdiği için asıl modelin dakikalık kotası doluyor, o sorular yedek modelden cevaplanıyor (deneme süresi 6 sn).

@@ -227,9 +227,6 @@
   border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-xs);
 }
 
-.ask-bubble-bot.is-empty .ask-answer-text {
-  color: var(--text-secondary);
-}
 
 .ask-bubble-bot.is-error {
   background-color: var(--hover-color);
@@ -315,4 +312,24 @@
   .ask-typing .ask-answer-text::after {
     animation: none;
   }
+}
+
+/* Cevabın kaynağı etiketi: videodan (sarı), karma, genel bilgi (soluk) */
+.ask-basis {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  background-color: var(--card-bg);
+}
+
+.ask-basis-video,
+.ask-basis-mixed {
+  color: var(--accent-text);
+  background-color: var(--accent-soft);
 }
