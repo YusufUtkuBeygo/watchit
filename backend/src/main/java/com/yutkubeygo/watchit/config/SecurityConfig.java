@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/playlists/**", "/playlistvideos/**").permitAll()
                         //Kurs listesi ve tek klip (paylaşılan bağlantı) girişsiz okunur; /clips (kliplerim) giriş ister
                         .requestMatchers(HttpMethod.GET, "/courses", "/clips/*").permitAll()
+                        //Sağlık kontrolü (Docker, yük dengeleyici) girişsiz; yalnız {"status":"UP"} döner
+                        .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         //API dokümanı (Swagger) herkese açık; uçların kendisi yine kendi kurallarına tabi
                         .requestMatchers(HttpMethod.GET, "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         //Kategori ekleme/değiştirme/silme ve yönetim paneli yalnız yöneticiye (V22, rol veritabanından)

@@ -31,6 +31,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	//E-posta gönderme (JavaMailSender, SMTP): doğrulama kodu ve şifre sıfırlama bağlantısı
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	//Sağlık kontrolü ucu (/actuator/health): Docker ve yayın ortamı uygulamanın ayakta olduğunu buradan anlar
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'io.minio:minio:8.5.7'
 	//Yapay zekâ: Gemini (embedding + sohbet modeli) ve pgvector (vektör araması)

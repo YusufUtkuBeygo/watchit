@@ -1,0 +1,10 @@
+# Docker imajına girmeyecekler. Özellikle şifreler: imaj paylaşılırsa içindeki her dosya okunabilir.
+.env
+**/application-local.properties
+build/
+.gradle/
+.idea/
+*.iml
+repomix-output.xml
+HELP.md
+seed/
