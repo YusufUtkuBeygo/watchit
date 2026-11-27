@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Pencil, Trash2, VideoOff, CircleAlert, RotateCw } from 'lucide-react';
 import { getVideoById, deleteVideoById } from '../services/videoService';
 import { getChannelById, getMyChannel } from '../services/channelService';
@@ -59,6 +59,25 @@ function WatchPage() {
   //Bölüm listesi saniyede bir sorar; her çizimde yeni fonksiyon olmasın diye useCallback
   const getCurrentTime = useCallback(() => playerRef.current?.currentTime || 0, []);
   const playerBoxRef = useRef(null);
+  //?t=192: video o saniyeden başlar (transkript aramasındaki "03:12'de geçiyor" bağlantısı)
+  const [searchParams] = useSearchParams();
+  const startAt = Number(searchParams.get('t')) || 0;
+  useEffect(() => {
+    if (startAt <= 0) return undefined;
+    //Oynatıcı yüklenene kadar kısa aralıklarla bakılır (en fazla ~10 sn); hazır olunca bir kez sarılır
+    let tries = 0;
+    const timer = setInterval(() => {
+      const player = playerRef.current;
+      tries += 1;
+      if (player && player.readyState >= 1) {
+        player.currentTime = startAt;
+        clearInterval(timer);
+      } else if (tries > 40) {
+        clearInterval(timer);
+      }
+    }, 250);
+    return () => clearInterval(timer);
+  }, [id, startAt]);
   //Dönüştürme video oynarken bittiyse yeni dosyaya hemen geçmiyoruz (izleyen kesilmesin), sahibine düğme gösteriyoruz
   const [readyVideo, setReadyVideo] = useState(null);
 

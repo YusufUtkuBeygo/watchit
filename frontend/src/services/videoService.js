@@ -79,3 +79,11 @@ export async function recordView(id)
 {
   await api.post(`/videos/${id}/view`);
 }
+
+//Transkriptte kelime araması (videoda söylenen kelime): [{ video, hits, matches: [{ startSeconds, text }] }], sayfalı (10'ar).
+//Kelimenin kendisi aranır (anlam değil); 3 karakterden kısa ya da 100'den uzunsa backend 400 döner
+export async function searchTranscripts(text, page = 0)
+{
+  const response = await api.get('/videos/transcript-search', { params: { q: text, page } });
+  return response.data;
+}

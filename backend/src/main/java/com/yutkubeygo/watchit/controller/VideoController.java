@@ -25,8 +25,11 @@ public class VideoController {
     private final VideoService videoService;
     //E-postası doğrulanmamış hesap bu işi yapamaz (403 EMAIL_NOT_VERIFIED)
     private final EmailVerificationService emailVerificationService;
+    private final com.yutkubeygo.watchit.service.TranscriptSearchService transcriptSearchService;
 
-    public VideoController(VideoService videoService, EmailVerificationService emailVerificationService) {
+    public VideoController(VideoService videoService, EmailVerificationService emailVerificationService,
+                           com.yutkubeygo.watchit.service.TranscriptSearchService transcriptSearchService) {
+        this.transcriptSearchService = transcriptSearchService;
         this.videoService = videoService;
         this.emailVerificationService = emailVerificationService;
     }
@@ -91,6 +94,20 @@ public class VideoController {
         if(videos == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         return ResponseEntity.ok(videos);
+    }
+
+    //Transkriptte kelime araması: GET /videos/transcript-search?q=telescope -> kelimenin söylendiği videolar,
+    //her birinde kaç yerde geçtiği ve ilk 3 yerin saniyesi + cümlesi (en çok geçen önce). q 3-100 karakter değilse 400
+    @GetMapping("/transcript-search")
+    public ResponseEntity<PageResponseDto<com.yutkubeygo.watchit.dto.TranscriptSearchResultDto>> searchTranscripts(
+            @RequestParam String q,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size)
+    {
+        var result = transcriptSearchService.search(q, Paging.of(page, size == null ? 10 : size));
+        if(result == null)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        return ResponseEntity.ok(result);
     }
 
     //Beğendiğim videolar (giriş ister: SecurityConfig'te açık /videos/** kuralından önce)

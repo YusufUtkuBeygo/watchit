@@ -6,6 +6,7 @@ import VideoCard from '../components/VideoCard';
 import { VideoGridSkeleton } from '../components/Skeleton';
 import { SearchX } from 'lucide-react';
 import EmptyState from '../components/EmptyState';
+import TranscriptMatches from '../components/TranscriptMatches';
 import '../components/VideoGrid.css';
 
 //Arama sonuçları (/search?q=kelime): başlığında kelime geçen videolar
@@ -50,6 +51,8 @@ function SearchPage() {
         </div>
       )}
       <LoadMore list={list} />
+      {/* Başlık sonuçlarından ayrı: kelime videonun konuşmasında geçiyorsa (sonuç yoksa görünmez) */}
+      <TranscriptMatches key={query} query={query} />
     </div>
   );
 }
