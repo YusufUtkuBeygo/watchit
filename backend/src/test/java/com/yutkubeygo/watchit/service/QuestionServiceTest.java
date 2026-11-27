@@ -264,6 +264,46 @@ class QuestionServiceTest {
         assertThat(System.currentTimeMillis() - started).isLessThan(5000);
     }
 
+    //Kotası dolan model bir süre zincirden çıkar: sonraki soru doğrudan yedekle başlar, asıl model boşuna denenmez
+    @Test
+    void quotaHitModelIsSkippedOnNextQuestion()
+    {
+        ReflectionTestUtils.setField(questionService, "primaryModel", "asil-model");
+        ReflectionTestUtils.setField(questionService, "fallbackModels", List.of("yedek-model"));
+        when(retriever.findRelevant(anyLong(), anyString())).thenReturn(SOURCES);
+        List<String> tried = new java.util.concurrent.CopyOnWriteArrayList<>();
+        when(chatModel.call(any(Prompt.class))).thenAnswer(inv -> {
+            String model = ((Prompt) inv.getArgument(0)).getOptions().getModel();
+            tried.add(model);
+            if("asil-model".equals(model))
+                throw new IllegalStateException("429 RESOURCE_EXHAUSTED");
+            return new ChatResponse(List.of(new Generation(new AssistantMessage("Yedekten cevap (00:05)."))));
+        });
+
+        questionService.ask(1L, 5L, "Birinci soru?");
+        questionService.ask(1L, 5L, "İkinci soru?");
+
+        //Birinci soruda asıl model denendi ve takıldı; ikinci soruda hiç denenmedi
+        assertThat(tried).containsExactly("asil-model", "yedek-model", "yedek-model");
+        assertThat(questionService.modelChain()).containsExactly("yedek-model");
+    }
+
+    @Test
+    void allModelsCooledDownStillTriesThem()
+    {
+        ReflectionTestUtils.setField(questionService, "primaryModel", "asil-model");
+        ReflectionTestUtils.setField(questionService, "fallbackModels", List.of("yedek-model"));
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, java.time.Instant> cooldown =
+                (java.util.Map<String, java.time.Instant>) ReflectionTestUtils.getField(questionService, "cooldownUntil");
+        java.time.Instant later = java.time.Instant.now().plusSeconds(600);
+        cooldown.put("asil-model", later);
+        cooldown.put("yedek-model", later);
+
+        //Hepsi atlanıyorsa hiç denemeden pes edilmez: zincirin tamamı denenir
+        assertThat(questionService.modelChain()).containsExactly("asil-model", "yedek-model");
+    }
+
     @Test
     void otherErrorsAreNotRetried()
     {
