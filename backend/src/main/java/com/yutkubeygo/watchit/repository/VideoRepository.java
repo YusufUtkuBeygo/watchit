@@ -49,6 +49,21 @@ public interface VideoRepository extends JpaRepository<Video,Long> {
     //Bu dosyayı kullanan başka video var mı (eski dosyayı silmeden önce)
     boolean existsByVideoUrl(String videoUrl);
 
+    //Silinecek kapak ya da HLS paketi başka bir videoda da kullanılıyor mu (StorageCleanupService)
+    boolean existsByThumbnailUrl(String thumbnailUrl);
+    boolean existsByHlsUrl(String hlsUrl);
+
+    //Hesap silinirken: kullanıcının videolarının yalnız dosya adresleri. Entity değil projeksiyon (yalnız bu sütunlar okunur):
+    //entity yüklenseydi Hibernate onu hafızasında tutar, kullanıcı silinince "sahibi silinmiş kayıt" diye işlemi durdururdu
+    List<VideoFiles> findFilesByChannelOwnerId(Long ownerId);
+
+    interface VideoFiles {
+        String getVideoUrl();
+        String getThumbnailUrl();
+        String getHlsSourceUrl();
+        String getHlsUrl();
+    }
+
     //İşi üstlen: yalnız hâlâ sıradaysa (PENDING -> PROCESSING). 0 = başkası aldı ya da iptal oldu.
     @Modifying
     @Transactional
