@@ -15,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import  org.springframework.stereotype.Service;
 
+import com.yutkubeygo.watchit.repository.ChannelRepository;
 import com.yutkubeygo.watchit.repository.EmailTokenRepository;
+import com.yutkubeygo.watchit.repository.VideoRepository;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Locale;
@@ -38,6 +40,12 @@ public class UserService {
     private final EmailVerificationService emailVerificationService;
 
     private final EmailTokenRepository emailTokenRepository;
+
+    private final ChannelRepository channelRepository;
+
+    private final VideoRepository videoRepository;
+
+    private final StorageCleanupService storageCleanupService;
 
 //    public UserService(UserRepository userRepository, UserMapper userMapper) {
 //        this.userRepository = userRepository;
@@ -169,8 +177,15 @@ public class UserService {
       if(!userRepository.existsById(id))
           return false;
 
+      //Hesabın kanalı ve videoları veritabanında zincirle silinir (V4); MinIO'daki dosyaları için adresler önceden toplanır.
+      //Dosyalar işlem (transaction) başarıyla bitince silinir: hesap silinemezse dosyalara da dokunulmaz
+      StorageCleanupService.Files files = new StorageCleanupService.Files();
+      videoRepository.findFilesByChannelOwnerId(id).forEach(files::addVideo);
+      channelRepository.findFilesByOwnerId(id).ifPresent(files::addChannel);
+
       emailTokenRepository.deleteByUserId(id);
       userRepository.deleteById(id);
+      storageCleanupService.deleteAfterCommit(files);
       return true;
     }
 

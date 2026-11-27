@@ -38,8 +38,10 @@ public class VideoService {
     private final NotificationService notificationService;
     private final VideoProcessingService videoProcessingService;
     private final WatchLaterRepository watchLaterRepository;
+    private final StorageCleanupService storageCleanupService;
 
-    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService, SubscriptionRepository subscriptionRepository, NotificationService notificationService, VideoProcessingService videoProcessingService, WatchLaterRepository watchLaterRepository) {
+    public VideoService(VideoMapper videoMapper, ChannelRepository channelRepository, CategoryRepository categoryRepository, VideoRepository videoRepository, VideoLikeRepository videoLikeRepository, FileService fileService, ViewLimiterService viewLimiterService, SubscriptionRepository subscriptionRepository, NotificationService notificationService, VideoProcessingService videoProcessingService, WatchLaterRepository watchLaterRepository, StorageCleanupService storageCleanupService) {
+        this.storageCleanupService = storageCleanupService;
         this.videoMapper = videoMapper;
         this.channelRepository = channelRepository;
         this.categoryRepository = categoryRepository;
@@ -174,12 +176,17 @@ public class VideoService {
         video.setCategory(category);
         video.setTitle(videoRequestDto.getTitle());
         video.setDescription((videoRequestDto.getDescription()));
+        //Yenisiyle değişen kapak ve video dosyasının eskisi depodan silinir (kayıt kaydedildikten sonra)
+        StorageCleanupService.Files replaced = new StorageCleanupService.Files();
+        StorageCleanupService.addReplaced(replaced, video.getThumbnailUrl(), videoRequestDto.getThumbnailUrl());
+        StorageCleanupService.addReplaced(replaced, video.getVideoUrl(), videoRequestDto.getVideoUrl());
         video.setThumbnailUrl(videoRequestDto.getThumbnailUrl());
         boolean fileChanged = !java.util.Objects.equals(video.getVideoUrl(), videoRequestDto.getVideoUrl());
         video.setVideoUrl(videoRequestDto.getVideoUrl());
         video.setDurationInSeconds(videoRequestDto.getDurationInSeconds());
 
         Video savedVideo=videoRepository.save(video);
+        storageCleanupService.deleteAfterCommit(replaced);
 
         //Video dosyası değiştiyse yeni dosya dönüştürülür, transkript de onun ardından yeniden çıkarılır
         if(fileChanged)
@@ -202,7 +209,10 @@ public class VideoService {
         if(!ownerId.equals(userId))
             throw new ForbiddenException();
 
+        //Dosya adresleri silmeden önce alınır: kayıt gidince adresler de gider
+        StorageCleanupService.Files files = new StorageCleanupService.Files().addVideo(video);
         videoRepository.deleteById(id);
+        storageCleanupService.deleteAfterCommit(files);
         return true;
     }
 

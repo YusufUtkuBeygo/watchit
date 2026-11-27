@@ -26,8 +26,10 @@ public class ChannelService {
     private final SubscriptionRepository subscriptionRepository;
     private final FileService fileService;
     private final VideoRepository videoRepository;
+    private final StorageCleanupService storageCleanupService;
 
-    public ChannelService(ChannelMapper channelMapper, ChannelRepository channelRepository, UserRepository userRepository, SubscriptionRepository subscriptionRepository, FileService fileService, VideoRepository videoRepository) {
+    public ChannelService(ChannelMapper channelMapper, ChannelRepository channelRepository, UserRepository userRepository, SubscriptionRepository subscriptionRepository, FileService fileService, VideoRepository videoRepository, StorageCleanupService storageCleanupService) {
+        this.storageCleanupService = storageCleanupService;
         this.videoRepository = videoRepository;
         this.channelMapper = channelMapper;
         this.channelRepository = channelRepository;
@@ -120,12 +122,17 @@ public class ChannelService {
 
         //Uptade istenilen elemanın bilgierini requestten gelen bilgieri kullanarak revize ediyoruz
         channel.setChannelName(request.getChannelName());
+        //Yenisiyle değişen resimlerin eskisi depodan silinir
+        StorageCleanupService.Files replaced = new StorageCleanupService.Files();
+        StorageCleanupService.addReplaced(replaced, channel.getBannerImageUrl(), request.getBannerImageUrl());
+        StorageCleanupService.addReplaced(replaced, channel.getProfilePictureUrl(), request.getProfilePictureUrl());
         channel.setBannerImageUrl(request.getBannerImageUrl());
         channel.setProfilePictureUrl(request.getProfilePictureUrl());
         channel.setDescription(request.getDescription());
 
         //Değişiklikleri kaydediyoruz
         Channel savedChannel=channelRepository.save(channel);
+        storageCleanupService.deleteAfterCommit(replaced);
         //İşlem sonunda dto nesnesini return ediyoruz
         return channelMapper.toDto(savedChannel);
 
@@ -143,7 +150,11 @@ public class ChannelService {
         if(!ownerId.equals(userId))
             throw new ForbiddenException();
 
+        //Kanal silinince videoları da silinir (ON DELETE CASCADE, V4); dosyalarının adresleri önceden toplanır
+        StorageCleanupService.Files files = StorageCleanupService.ofVideos(videoRepository.findByChannelIdOrderByCreatedAtDesc(id))
+                .addChannel(channel);
         channelRepository.deleteById(id);
+        storageCleanupService.deleteAfterCommit(files);
         return true;
     }
 

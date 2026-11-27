@@ -50,4 +50,17 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    //Depo temizliği (silinen kayıtların MinIO dosyaları): tek iş parçacığı yeter, acelesi yok
+    @Bean(name = "storageExecutor")
+    public Executor storageExecutor()
+    {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(1);
+        executor.setQueueCapacity(1000);
+        executor.setThreadNamePrefix("depo-temizlik-");
+        executor.initialize();
+        return executor;
+    }
 }
