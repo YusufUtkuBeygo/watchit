@@ -1,0 +1,71 @@
+.chapters {
+  margin-top: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.chapters-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px 4px;
+  font-size: var(--fs-md);
+}
+
+.chapters-note {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  color: var(--text-secondary);
+}
+
+.chapters-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chapter {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chapter:hover {
+  background: var(--hover-color);
+}
+
+.chapter:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.chapter.is-current {
+  background: var(--accent-soft);
+}
+
+.chapter-time {
+  flex-shrink: 0;
+  min-width: 48px;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  color: var(--accent-text);
+  font-weight: var(--fw-semibold);
+}
+
+.chapter-name {
+  overflow-wrap: anywhere;
+}

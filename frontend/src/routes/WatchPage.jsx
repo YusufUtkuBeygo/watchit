@@ -14,6 +14,7 @@ import WatchLaterButton from '../components/WatchLaterButton';
 import ClipButton from '../components/ClipButton';
 import DownloadButton from '../components/DownloadButton';
 import ReportButton from '../components/ReportButton';
+import ChapterList from '../components/ChapterList';
 import AskVideoPanel from '../components/AskVideoPanel';
 import RelatedVideos from '../components/RelatedVideos';
 import { formatViews } from '../utils/format';
@@ -55,6 +56,8 @@ function WatchPage() {
   const [isEditing, setIsEditing] = useState(false);
   //Oynatıcı ve kutusu: "Videoya sor"daki dakikaya tıklayınca video oraya sarılır ve görünür hâle kaydırılır
   const playerRef = useRef(null);
+  //Bölüm listesi saniyede bir sorar; her çizimde yeni fonksiyon olmasın diye useCallback
+  const getCurrentTime = useCallback(() => playerRef.current?.currentTime || 0, []);
   const playerBoxRef = useRef(null);
   //Dönüştürme video oynarken bittiyse yeni dosyaya hemen geçmiyoruz (izleyen kesilmesin), sahibine düğme gösteriyoruz
   const [readyVideo, setReadyVideo] = useState(null);
@@ -284,6 +287,8 @@ function WatchPage() {
         </div>
         <p>{video.description || 'Açıklama yok.'}</p>
       </div>
+
+      <ChapterList key={`bolum-${video.id}`} videoId={video.id} getCurrentTime={getCurrentTime} onSeek={seekTo} />
 
       {/* "Videoya sor" açıklamanın altında, yorumların hemen üstünde; key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
       <AskVideoPanel
