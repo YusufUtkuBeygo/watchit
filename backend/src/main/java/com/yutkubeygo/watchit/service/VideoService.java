@@ -276,6 +276,7 @@ public class VideoService {
         if(viewLimiterService.tryCount(viewer,videoId,video.getDurationInSeconds()))
         {
             videoRepository.incrementViewCount(videoId);
+            videoRepository.incrementDailyViews(videoId);    //Stüdyo grafiği (gün gün)
         }
 
         return true;

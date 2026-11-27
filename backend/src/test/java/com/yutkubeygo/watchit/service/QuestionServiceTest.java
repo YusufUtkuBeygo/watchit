@@ -46,6 +46,8 @@ class QuestionServiceTest {
     @Mock private TranscriptRetriever retriever;
     @Mock private QuestionLimiterService limiter;
     @Mock private ChatModel chatModel;
+    //Gerçek önbellek (her test için yeni): aynı testte aynı soru iki kez sorulursa ikincisi önbellekten gelir
+    @org.mockito.Spy private AnswerCache answerCache = new AnswerCache();
 
     @InjectMocks
     private QuestionService questionService;
@@ -86,6 +88,20 @@ class QuestionServiceTest {
         assertThat(result.found()).isTrue();
         assertThat(result.answer()).isEqualTo("Tom, Celia'nın robot elinden korkuyor (00:02).");
         assertThat(result.sources()).isEqualTo(SOURCES);
+    }
+
+    @Test
+    void repeatedQuestionComesFromCacheWithoutGeminiOrLimit()
+    {
+        when(retriever.findRelevant(anyLong(), anyString())).thenReturn(SOURCES);
+        geminiSays("Tom, Celia'nın robot elinden korkuyor (00:02).");
+
+        QuestionResponseDto first = questionService.ask(1L, 5L, "Neden tartışıyorlar?");
+        QuestionResponseDto second = questionService.ask(1L, 7L, "neden  TARTIŞIYORLAR");
+
+        assertThat(second).isEqualTo(first);
+        verify(chatModel, org.mockito.Mockito.times(1)).call(any(Prompt.class));
+        verify(limiter, org.mockito.Mockito.never()).tryAcquire(7L);   //önbellekten gelen cevap soru hakkı yemez
     }
 
     @Test

@@ -101,6 +101,32 @@ public interface VideoRepository extends JpaRepository<Video,Long>, JpaSpecifica
             nativeQuery = true)
     Page<Video> findForYou(@Param("userId") Long userId, @Param("categoryId") Long categoryId, Pageable pageable);
 
+    //Günlük sayaç (V25): o günün satırı yoksa 1 ile açılır, varsa 1 artar. Tek sorgu (upsert): iki izleyici aynı anda gelse de kayıp olmaz
+    @Modifying
+    @Transactional
+    @Query(value = """
+            INSERT INTO video_view_daily (video_id, day, views) VALUES (:id, CURRENT_DATE, 1)
+            ON CONFLICT (video_id, day) DO UPDATE SET views = video_view_daily.views + 1
+            """, nativeQuery = true)
+    int incrementDailyViews(@Param("id") Long videoId);
+
+    //Kanalın son günlerdeki günlük görüntülenmeleri: [gün, toplam] (izlenme olmayan günler satır olarak gelmez)
+    @Query(value = """
+            SELECT d.day, SUM(d.views) FROM video_view_daily d JOIN videos v ON v.id = d.video_id
+            WHERE v.channel_id = :channelId AND d.day >= :since
+            GROUP BY d.day ORDER BY d.day
+            """, nativeQuery = true)
+    List<Object[]> dailyViewsOfChannel(@Param("channelId") Long channelId, @Param("since") java.time.LocalDate since);
+
+    @Query("SELECT COALESCE(SUM(v.viewCount), 0) FROM Video v WHERE v.channel.id = :channelId")
+    long totalViewsOfChannel(@Param("channelId") Long channelId);
+
+    //Otomatik kapak: yalnız video hâlâ kapaksızsa yazılır (sahibi bu arada kendi kapağını eklediyse 0 döner)
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE videos SET thumbnail_url = :url WHERE id = :id AND (thumbnail_url IS NULL OR thumbnail_url = '')", nativeQuery = true)
+    int setThumbnailIfMissing(@Param("id") Long videoId, @Param("url") String url);
+
     //Yorumu sabitle (commentId null: sabiti kaldır)
     @Modifying
     @Transactional

@@ -11,6 +11,7 @@ import { getTranscript } from '../services/transcriptService';
 import { formatCount, formatViews, timeAgo } from '../utils/format';
 import { RowListSkeleton } from '../components/Skeleton';
 import './ListPage.css';
+import ViewsChart from '../components/ViewsChart';
 import './StudioPage.css';
 
 //Bir video işlenirken liste bu aralıkla yeniden okunur
@@ -161,6 +162,8 @@ function Studio() {
         <div className="studio-stat"><dt>Görüntülenme</dt><dd>{formatCount(totalViews)}</dd></div>
         <div className="studio-stat"><dt>Abone</dt><dd>{formatCount(channel.subscriberCount)}</dd></div>
       </dl>
+
+      {videos.length > 0 && <ViewsChart />}
 
       {videos.length === 0 ? (
         <div className="card studio-empty">

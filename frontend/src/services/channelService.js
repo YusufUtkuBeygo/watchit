@@ -65,3 +65,11 @@ export async function getMySubscribedChannels()
 
 //Abonelik değişince (abone ol / çık) sol menü gibi yerlerin listeyi yenilemesi için haber verilir
 export const SUBSCRIPTIONS_CHANGED = 'watchit:subscriptions-changed';
+
+//Stüdyo: kendi kanalımın toplamları ve son "days" günün günlük görüntülenmesi
+//{ totalViews, subscriberCount, videoCount, periodViews, daily: [{ date: '2026-11-27', views }] }
+export async function getMyChannelStats(days = 28)
+{
+  const response = await api.get('/channels/me/stats', { params: { days } });
+  return response.data;
+}

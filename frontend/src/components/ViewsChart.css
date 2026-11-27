@@ -1,0 +1,76 @@
+.views-chart {
+  margin-bottom: 24px;
+  padding: 16px;
+}
+
+.views-chart-loading {
+  height: 240px;
+}
+
+.views-chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 8px;
+}
+
+.views-chart-head .card-title {
+  margin: 0;
+}
+
+.views-chart-total {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.views-chart-total strong {
+  font-size: var(--fs-xl);
+  font-variant-numeric: tabular-nums;
+}
+
+.views-chart-total span {
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.views-chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.views-chart-grid {
+  stroke: var(--border-color);
+  stroke-width: 1;
+}
+
+.views-chart-axis {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.views-chart-bar {
+  fill: var(--chart-bar);
+}
+
+.views-chart-bar.is-active {
+  fill: var(--accent);
+}
+
+.views-chart-hit {
+  fill: transparent;
+  cursor: default;
+}
+
+.views-chart-hit:focus-visible {
+  outline: none;
+  stroke: var(--focus);
+  stroke-width: 2;
+}

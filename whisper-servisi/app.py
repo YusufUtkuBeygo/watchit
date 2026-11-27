@@ -206,6 +206,41 @@ def transcode(request: TranscribeRequest):
             raise
 
 
+thumbnail_lock = threading.Lock()
+
+
+@app.post("/thumbnail")
+def thumbnail(request: TranscribeRequest):
+    """Videodan kapak resmi (JPEG) çıkarır: videonun %10'undan sonraki 100 kare içinden en temsil edici olanı
+    (ffmpeg thumbnail süzgeci: ortalamaya en yakın kare; siyah geçiş ya da bulanık kare seçilmesin diye).
+    En fazla 720 piksel yükseklik. Kapaksız yüklenen videolar için."""
+    with thumbnail_lock:
+        tmp = tempfile.mkdtemp()
+        try:
+            source = os.path.join(tmp, "kaynak")
+            output = os.path.join(tmp, "kapak.jpg")
+            download(request.url, source)
+            info = probe(source)
+            if not any(s.get("codec_type") == "video" for s in info.get("streams", [])):
+                raise HTTPException(status_code=422, detail="Dosyada görüntü yok.")
+            duration = float(info.get("format", {}).get("duration") or 0)
+            # Baştaki logo/siyah ekrandan kaçmak için %10 ileriden başla (kısa videoda en fazla 1 sn önce bitsin)
+            start = max(0.0, min(duration * 0.1, duration - 1)) if duration > 0 else 0
+            result = subprocess.run(
+                ["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-ss", f"{start:.2f}", "-i", source,
+                 "-vf", f"thumbnail=100,scale=-2:'min({MAX_HEIGHT},ih)'", "-frames:v", "1", "-q:v", "3", output],
+                capture_output=True, text=True)
+            if result.returncode != 0 or not os.path.exists(output):
+                log.warning("Kapak çıkarılamadı: %s", result.stderr[-500:])
+                raise HTTPException(status_code=422, detail="Kapak çıkarılamadı.")
+            log.info("Kapak çıkarıldı: %.1f sn civarından, %.0f KB", start, os.path.getsize(output) / 1e3)
+            os.remove(source)
+            return FileResponse(output, media_type="image/jpeg", background=BackgroundTask(shutil.rmtree, tmp, True))
+        except Exception:
+            shutil.rmtree(tmp, True)
+            raise
+
+
 # HLS kalite basamakları: (yükseklik, görüntü bit hızı, ses bit hızı). Kaynaktan büyük basamak üretilmez.
 # Bit hızları YouTube'un önerdiği aralıkların altında: okul/ev bağlantısında takılmadan oynasın.
 HLS_LADDER = [(720, 2800, 128), (480, 1400, 128), (360, 800, 96), (240, 400, 64)]
