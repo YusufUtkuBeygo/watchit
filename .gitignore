@@ -11,3 +11,6 @@ skills-lock.json
 
 # Yayın ayarları (şifreler)
 .env.prod
+
+# ops/yedek.sh çıktısı (veritabanı dökümü ve dosyalar; repoya girmez)
+yedekler/
