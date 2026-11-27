@@ -46,9 +46,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/courses", "/clips/*").permitAll()
                         //API dokümanı (Swagger) herkese açık; uçların kendisi yine kendi kurallarına tabi
                         .requestMatchers(HttpMethod.GET, "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        //Kategori ekleme/değiştirme/silme kimseye açık değil (rol sistemi yok, kategoriler veritabanından yönetilir)
-                        //Okuma üstteki GET kuralına uyduğu için buraya hiç gelmez
-                        .requestMatchers("/categories/**").denyAll()
+                        //Kategori ekleme/değiştirme/silme ve yönetim paneli yalnız yöneticiye (V22, rol veritabanından)
+                        //Kategori okuma üstteki GET kuralına uyduğu için buraya hiç gelmez. Giriş yoksa 401, yönetici değilse 403
+                        .requestMatchers("/categories/**", "/admin/**").hasRole("ADMIN")
                         //Görüntülenme sayımı girişsiz izleyiciye de açık (girişsizse IP ile tanınır, ViewLimiterService sınırlar)
                         .requestMatchers(HttpMethod.POST , "/videos/*/view").permitAll()
                         .anyRequest().authenticated()

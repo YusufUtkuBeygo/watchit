@@ -223,11 +223,26 @@ public class VideoService {
         if(!ownerId.equals(userId))
             throw new ForbiddenException();
 
+        removeVideo(video);
+        return true;
+    }
+
+    //Yönetici (şikayet üzerine) sahiplik kontrolü olmadan siler; video yoksa false
+    public boolean deleteVideoAsAdmin(Long id)
+    {
+        Video video=videoRepository.findById(id).orElse(null);
+        if(video==null)
+            return false;
+        removeVideo(video);
+        return true;
+    }
+
+    private void removeVideo(Video video)
+    {
         //Dosya adresleri silmeden önce alınır: kayıt gidince adresler de gider
         StorageCleanupService.Files files = new StorageCleanupService.Files().addVideo(video);
-        videoRepository.deleteById(id);
+        videoRepository.deleteVideoById(video.getId());
         storageCleanupService.deleteAfterCommit(files);
-        return true;
     }
 
 

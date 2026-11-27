@@ -59,6 +59,15 @@ public interface VideoRepository extends JpaRepository<Video,Long>, JpaSpecifica
     boolean existsByThumbnailUrl(String thumbnailUrl);
     boolean existsByHlsUrl(String hlsUrl);
 
+    //Videoyu tek DELETE ile siler; yorumlar, beğeniler, transkript, klipler... veritabanında zincirle gider (ON DELETE CASCADE).
+    //Neden delete(video) değil: o yol Hibernate'in hafızasındaki bağlı kayıtları (ör. aynı işlemde yüklenmiş bir yorum) da
+    //düşünmek zorunda kalıyor ve "silinmiş videoya bağlı yorum" diye işlemi durduruyordu.
+    //flushAutomatically: önce bekleyen yazmalar (ör. bildirim) gider; clearAutomatically: sonra hafıza temizlenir, eski kayıt kalmaz
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional
+    @Query("DELETE FROM Video v WHERE v.id = :id")
+    int deleteVideoById(@Param("id") Long id);
+
     //Hesap silinirken: kullanıcının videolarının yalnız dosya adresleri. Entity değil projeksiyon (yalnız bu sütunlar okunur):
     //entity yüklenseydi Hibernate onu hafızasında tutar, kullanıcı silinince "sahibi silinmiş kayıt" diye işlemi durdururdu
     List<VideoFiles> findFilesByChannelOwnerId(Long ownerId);

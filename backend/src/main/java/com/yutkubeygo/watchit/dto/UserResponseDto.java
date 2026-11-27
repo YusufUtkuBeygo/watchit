@@ -13,6 +13,8 @@ public class UserResponseDto {
     private String email;
     //Frontend "e-postanı doğrula" uyarısını buna göre gösterir
     private boolean emailVerified;
+    //USER ya da ADMIN: frontend yönetim panelini yalnız yöneticiye gösterir
+    private String role;
 
 
 }

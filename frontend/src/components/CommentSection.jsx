@@ -9,6 +9,7 @@ import { CommentsSkeleton } from './Skeleton';
 import { MessageSquare } from 'lucide-react';
 import { TOO_MANY_REQUESTS } from '../utils/errors';
 import EmptyState from './EmptyState';
+import ReportModal from './ReportModal';
 
 //Yorum içeriği veritabanında en fazla 1000 karakter (comments.content varchar(1000))
 const MAX_LENGTH = 1000;
@@ -78,6 +79,7 @@ export default function CommentSection({ videoId }) {
             <CommentItem
               comment={comment}
               canDelete={user?.id === comment.userId}
+              canReport={!!user && user.id !== comment.userId}
               onDelete={handleDelete}
               onEdited={reload}
               onReply={user ? () => setReplyingTo(comment.id) : null}
@@ -90,6 +92,7 @@ export default function CommentSection({ videoId }) {
                     <CommentItem
                       comment={reply}
                       canDelete={user?.id === reply.userId}
+                      canReport={!!user && user.id !== reply.userId}
                       onDelete={handleDelete}
                       onEdited={reload}
                       //Cevaba cevap da aynı üst yoruma bağlanır (tek seviye, YouTube gibi)
@@ -121,8 +124,9 @@ export default function CommentSection({ videoId }) {
 
 //Tek bir yorum: kullanıcı adı, tarih, metin, Yanıtla / Düzenle / Sil
 //canDelete: yorum benimse true (yalnız yazarı düzenleyip silebilir)
-function CommentItem({ comment, canDelete, onDelete, onReply, onEdited }) {
+function CommentItem({ comment, canDelete, canReport, onDelete, onReply, onEdited }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
 
   return (
     <div className="comment">
@@ -152,8 +156,14 @@ function CommentItem({ comment, canDelete, onDelete, onReply, onEdited }) {
                   <button className="comment-action" onClick={() => onDelete(comment.id)}>Sil</button>
                 </>
               )}
+              {canReport && (
+                <button className="comment-action" onClick={() => setIsReporting(true)}>Şikayet et</button>
+              )}
             </div>
           </>
+        )}
+        {isReporting && (
+          <ReportModal targetType="COMMENT" targetId={comment.id} onClose={() => setIsReporting(false)} />
         )}
       </div>
     </div>

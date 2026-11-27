@@ -6,6 +6,8 @@ public enum NotificationType {
     LIKE,
     COMMENT,
     SUBSCRIBE,
-    VIDEO_UPLOAD
+    VIDEO_UPLOAD,
+    //Sistemden (ör. yönetici içeriğini kaldırdı)
+    SYSTEM
 
 }

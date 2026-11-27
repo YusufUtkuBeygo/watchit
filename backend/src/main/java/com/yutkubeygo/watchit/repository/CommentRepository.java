@@ -20,4 +20,10 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
 
     long countByVideoId(Long videoId);
 
+    //Tek DELETE (cevaplar ve beğeniler veritabanında zincirle gider); sebebi VideoRepository.deleteVideoById ile aynı
+    @org.springframework.data.jpa.repository.Modifying(flushAutomatically = true, clearAutomatically = true)
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query("DELETE FROM Comment c WHERE c.id = :id")
+    int deleteCommentById(@org.springframework.data.repository.query.Param("id") Long id);
+
 }

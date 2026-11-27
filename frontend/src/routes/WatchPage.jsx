@@ -13,6 +13,7 @@ import SaveToPlaylist from '../components/SaveToPlaylist';
 import WatchLaterButton from '../components/WatchLaterButton';
 import ClipButton from '../components/ClipButton';
 import DownloadButton from '../components/DownloadButton';
+import ReportButton from '../components/ReportButton';
 import AskVideoPanel from '../components/AskVideoPanel';
 import RelatedVideos from '../components/RelatedVideos';
 import { formatViews } from '../utils/format';
@@ -266,6 +267,7 @@ function WatchPage() {
           {/* Klip başlangıcı oynatıcının o anki saniyesinden alınır */}
           <ClipButton key={`klip-${video.id}`} video={video} getCurrentTime={() => playerRef.current?.currentTime || 0} />
           <DownloadButton key={`indir-${video.id}`} video={video} />
+          {user && !isOwner && <ReportButton key={`sikayet-${video.id}`} videoId={video.id} />}
           {isOwner && (
             <>
               <button className="btn" onClick={() => setIsEditing(true)}><Pencil size={16} /> Düzenle</button>

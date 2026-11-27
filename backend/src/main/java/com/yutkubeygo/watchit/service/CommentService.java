@@ -155,4 +155,13 @@ public class CommentService {
         return true;
     }
 
+    //Yönetici (şikayet üzerine) sahiplik kontrolü olmadan siler (cevapları ve beğenileri de gider); yorum yoksa false
+    public boolean deleteCommentAsAdmin(Long id)
+    {
+        if(!commentRepository.existsById(id))
+            return false;
+        commentRepository.deleteCommentById(id);
+        return true;
+    }
+
 }
