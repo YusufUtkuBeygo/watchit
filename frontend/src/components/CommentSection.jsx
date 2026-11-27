@@ -7,6 +7,7 @@ import './CommentSection.css';
 import Avatar from './Avatar';
 import { CommentsSkeleton } from './Skeleton';
 import { MessageSquare } from 'lucide-react';
+import { TOO_MANY_REQUESTS } from '../utils/errors';
 import EmptyState from './EmptyState';
 
 //Yorum içeriği veritabanında en fazla 1000 karakter (comments.content varchar(1000))
@@ -221,7 +222,8 @@ function CommentForm({ videoId, parentCommentId = null, placeholder, autoFocus, 
     } catch (error) {
       const status = error.response ? error.response.status : null;
       setErrorMessage(
-        status === 401 ? 'Oturumun süresi dolmuş, tekrar giriş yap.' : 'Yorum gönderilemedi.'
+        status === 401 ? 'Oturumun süresi dolmuş, tekrar giriş yap.'
+          : status === 429 ? TOO_MANY_REQUESTS : 'Yorum gönderilemedi.'
       );
     } finally {
       setIsSubmitting(false);

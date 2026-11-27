@@ -3,6 +3,7 @@ import { ThumbsUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getVideoById } from '../services/videoService';
 import { likeVideo, unlikeVideo } from '../services/videoLikeService';
+import { TOO_MANY_REQUESTS } from '../utils/errors';
 import './LikeButton.css';
 
 //İzleme sayfasındaki beğeni düğmesi.
@@ -61,7 +62,8 @@ export default function LikeButton({ videoId, initialCount, initialLiked }) {
       const status = error.response ? error.response.status : null;
       //409: zaten beğenilmiş, 404: zaten geri alınmış (ör. başka sekmede). İkisinde de sunucu doğrusunu söyler
       if (status !== 409 && status !== 404) {
-        setMessage(status === 401 ? 'Oturumun süresi dolmuş, tekrar giriş yap.' : 'Beğeni kaydedilemedi.');
+        setMessage(status === 401 ? 'Oturumun süresi dolmuş, tekrar giriş yap.'
+          : status === 429 ? TOO_MANY_REQUESTS : 'Beğeni kaydedilemedi.');
       }
     } finally {
       //Her durumda sayıyı ve durumu sunucudakiyle eşitle

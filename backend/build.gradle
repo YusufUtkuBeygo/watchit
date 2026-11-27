@@ -65,6 +65,7 @@ tasks.named('test') {
 	}
 	//Testler gerçek yerel veritabanına bağlanıyor: açılışta eski videolar HLS sırasına girmesin
 	systemProperty 'hls.run-on-startup', 'false'
+	systemProperty 'rate-limit.enabled', 'false'
 }
 
 //Videoya soru sor değerlendirmesi (gerçek Gemini + yerel veritabanı gerekir, CI'da çalışmaz): ./gradlew eval
@@ -78,6 +79,7 @@ tasks.register('eval', Test) {
 	}
 	systemProperty 'eval.pauseMs', findProperty('eval.pauseMs') ?: '4000'
 	systemProperty 'hls.run-on-startup', 'false'
+	systemProperty 'rate-limit.enabled', 'false'
 	testLogging {
 		showStandardStreams = true
 	}

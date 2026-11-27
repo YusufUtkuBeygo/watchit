@@ -4,6 +4,7 @@ import { Scissors } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { createClip, CLIP_MIN, CLIP_MAX } from '../services/clipService';
 import { formatDuration } from '../utils/format';
+import { TOO_MANY_REQUESTS } from '../utils/errors';
 import Modal from './Modal';
 
 //"1:23" ya da "83" → 83 saniye; anlaşılmazsa null
@@ -73,6 +74,8 @@ export default function ClipButton({ video, getCurrentTime }) {
         openVerify();
       } else if (status === 400) {
         setError('Klip 5-60 saniye olmalı ve videonun içinde kalmalı.');
+      } else if (status === 429) {
+        setError(TOO_MANY_REQUESTS);
       } else {
         setError('Klip kaydedilemedi. Biraz sonra tekrar dene.');
       }

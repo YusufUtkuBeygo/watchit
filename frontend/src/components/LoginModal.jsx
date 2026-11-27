@@ -96,6 +96,8 @@ const LoginModal = ({ isOpen, onClose }) => {
     const status = error.response ? error.response.status : null;
     if (status === 409) {
       setErrorMessage('Bu e-posta ya da kullanıcı adı zaten kullanılıyor.');
+    } else if (status === 429) {
+      setErrorMessage('Bu ağdan çok fazla hesap açıldı. Bir saat sonra tekrar dene.');
     } else if (status === 400 && error.response.data) {
       //Backend hatalı alanları döner; her alanın altına Türkçe mesajı yaz
       const errors = {};

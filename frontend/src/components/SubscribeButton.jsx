@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getChannelById, getMyChannel, subscribe, unsubscribe, SUBSCRIPTIONS_CHANGED } from '../services/channelService';
+import { TOO_MANY_REQUESTS } from '../utils/errors';
 import './SubscribeButton.css';
 
 //İzleme sayfasındaki "Abone ol" düğmesi.
@@ -68,6 +69,8 @@ export default function SubscribeButton({ channel, onChannelChange }) {
         setMessage('Kendi kanalına abone olamazsın.');
       } else if (status === 401) {
         setMessage('Oturumun süresi dolmuş, tekrar giriş yap.');
+      } else if (status === 429) {
+        setMessage(TOO_MANY_REQUESTS);
       } else if (status !== 409 && status !== 404) {
         //409: zaten abone, 404: zaten çıkılmış (ör. başka sekmede); sunucu doğrusunu söyler
         setMessage('İşlem kaydedilemedi.');

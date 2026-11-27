@@ -161,6 +161,8 @@ export default function UploadModal({ onClose }) {
         setErrorMessage('Başlık ve kategori zorunlu.');
       } else if (status === 404) {
         setErrorMessage('Kanal ya da kategori bulunamadı.');
+      } else if (status === 429) {
+        setErrorMessage('Kısa sürede çok fazla video yükledin. Biraz bekleyip tekrar dene.');
       } else {
         setErrorMessage('Yükleme başarısız. Biraz sonra tekrar dene.');
       }
