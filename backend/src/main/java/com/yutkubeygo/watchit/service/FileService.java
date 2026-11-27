@@ -26,7 +26,9 @@ public class FileService {
     @Value("${minio.bucket.name}")
     private String bucketName;
 
-    @Value("${minio.url}")
+    //Dosya adreslerinin TARAYICIYA görünen başı (ör. https://dosya.alanadi.com). Backend MinIO'ya iç adresten
+    //(minio.url, ör. http://minio:9000) bağlanır; ikisi geliştirmede aynı, yayında farklı (MinioConfig)
+    @Value("${minio.public-url}")
     private String minioUrl;
 
     public FileService(MinioClient minioClient) {
@@ -81,18 +83,22 @@ public class FileService {
         return url == null || url.isEmpty() || url.startsWith(minioUrl + "/" + bucketName + "/");
     }
 
-    public UploadUrlResponseDto createUploadUrl(String originalFileName, String contentType) {
+    //Tarayıcının yüklediği dosyalar bu klasöre gider. Sahipsiz dosya temizliği yalnız burada arar
+    //(kovadaki öteki dosyalara, ör. işlenmiş videolar ve demo verisi, dokunmaz)
+    public static final String UPLOAD_PREFIX = "yuklemeler/";
+
+    public UploadUrlResponseDto createUploadUrl(String originalFileName, String contentType, long maxBytes) {
         try {
 
             UploadUrlResponseDto uploadUrlResponseDto = new UploadUrlResponseDto();
 
             prepareBucket();
-            String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
+            String fileName = UPLOAD_PREFIX + UUID.randomUUID() + "_" + originalFileName;
 
             PostPolicy policy = new PostPolicy(bucketName, ZonedDateTime.now().plusMinutes(15)); // kova + son geçerlilik zamanı
             policy.addEqualsCondition("key", fileName);                    // dosya adı tam olarak bu olmalı
             policy.addEqualsCondition("Content-Type", contentType);        // dosya tipi tam olarak bu olmalı (video/... ya da image/...)
-            policy.addContentLengthRangeCondition(1L, 2L * 1024 * 1024 * 1024); // boyut: 1 bayt ile 2 GB arası
+            policy.addContentLengthRangeCondition(1L, maxBytes);           // boyut: 1 bayt ile tarayıcının bildirdiği boyut arası
 
             Map<String, String> formData = minioClient.getPresignedPostFormData(policy);
             formData.put("key", fileName);
@@ -148,6 +154,47 @@ public class FileService {
         {
             throw new IllegalStateException("Kapak depoya yazılamadı: " + e.getMessage(), e);
         }
+    }
+
+    //Bizim kovadaki bir dosyanın boyutu (bayt); bulunamazsa null. Video kaydına yazılır (yükleme kotası)
+    public Long objectSize(String url)
+    {
+        if(url == null || url.isEmpty() || !isOwnFileUrl(url))
+            return null;
+        try
+        {
+            return minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(keyOf(url)).build()).size();
+        }
+        catch(Exception e)
+        {
+            return null;
+        }
+    }
+
+    //Tarayıcının yüklediği ve verilen andan önce yazılmış dosyaların adresleri (sahipsiz dosya temizliği)
+    public java.util.List<String> listUploadsOlderThan(ZonedDateTime before)
+    {
+        java.util.List<String> urls = new java.util.ArrayList<>();
+        try
+        {
+            for(Result<Item> result : minioClient.listObjects(ListObjectsArgs.builder()
+                    .bucket(bucketName).prefix(UPLOAD_PREFIX).recursive(true).build()))
+            {
+                Item item = result.get();
+                if(!item.isDir() && item.lastModified().isBefore(before))
+                    urls.add(minioUrl + "/" + bucketName + "/" + item.objectName());
+            }
+        }
+        catch(Exception e)
+        {
+            throw new IllegalStateException("Yüklemeler listelenemedi: " + e.getMessage(), e);
+        }
+        return urls;
+    }
+
+    private String keyOf(String url)
+    {
+        return url.substring((minioUrl + "/" + bucketName + "/").length());
     }
 
     //Bölüm karesi: her videonun kareleri kendi klasöründe (bolum-kareleri/v<id>/). Video silinince klasör toptan silinir,

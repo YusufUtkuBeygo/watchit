@@ -53,6 +53,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "EMAIL_NOT_VERIFIED"));
     }
 
+    //413 Payload Too Large: istek kendi başına geçerli ama kullanıcının yeri yetmiyor
+    @ExceptionHandler(QuotaExceededException.class)
+    public ResponseEntity<Map<String, String>> handleQuotaExceeded(QuotaExceededException ex)
+    {
+        return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE)
+                .body(Map.of("error", "QUOTA_EXCEEDED", "limit", ex.getLimit().name()));
+    }
+
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Void> handleForbidden()
     {

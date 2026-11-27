@@ -45,3 +45,13 @@ export function formatCount(count) {
 export function formatViews(count) {
   return `${formatCount(count)}${NBSP}görüntülenme`;
 }
+
+//Bayt → "850 MB", "1,2 GB" (Türkçe ondalık virgül)
+export function formatBytes(bytes) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let value = bytes || 0;
+  let i = 0;
+  while (value >= 1024 && i < units.length - 1) { value /= 1024; i += 1; }
+  const digits = value >= 10 || i === 0 ? 0 : 1;
+  return `${value.toLocaleString('tr-TR', { maximumFractionDigits: digits })} ${units[i]}`;
+}

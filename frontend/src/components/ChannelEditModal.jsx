@@ -1,3 +1,4 @@
+import { uploadErrorMessage } from '../utils/errors';
 import { useState } from 'react';
 import Modal from './Modal';
 import ImagePicker from './ImagePicker';
@@ -35,7 +36,7 @@ export default function ChannelEditModal({ channel, onClose, onSaved }) {
       onSaved(saved);
     } catch (error) {
       const status = error.response ? error.response.status : null;
-      setErrorMessage(
+      setErrorMessage(uploadErrorMessage(error) ||
         status === 409 ? 'Bu kanal adı kullanılıyor.'
           : status === 400 ? 'Bilgileri kontrol et: ad boş olamaz; eski resim adresi geçersizse yeni resim seç ya da kaldır.'
             : status === 401 ? 'Oturumun süresi dolmuş, tekrar giriş yap.'
