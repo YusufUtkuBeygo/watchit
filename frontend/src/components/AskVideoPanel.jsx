@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Sparkles, CircleAlert, FileText, LogIn, ArrowUp } from 'lucide-react';
+import { Sparkles, CircleAlert, FileText, LogIn, ArrowUp, Film, Globe, Layers } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { askVideo, getTranscript, requestTranscript } from '../services/transcriptService';
 import { LinesSkeleton } from './Skeleton';
@@ -102,6 +102,13 @@ function errorText(status) {
   return 'Soru gönderilemedi. Biraz sonra tekrar dene.';
 }
 
+//Cevabın kaynağı (backend basis): videodan mı, genel bilgiden mi
+const BASIS = {
+  VIDEO: { icon: Film, text: 'Videodan' },
+  MIXED: { icon: Layers, text: 'Video + genel bilgi' },
+  GENERAL: { icon: Globe, text: 'Genel bilgi' },
+};
+
 //Tek soru-cevap: sağda soru, solda düşünüyor baloncuğu ya da (yazılarak gelen) cevap
 function MessagePair({ item, onSeek, onTyped }) {
   return (
@@ -114,11 +121,17 @@ function MessagePair({ item, onSeek, onTyped }) {
       ) : (
         <li className="ask-msg ask-msg-bot ask-enter">
           <span className="ask-avatar" aria-hidden="true"><Sparkles size={16} /></span>
-          <div className={`ask-bubble ask-bubble-bot ${item.error ? 'is-error' : ''} ${item.found === false ? 'is-empty' : ''}`}>
+          <div className={`ask-bubble ask-bubble-bot ${item.error ? 'is-error' : ''}`}>
             {item.error ? (
               <p role="alert">{item.error}</p>
             ) : (
               <TypingAnswer text={item.answer} animate={!item.typed} onSeek={onSeek} onDone={item.typed ? undefined : onTyped} />
+            )}
+            {item.typed && BASIS[item.basis] && (
+              <span className={`ask-basis ask-fade ask-basis-${item.basis.toLowerCase()}`}>
+                {(() => { const Icon = BASIS[item.basis].icon; return <Icon size={13} aria-hidden="true" />; })()}
+                {BASIS[item.basis].text}
+              </span>
             )}
             {item.typed && item.sources?.length > 0 && (
               <div className="ask-sources ask-fade">
@@ -325,7 +338,7 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
           <li className="ask-msg ask-msg-bot">
             <span className="ask-avatar" aria-hidden="true"><Sparkles size={16} /></span>
             <div className="ask-bubble ask-bubble-bot">
-              <p>Merhaba! Bu videodaki konuşmalara dayanarak sorularını cevaplarım. Cevaptaki dakikalara tıklarsan video oraya atlar.</p>
+              <p>Merhaba! Bu videoyla ilgili sorularını videodaki konuşmalara dayanarak cevaplarım; cevaptaki dakikalara tıklarsan video oraya atlar. Konuyla ilgili genel sorularını da sorabilirsin.</p>
             </div>
           </li>
           {history.map((item) => (
