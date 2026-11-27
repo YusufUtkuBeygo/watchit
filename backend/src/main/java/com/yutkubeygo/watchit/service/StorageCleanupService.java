@@ -38,17 +38,19 @@ public class StorageCleanupService {
         this.executor = executor;
     }
 
-    //Silinecek dosyalar: tek dosyalar (video, kapak, resim) ve HLS paketleri (klasör)
-    public record Files(Set<String> files, Set<String> hlsPackages)
+    //Silinecek dosyalar: tek dosyalar (video, kapak, resim), HLS paketleri (klasör) ve bölüm kareleri (video id'sine göre klasör)
+    public record Files(Set<String> files, Set<String> hlsPackages, Set<Long> chapterFrameVideos)
     {
         public Files()
         {
-            this(new LinkedHashSet<>(), new LinkedHashSet<>());
+            this(new LinkedHashSet<>(), new LinkedHashSet<>(), new LinkedHashSet<>());
         }
 
         //Videonun bütün dosyaları. hlsSourceUrl: HLS'nin üretildiği eski dosya; videoUrl'den farklıysa o da artık kimsenin değil
         public Files addVideo(Video video)
         {
+            if(video.getId() != null)
+                chapterFrameVideos.add(video.getId());
             add(files, video.getVideoUrl());
             add(files, video.getThumbnailUrl());
             add(files, video.getHlsSourceUrl());
@@ -59,6 +61,8 @@ public class StorageCleanupService {
         //Projeksiyonla gelen adresler (hesap silme)
         public Files addVideo(VideoRepository.VideoFiles video)
         {
+            if(video.getId() != null)
+                chapterFrameVideos.add(video.getId());
             add(files, video.getVideoUrl());
             add(files, video.getThumbnailUrl());
             add(files, video.getHlsSourceUrl());
@@ -94,7 +98,7 @@ public class StorageCleanupService {
 
         public boolean isEmpty()
         {
-            return files.isEmpty() && hlsPackages.isEmpty();
+            return files.isEmpty() && hlsPackages.isEmpty() && chapterFrameVideos.isEmpty();
         }
     }
 
@@ -152,6 +156,18 @@ public class StorageCleanupService {
             catch(Exception e)
             {
                 log.warn("HLS paketi silinemedi (depoda sahipsiz kaldı): {}: {}", hlsUrl, e.getMessage());
+            }
+        }
+        //Bölüm kareleri yalnız o videonun: başka kayıt kullanmaz, kontrol gerekmez
+        for(Long videoId : files.chapterFrameVideos())
+        {
+            try
+            {
+                fileService.deleteChapterFrames(videoId);
+            }
+            catch(Exception e)
+            {
+                log.warn("Bölüm kareleri silinemedi (depoda sahipsiz kaldı): video {}: {}", videoId, e.getMessage());
             }
         }
     }

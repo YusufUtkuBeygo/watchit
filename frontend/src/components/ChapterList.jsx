@@ -47,8 +47,17 @@ export default function ChapterList({ videoId, getCurrentTime, onSeek }) {
             <button type="button" className={`chapter ${i === current ? 'is-current' : ''}`}
               aria-current={i === current ? 'true' : undefined}
               onClick={() => onSeek(c.startSeconds)}>
-              <span className="chapter-time">{formatDuration(c.startSeconds)}</span>
-              <span className="chapter-name">{c.title}</span>
+              {c.thumbnailUrl && (
+                //Kare süs: başlık zaten yazılı, ekran okuyucu atlasın (alt="")
+                <span className="chapter-thumb">
+                  <img src={c.thumbnailUrl} alt="" width="120" height="68" loading="lazy" decoding="async"
+                    onError={(e) => { e.currentTarget.parentElement.hidden = true; }} />
+                </span>
+              )}
+              <span className="chapter-text">
+                <span className="chapter-name">{c.title}</span>
+                <span className="chapter-time">{formatDuration(c.startSeconds)}</span>
+              </span>
             </button>
           </li>
         ))}

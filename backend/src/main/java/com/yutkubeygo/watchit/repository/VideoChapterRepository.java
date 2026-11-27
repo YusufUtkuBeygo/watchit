@@ -15,6 +15,16 @@ public interface VideoChapterRepository extends JpaRepository<VideoChapter, Long
 
     List<VideoChapter> findByVideoIdOrderByStartSecondsAsc(Long videoId);
 
+    //Karesi eksik bölümü olan videolar (açılışta tamamlanır)
+    @Query("SELECT DISTINCT c.video.id FROM VideoChapter c WHERE c.thumbnailUrl IS NULL")
+    List<Long> findVideoIdsWithMissingFrames();
+
+    //Kareyi yalnız bölüm hâlâ duruyorsa ve karesi yoksa yazar. 0 = bölüm bu arada silindi/yenilendi (kare boşa çıktı, silinmeli)
+    @Modifying
+    @Transactional
+    @Query("UPDATE VideoChapter c SET c.thumbnailUrl = :url WHERE c.id = :id AND c.thumbnailUrl IS NULL")
+    int setThumbnailIfMissing(@Param("id") Long id, @Param("url") String url);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM VideoChapter c WHERE c.video.id = :videoId")

@@ -27,6 +27,9 @@ public class VideoChapter {
     @Column(nullable = false, length = 100)
     private String title;
 
+    //Bölümün videodan çıkarılmış küçük resmi (boş olabilir: henüz çıkarılmadı ya da çıkarılamadı)
+    private String thumbnailUrl;
+
     public VideoChapter(Video video, int startSeconds, String title)
     {
         this.video = video;

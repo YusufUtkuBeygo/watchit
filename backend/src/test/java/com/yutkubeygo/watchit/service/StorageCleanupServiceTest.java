@@ -66,6 +66,17 @@ class StorageCleanupServiceTest {
     }
 
     @Test
+    void deletedVideoChapterFramesAreRemoved()
+    {
+        Video saved = video();
+        saved.setId(42L);
+        service.deleteAfterCommit(new StorageCleanupService.Files().addVideo(saved));
+
+        //Bölüm kareleri videonun kendi klasöründe: id'ye göre toptan silinir
+        verify(fileService).deleteChapterFrames(42L);
+    }
+
+    @Test
     void fileUsedByAnotherRecordIsKept()
     {
         //Demo verisinde aynı kapak birkaç videoda kullanılıyor
