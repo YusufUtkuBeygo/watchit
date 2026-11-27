@@ -31,39 +31,7 @@
   color: var(--text-secondary);
 }
 
-.ask-history {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.ask-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.ask-question {
-  align-self: flex-end;
-  max-width: 85%;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md) var(--radius-md) var(--radius-xs) var(--radius-md);
-  background-color: var(--hover-color);
-  font-size: var(--fs-base);
-  overflow-wrap: anywhere;
-}
-
-.ask-answer {
-  max-width: 95%;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  font-size: var(--fs-md);
-  line-height: 1.6;
-}
-
-.ask-answer-empty .ask-answer-text {
+.ask-answer-text {
   color: var(--text-secondary);
 }
 
@@ -196,3 +164,155 @@
   outline-offset: 2px;
 }
 
+
+/* --- Sohbet görünümü --- */
+
+/* Akış: uzun sohbet panel içinde kayar (sayfa uzamasın); yeni mesaj gelince en alta iner */
+.ask-thread {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 440px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-1) var(--space-1) var(--space-2) 0;
+  scrollbar-width: thin;
+}
+
+.ask-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.ask-msg-user {
+  justify-content: flex-end;
+}
+
+/* Asistanın yuvarlak simgesi (sarı kıvılcım) */
+.ask-avatar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background-color: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.ask-bubble {
+  max-width: 85%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+/* Benim sorum: sağda, sarı; köşesi konuşma balonu gibi sağ altta sivri */
+.ask-bubble-user {
+  background-color: var(--accent);
+  color: var(--on-accent);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-xs) var(--radius-lg);
+}
+
+/* Asistan: solda, koyu/açık kart rengi; sol altta sivri */
+.ask-bubble-bot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background-color: var(--hover-color);
+  color: var(--text-primary);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-xs);
+}
+
+.ask-bubble-bot.is-empty .ask-answer-text {
+  color: var(--text-secondary);
+}
+
+.ask-bubble-bot.is-error {
+  background-color: var(--hover-color);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
+}
+
+/* Yazılırken sonda yanıp sönen imleç */
+.ask-typing .ask-answer-text::after {
+  content: '';
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background-color: var(--accent-text);
+  animation: ask-caret 0.9s steps(1) infinite;
+}
+
+/* "Düşünüyor" + üç zıplayan nokta */
+.ask-thinking {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--fs-base);
+}
+
+.ask-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.ask-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--accent-text);
+  animation: ask-bounce 1.2s ease-in-out infinite;
+}
+
+.ask-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ask-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Yeni mesaj aşağıdan hafifçe kayarak belirir */
+.ask-enter {
+  animation: ask-in 0.28s var(--ease-out, ease-out) both;
+}
+
+.ask-fade {
+  animation: ask-fade-in 0.3s ease-out both;
+}
+
+@keyframes ask-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ask-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ask-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-4px); opacity: 1; }
+}
+
+@keyframes ask-caret {
+  50% { opacity: 0; }
+}
+
+/* Hareket azaltma açıksa animasyon yok (cevap da bir anda gelir, bkz. prefersReducedMotion) */
+@media (prefers-reduced-motion: reduce) {
+  .ask-enter,
+  .ask-fade,
+  .ask-dots i,
+  .ask-typing .ask-answer-text::after {
+    animation: none;
+  }
+}

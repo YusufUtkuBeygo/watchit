@@ -41,12 +41,102 @@ function AnswerText({ text, onSeek }) {
   );
 }
 
+//Hareket azaltma açıksa (işletim sistemi ayarı) cevap yazılarak değil, bir anda görünür
+function prefersReducedMotion() {
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
+//Cevap kelime kelime belirir (sohbet hissi). Bittiğinde onDone çağrılır; dakika etiketleri ve kaynaklar ondan sonra gelir.
+//Kelimeler boşluklardan bölünür: "04:59" gibi zamanlar bütün kalır, yarım yazılmış dakika görünmez
+function TypingAnswer({ text, animate, onSeek, onDone }) {
+  const words = text.split(/(\s+)/);
+  const [shown, setShown] = useState(animate ? 0 : words.length);
+  const onDoneRef = useRef(onDone);
+  useEffect(() => { onDoneRef.current = onDone; });
+
+  useEffect(() => {
+    if (shown >= words.length) {
+      onDoneRef.current?.();
+      return undefined;
+    }
+    //Uzun cevap uzun beklemesin: toplam süre ~1,5 sn civarında kalsın diye adım başına birkaç kelime
+    const step = Math.max(1, Math.ceil(words.length / 90));
+    const timer = setTimeout(() => setShown((n) => Math.min(words.length, n + step)), 18);
+    return () => clearTimeout(timer);
+  }, [shown, words.length]);
+
+  const done = shown >= words.length;
+  return (
+    <div className={done ? '' : 'ask-typing'}>
+      <AnswerText text={words.slice(0, shown).join('')} onSeek={onSeek} />
+    </div>
+  );
+}
+
+//Cevap beklenirken: "Düşünüyor" + zıplayan noktalar. Bekleme uzadıkça yazı, backend'in o an yaptığını söyler
+function ThinkingBubble() {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const label = seconds >= 10
+    ? 'Biraz uzun sürdü, başka bir modele soruluyor'
+    : seconds >= 3 ? 'Videodaki konuşmalara bakıyor' : 'Düşünüyor';
+  return (
+    <li className="ask-msg ask-msg-bot ask-enter">
+      <span className="ask-avatar" aria-hidden="true"><Sparkles size={16} /></span>
+      <div className="ask-bubble ask-bubble-bot ask-thinking" role="status">
+        <span>{label}</span>
+        <span className="ask-dots" aria-hidden="true"><i /><i /><i /></span>
+      </div>
+    </li>
+  );
+}
+
 function errorText(status) {
   if (status === 401) return 'Oturumun süresi dolmuş, tekrar giriş yap.';
   if (status === 409) return 'Bu videonun transkripti henüz hazır değil.';
   if (status === 429) return 'Çok fazla soru sordun (dakikada 5, günde 50). Biraz bekleyip tekrar dene.';
   if (status === 503 || status == null) return 'Şu an cevap verilemiyor. Biraz sonra tekrar dene.';
   return 'Soru gönderilemedi. Biraz sonra tekrar dene.';
+}
+
+//Tek soru-cevap: sağda soru, solda düşünüyor baloncuğu ya da (yazılarak gelen) cevap
+function MessagePair({ item, onSeek, onTyped }) {
+  return (
+    <>
+      <li className="ask-msg ask-msg-user ask-enter">
+        <div className="ask-bubble ask-bubble-user"><p>{item.question}</p></div>
+      </li>
+      {item.pending ? (
+        <ThinkingBubble />
+      ) : (
+        <li className="ask-msg ask-msg-bot ask-enter">
+          <span className="ask-avatar" aria-hidden="true"><Sparkles size={16} /></span>
+          <div className={`ask-bubble ask-bubble-bot ${item.error ? 'is-error' : ''} ${item.found === false ? 'is-empty' : ''}`}>
+            {item.error ? (
+              <p role="alert">{item.error}</p>
+            ) : (
+              <TypingAnswer text={item.answer} animate={!item.typed} onSeek={onSeek} onDone={item.typed ? undefined : onTyped} />
+            )}
+            {item.typed && item.sources?.length > 0 && (
+              <div className="ask-sources ask-fade">
+                <span className="ask-sources-label">Videoda:</span>
+                {/* Backend benzerlik sırasıyla verir; ekranda zaman sırası daha okunur */}
+                {[...item.sources].sort((a, b) => a.start - b.start).map((s) => (
+                  <button key={s.start} type="button" className="ask-time" onClick={() => onSeek(s.start)}
+                    title={s.text} aria-label={`Videoda ${toClock(s.start)} anına git`}>
+                    {toClock(s.start)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </li>
+      )}
+    </>
+  );
 }
 
 //İzleme sayfasındaki "Videoya sor" paneli: transkript durumu, soru kutusu ve cevaplar.
@@ -65,6 +155,8 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
   //Bu oturumdaki soru-cevaplar (kaydedilmez, sayfadan çıkınca kaybolur)
   const [history, setHistory] = useState([]);
   const inputRef = useRef(null);
+  //Sohbet kutusu: yeni mesaj ya da yazılan cevap gelince kutunun içinde en alta kayar (sayfa kaymaz)
+  const threadRef = useRef(null);
 
   //Dönüştürme az önce bittiyse transkript birkaç saniye içinde sıraya girer: o arada "transkript yok" demeyip
   //birkaç kez daha yokluyoruz (prop değişince state'i ayarlamak: React'in önerdiği kalıp, effect'e gerek yok)
@@ -82,6 +174,11 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
     const last = [...history].reverse().find((item) => item.sources?.length > 0);
     onSourcesChangeRef.current?.(last ? last.sources : []);
   }, [history]);
+
+  useEffect(() => {
+    const box = threadRef.current;
+    if (box) box.scrollTop = box.scrollHeight;
+  });
 
   const status = transcript?.status;
   const isWorking = status === 'PENDING' || status === 'PROCESSING';
@@ -132,6 +229,7 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
     }
   };
 
+  //Soru hemen akışa eklenir (sohbet gibi), cevap gelince aynı mesaja yazılır; hata da asistan baloncuğunda görünür
   const ask = async (text) => {
     const clean = text.trim();
     if (!clean) {
@@ -139,19 +237,24 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
       inputRef.current?.focus();
       return;
     }
+    if (isAsking) return;
     setInputError('');
     setAskError('');
     setIsAsking(true);
+    const id = Date.now();
+    setHistory((old) => [...old, { id, question: clean, pending: true }]);
+    setQuestion('');
     try {
       const result = await askVideo(videoId, clean);
-      setHistory((old) => [...old, { question: clean, ...result }]);
-      setQuestion('');
+      setHistory((old) => old.map((m) => (m.id === id ? { ...m, ...result, pending: false, typed: prefersReducedMotion() } : m)));
     } catch (error) {
-      setAskError(errorText(error.response?.status));
+      setHistory((old) => old.map((m) => (m.id === id ? { ...m, pending: false, error: errorText(error.response?.status), typed: true } : m)));
     } finally {
       setIsAsking(false);
     }
   };
+
+  const markTyped = (id) => setHistory((old) => old.map((m) => (m.id === id ? { ...m, typed: true } : m)));
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -215,32 +318,21 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
   } else {
     body = (
       <>
-        {history.length > 0 && (
-          <ol className="ask-history">
-            {history.map((item, i) => (
-              <li key={i} className="ask-item">
-                <p className="ask-question">{item.question}</p>
-                <div className={item.found ? 'ask-answer' : 'ask-answer ask-answer-empty'}>
-                  <AnswerText text={item.answer} onSeek={onSeek} />
-                  {item.sources?.length > 0 && (
-                    <div className="ask-sources">
-                      <span className="ask-sources-label">Videoda:</span>
-                      {/* Backend benzerlik sırasıyla verir; ekranda zaman sırası daha okunur */}
-                      {[...item.sources].sort((a, b) => a.start - b.start).map((s) => (
-                        <button key={s.start} type="button" className="ask-time" onClick={() => onSeek(s.start)}
-                          title={s.text} aria-label={`Videoda ${toClock(s.start)} anına git`}>
-                          {toClock(s.start)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
+        {/* Sohbet akışı. role="log": ekran okuyucu yeni mesajları sırayla okur; cevap yazılırken aria-busy,
+            böylece yarım cümle değil bitmiş cevap okunur */}
+        <ol className="ask-thread" ref={threadRef} role="log" aria-label="Videoya sor sohbeti"
+          aria-busy={history.some((m) => m.pending || (!m.typed && !m.error))}>
+          <li className="ask-msg ask-msg-bot">
+            <span className="ask-avatar" aria-hidden="true"><Sparkles size={16} /></span>
+            <div className="ask-bubble ask-bubble-bot">
+              <p>Merhaba! Bu videodaki konuşmalara dayanarak sorularını cevaplarım. Cevaptaki dakikalara tıklarsan video oraya atlar.</p>
+            </div>
+          </li>
+          {history.map((item) => (
+            <MessagePair key={item.id} item={item} onSeek={onSeek} onTyped={() => markTyped(item.id)} />
+          ))}
+        </ol>
 
-        {isAsking && <p className="ask-hint" role="status"><span className="ask-spinner" aria-hidden="true" />Cevap hazırlanıyor…</p>}
         {askError && <p className="form-error" role="alert">{askError}</p>}
         {/* Birkaç cümlelik transkript çoğunlukla şarkı sözüdür: soru sorulabilir ama cevap bulunamayabilir */}
         {speechCount > 0 && speechCount < 8 && history.length === 0 && (
@@ -261,7 +353,7 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
             placeholder="Videoya bir soru sor…" maxLength={MAX_QUESTION}
             value={question} onChange={(e) => { setQuestion(e.target.value); setInputError(''); }}
             aria-invalid={Boolean(inputError)} aria-describedby={inputError ? 'ask-input-error' : undefined} />
-          <button type="submit" className="ask-send" disabled={isAsking}>
+          <button type="submit" className="ask-send" disabled={isAsking} aria-label={isAsking ? 'Cevap bekleniyor' : 'Sor'}>
             <ArrowUp size={18} aria-hidden="true" />
             Sor
           </button>
