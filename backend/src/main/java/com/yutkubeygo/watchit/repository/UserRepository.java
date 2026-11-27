@@ -1,5 +1,7 @@
 package com.yutkubeygo.watchit.repository;
 
+import com.yutkubeygo.watchit.enums.UserRole;
+
 import com.yutkubeygo.watchit.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -24,8 +26,9 @@ public interface UserRepository extends JpaRepository<User,Long> {
     interface TokenCheck {
         Long getId();
         LocalDateTime getPasswordChangedAt();
+        UserRole getRole();
     }
 
-    @Query("SELECT u.id AS id, u.passwordChangedAt AS passwordChangedAt FROM User u WHERE u.id = :id")
+    @Query("SELECT u.id AS id, u.passwordChangedAt AS passwordChangedAt, u.role AS role FROM User u WHERE u.id = :id")
     Optional<TokenCheck> findTokenCheckById(@Param("id") Long id);
 }

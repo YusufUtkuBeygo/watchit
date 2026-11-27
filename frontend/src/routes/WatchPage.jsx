@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Pencil, Trash2, VideoOff, CircleAlert, RotateCw } from 'lucide-react';
 import { getVideoById, deleteVideoById } from '../services/videoService';
 import { getChannelById, getMyChannel } from '../services/channelService';
@@ -13,6 +13,8 @@ import SaveToPlaylist from '../components/SaveToPlaylist';
 import WatchLaterButton from '../components/WatchLaterButton';
 import ClipButton from '../components/ClipButton';
 import DownloadButton from '../components/DownloadButton';
+import ReportButton from '../components/ReportButton';
+import ChapterList from '../components/ChapterList';
 import AskVideoPanel from '../components/AskVideoPanel';
 import RelatedVideos from '../components/RelatedVideos';
 import { formatViews } from '../utils/format';
@@ -54,7 +56,28 @@ function WatchPage() {
   const [isEditing, setIsEditing] = useState(false);
   //Oynatıcı ve kutusu: "Videoya sor"daki dakikaya tıklayınca video oraya sarılır ve görünür hâle kaydırılır
   const playerRef = useRef(null);
+  //Bölüm listesi saniyede bir sorar; her çizimde yeni fonksiyon olmasın diye useCallback
+  const getCurrentTime = useCallback(() => playerRef.current?.currentTime || 0, []);
   const playerBoxRef = useRef(null);
+  //?t=192: video o saniyeden başlar (transkript aramasındaki "03:12'de geçiyor" bağlantısı)
+  const [searchParams] = useSearchParams();
+  const startAt = Number(searchParams.get('t')) || 0;
+  useEffect(() => {
+    if (startAt <= 0) return undefined;
+    //Oynatıcı yüklenene kadar kısa aralıklarla bakılır (en fazla ~10 sn); hazır olunca bir kez sarılır
+    let tries = 0;
+    const timer = setInterval(() => {
+      const player = playerRef.current;
+      tries += 1;
+      if (player && player.readyState >= 1) {
+        player.currentTime = startAt;
+        clearInterval(timer);
+      } else if (tries > 40) {
+        clearInterval(timer);
+      }
+    }, 250);
+    return () => clearInterval(timer);
+  }, [id, startAt]);
   //Dönüştürme video oynarken bittiyse yeni dosyaya hemen geçmiyoruz (izleyen kesilmesin), sahibine düğme gösteriyoruz
   const [readyVideo, setReadyVideo] = useState(null);
 
@@ -266,6 +289,7 @@ function WatchPage() {
           {/* Klip başlangıcı oynatıcının o anki saniyesinden alınır */}
           <ClipButton key={`klip-${video.id}`} video={video} getCurrentTime={() => playerRef.current?.currentTime || 0} />
           <DownloadButton key={`indir-${video.id}`} video={video} />
+          {user && !isOwner && <ReportButton key={`sikayet-${video.id}`} videoId={video.id} />}
           {isOwner && (
             <>
               <button className="btn" onClick={() => setIsEditing(true)}><Pencil size={16} /> Düzenle</button>
@@ -282,6 +306,8 @@ function WatchPage() {
         </div>
         <p>{video.description || 'Açıklama yok.'}</p>
       </div>
+
+      <ChapterList key={`bolum-${video.id}`} videoId={video.id} getCurrentTime={getCurrentTime} onSeek={seekTo} />
 
       {/* "Videoya sor" açıklamanın altında, yorumların hemen üstünde; key: başka videoya geçince panel (soru geçmişi dahil) sıfırdan kurulur */}
       <AskVideoPanel
@@ -309,7 +335,7 @@ function WatchPage() {
     <RelatedVideos key={`sira-${video.id}`} video={video} />
     <div className="watch-comments">
       {/* key: başka videoya geçince yorum bölümü (açık cevap kutusu dahil) sıfırdan kurulur */}
-      <CommentSection key={video.id} videoId={video.id} />
+      <CommentSection key={video.id} videoId={video.id} isVideoOwner={isOwner} />
     </div>
     </div>
     </div>

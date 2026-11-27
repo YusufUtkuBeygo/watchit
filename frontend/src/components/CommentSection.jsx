@@ -1,46 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getCommentsByVideoId, createComment, deleteComment, updateComment } from '../services/commentService';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from './LoadMore';
+import {
+  getCommentsByVideoId, createComment, deleteComment, updateComment, likeComment, unlikeComment, pinComment, unpinComment,
+} from '../services/commentService';
+import { TOO_MANY_REQUESTS } from '../utils/errors';
 import './CommentSection.css';
 import Avatar from './Avatar';
 import { CommentsSkeleton } from './Skeleton';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Pin } from 'lucide-react';
 import EmptyState from './EmptyState';
+import ReportModal from './ReportModal';
 
 //Yorum içeriği veritabanında en fazla 1000 karakter (comments.content varchar(1000))
 const MAX_LENGTH = 1000;
 
 //İzleme sayfasının altındaki yorum bölümü
-export default function CommentSection({ videoId }) {
+//isVideoOwner: izleyen videonun sahibi mi (sahip yorumları sabitler ve videosundaki yorumları silebilir)
+export default function CommentSection({ videoId, isVideoOwner = false }) {
   const { user } = useAuth();
-  const [comments, setComments] = useState([]);
-  //'loading' | 'ready' | 'error'
-  const [status, setStatus] = useState('loading');
-  //Yorum eklenince/silinince artar, liste yeniden çekilir
-  const [reloadKey, setReloadKey] = useState(0);
+  //'new' (en yeni) | 'top' (en beğenilen)
+  const [sort, setSort] = useState('new');
+  //Sayfa sayfa: her sayfada 24 üst yorum + cevapları. Yorum eklenince/silinince ya da sıralama değişince liste baştan yüklenir
+  const list = usePagedList((page) => getCommentsByVideoId(videoId, page, sort), `comments-${videoId}-${sort}`);
+  const { items: comments, status, reload } = list;
   //Hangi yoruma cevap yazılıyor (üst yorumun id'si), yoksa null
   const [replyingTo, setReplyingTo] = useState(null);
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadComments() {
-      try {
-        const data = await getCommentsByVideoId(videoId);
-        if (ignore) return;
-        setComments(data);
-        setStatus('ready');
-      } catch (error) {
-        console.error('Yorumlar yüklenemedi:', error);
-        if (!ignore) setStatus('error');
-      }
-    }
-
-    loadComments();
-    return () => { ignore = true; };
-  }, [videoId, reloadKey]);
-
-  const reload = () => setReloadKey((key) => key + 1);
 
   const handleDelete = async (commentId) => {
     if (!window.confirm('Yorum silinsin mi?')) return;
@@ -50,6 +36,18 @@ export default function CommentSection({ videoId }) {
     } catch (error) {
       console.error('Yorum silinemedi:', error);
       alert('Yorum silinemedi.');
+    }
+  };
+
+  //Sabitle / sabiti kaldır (yalnız video sahibi); sonra liste yeniden okunur (sabit en üste çıkar)
+  const handlePin = async (comment) => {
+    try {
+      if (comment.pinned) await unpinComment(videoId);
+      else await pinComment(comment.id);
+      reload();
+    } catch (error) {
+      console.error('Yorum sabitlenemedi:', error);
+      alert('Yorum sabitlenemedi.');
     }
   };
 
@@ -72,8 +70,15 @@ export default function CommentSection({ videoId }) {
     <section className="comments">
       <h2 className="comments-title">
         Yorumlar
-        {status === 'ready' && comments.length > 0 && <span className="comments-count">{comments.length}</span>}
+        {status === 'ready' && list.total > 0 && <span className="comments-count">{list.total}</span>}
       </h2>
+      <label className="comments-sort">
+        <span className="sr-only">Yorumları sırala</span>
+        <select value={sort} onChange={(e) => setSort(e.target.value)}>
+          <option value="new">En yeni</option>
+          <option value="top">En beğenilen</option>
+        </select>
+      </label>
 
       {user ? (
         <CommentForm videoId={videoId} onPosted={reload} placeholder="Yorum ekle…" />
@@ -97,7 +102,11 @@ export default function CommentSection({ videoId }) {
           <li key={comment.id}>
             <CommentItem
               comment={comment}
-              canDelete={user?.id === comment.userId}
+              canEdit={user?.id === comment.userId}
+              canDelete={user?.id === comment.userId || isVideoOwner}
+              canReport={!!user && user.id !== comment.userId}
+              canLike={!!user}
+              onPin={isVideoOwner ? () => handlePin(comment) : null}
               onDelete={handleDelete}
               onEdited={reload}
               onReply={user ? () => setReplyingTo(comment.id) : null}
@@ -109,7 +118,10 @@ export default function CommentSection({ videoId }) {
                   <li key={reply.id}>
                     <CommentItem
                       comment={reply}
-                      canDelete={user?.id === reply.userId}
+                      canEdit={user?.id === reply.userId}
+                      canDelete={user?.id === reply.userId || isVideoOwner}
+                      canReport={!!user && user.id !== reply.userId}
+                      canLike={!!user}
                       onDelete={handleDelete}
                       onEdited={reload}
                       //Cevaba cevap da aynı üst yoruma bağlanır (tek seviye, YouTube gibi)
@@ -134,19 +146,24 @@ export default function CommentSection({ videoId }) {
           </li>
         ))}
       </ul>
+      <LoadMore list={list} label="Daha fazla yorum" />
     </section>
   );
 }
 
 //Tek bir yorum: kullanıcı adı, tarih, metin, Yanıtla / Düzenle / Sil
 //canDelete: yorum benimse true (yalnız yazarı düzenleyip silebilir)
-function CommentItem({ comment, canDelete, onDelete, onReply, onEdited }) {
+function CommentItem({ comment, canEdit, canDelete, canReport, canLike, onPin, onDelete, onReply, onEdited }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
 
   return (
     <div className="comment">
       <Avatar className="comment-avatar" name={comment.username} />
       <div className="comment-body">
+        {comment.pinned && (
+          <div className="comment-pinned"><Pin size={14} aria-hidden="true" /> Video sahibi sabitledi</div>
+        )}
         <div className="comment-meta">
           <span className="comment-author">{comment.username || 'Silinmiş kullanıcı'}</span>
           <span className="comment-date">
@@ -164,18 +181,65 @@ function CommentItem({ comment, canDelete, onDelete, onReply, onEdited }) {
           <>
             <p className="comment-content">{comment.content}</p>
             <div className="comment-actions">
+              <CommentLike key={`${comment.id}-${comment.likedByMe}`} comment={comment} canLike={canLike} />
               {onReply && <button className="comment-action" onClick={onReply}>Yanıtla</button>}
-              {canDelete && (
-                <>
-                  <button className="comment-action" onClick={() => setIsEditing(true)}>Düzenle</button>
-                  <button className="comment-action" onClick={() => onDelete(comment.id)}>Sil</button>
-                </>
+              {canEdit && <button className="comment-action" onClick={() => setIsEditing(true)}>Düzenle</button>}
+              {canDelete && <button className="comment-action" onClick={() => onDelete(comment.id)}>Sil</button>}
+              {onPin && (
+                <button className="comment-action" onClick={onPin}>{comment.pinned ? 'Sabitlemeyi kaldır' : 'Sabitle'}</button>
+              )}
+              {canReport && (
+                <button className="comment-action" onClick={() => setIsReporting(true)}>Şikayet et</button>
               )}
             </div>
           </>
         )}
+        {isReporting && (
+          <ReportModal targetType="COMMENT" targetId={comment.id} onClose={() => setIsReporting(false)} />
+        )}
       </div>
     </div>
+  );
+}
+
+//Yorum beğenisi: anında değişir (iyimser), sunucu reddederse geri alınır. Girişsizde yalnız sayı görünür
+function CommentLike({ comment, canLike }) {
+  const [liked, setLiked] = useState(comment.likedByMe);
+  const [count, setCount] = useState(comment.likeCount);
+  const [busy, setBusy] = useState(false);
+
+  const toggle = async () => {
+    if (busy) return;
+    const next = !liked;
+    setBusy(true);
+    setLiked(next);
+    setCount((c) => c + (next ? 1 : -1));
+    try {
+      if (next) await likeComment(comment.id);
+      else await unlikeComment(comment.id);
+    } catch (error) {
+      const status = error.response ? error.response.status : null;
+      //409: zaten beğenilmiş, 404: zaten kaldırılmış (başka sekmede); ekrandaki doğru, geri alma
+      if (status !== 409 && status !== 404) {
+        setLiked(!next);
+        setCount((c) => c + (next ? -1 : 1));
+        if (status === 429) alert(TOO_MANY_REQUESTS);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!canLike) {
+    return count > 0 ? (
+      <span className="comment-like-count"><ThumbsUp size={14} aria-hidden="true" /> {count}</span>
+    ) : null;
+  }
+  return (
+    <button type="button" className={`comment-action comment-like ${liked ? 'is-liked' : ''}`} onClick={toggle}
+      aria-pressed={liked} aria-label={liked ? `Beğeniyi kaldır (${count})` : `Beğen (${count})`}>
+      <ThumbsUp size={14} aria-hidden="true" /> {count > 0 && count}
+    </button>
   );
 }
 
@@ -241,7 +305,8 @@ function CommentForm({ videoId, parentCommentId = null, placeholder, autoFocus, 
     } catch (error) {
       const status = error.response ? error.response.status : null;
       setErrorMessage(
-        status === 401 ? 'Oturumun süresi dolmuş, tekrar giriş yap.' : 'Yorum gönderilemedi.'
+        status === 401 ? 'Oturumun süresi dolmuş, tekrar giriş yap.'
+          : status === 429 ? TOO_MANY_REQUESTS : 'Yorum gönderilemedi.'
       );
     } finally {
       setIsSubmitting(false);

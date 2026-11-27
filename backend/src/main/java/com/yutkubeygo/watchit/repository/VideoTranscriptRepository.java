@@ -18,4 +18,10 @@ public interface VideoTranscriptRepository extends JpaRepository<VideoTranscript
 
     //Hazır ama özeti olmayanlar (özellik eklenmeden önce hazırlananlar ya da özeti yazılamayanlar)
     List<VideoTranscript> findByStatusAndSummaryIsNull(TranscriptStatus status);
+
+    List<VideoTranscript> findByStatusAndChaptersDoneFalse(TranscriptStatus status);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("UPDATE VideoTranscript t SET t.chaptersDone = true WHERE t.video.id = :videoId")
+    int markChaptersDone(@org.springframework.data.repository.query.Param("videoId") Long videoId);
 }

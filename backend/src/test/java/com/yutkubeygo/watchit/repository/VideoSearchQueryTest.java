@@ -64,7 +64,9 @@ class VideoSearchQueryTest {
 
     private List<String> titles(String text)
     {
-        return videoRepository.searchByTitle(text).stream().map(Video::getTitle).toList();
+        //Gerçek veritabanında demo videoları da var: yalnız bu testin eklediği (QQX ile başlayan) videolara bakılır
+        return videoRepository.search(text, org.springframework.data.domain.PageRequest.of(0, 50)).stream()
+                .map(Video::getTitle).filter(t -> t.startsWith("QQX")).toList();
     }
 
     @Test
@@ -89,6 +91,24 @@ class VideoSearchQueryTest {
         //Servis kaçırmayı yapar; burada kaçırılmış hâli verilir
         assertThat(titles("\\%100")).containsExactly("QQX %100 Kod");
         assertThat(titles("a\\_b")).containsExactly("QQX a_b deneme");
+    }
+
+    @Test
+    void descriptionAndChannelNameAlsoMatchButTitleComesFirst()
+    {
+        Video described = new Video();
+        described.setTitle("QQX açıklamada geçen");
+        described.setDescription("Bu videoda zürafa anlatılıyor");
+        described.setChannel(channel);
+        described.setCategory(category);
+        described.setDurationInSeconds(10);
+        videoRepository.saveAndFlush(described);
+        save("QQX Zürafa belgeseli");
+
+        //Başlıkta geçen önce, yalnız açıklamada geçen sonra
+        assertThat(titles("zurafa")).containsExactly("QQX Zürafa belgeseli", "QQX açıklamada geçen");
+        //Kanal adı ("Arama testi kanalı") bu testin bütün videolarını getirir
+        assertThat(titles("arama testi kanali")).hasSize(7);
     }
 
     @Test

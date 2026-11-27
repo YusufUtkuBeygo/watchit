@@ -1,5 +1,11 @@
 package com.yutkubeygo.watchit.repository;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.yutkubeygo.watchit.entity.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,5 +17,16 @@ public interface NotificationRepository extends JpaRepository<Notification,Long>
 
     //Kullanıcıya gelen bildirimler, en yeni en üstte (notification.receiver.id = ?)
     List<Notification> findByReceiverIdOrderByCreatedAtDesc(Long receiverId);
+
+    Page<Notification> findByReceiverIdOrderByCreatedAtDescIdDesc(Long receiverId, Pageable pageable);
+
+    //Zildeki sayı: liste sayfalı olduğu için okunmamışlar ayrıca sayılır
+    long countByReceiverIdAndIsReadFalse(Long receiverId);
+
+    //Hepsini okundu yap: tek UPDATE (liste sayfalı, tarayıcı hepsini bilmiyor). Dönen: değişen satır sayısı
+    @Modifying
+    @Transactional
+    @Query("UPDATE Notification n SET n.isRead = true WHERE n.receiver.id = :receiverId AND n.isRead = false")
+    int markAllRead(@Param("receiverId") Long receiverId);
 
 }

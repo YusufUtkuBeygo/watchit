@@ -87,6 +87,7 @@ public class TranscriptService {
         transcript.setVideo(video);
         transcript.setLanguage(null);
         transcript.setSummary(null);
+        transcript.setChaptersDone(false);
 
         Integer duration = video.getDurationInSeconds();
         if(duration != null && duration > MAX_DURATION_SECONDS)

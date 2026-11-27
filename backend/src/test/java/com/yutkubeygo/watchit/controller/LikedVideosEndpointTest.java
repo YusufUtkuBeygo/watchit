@@ -107,9 +107,9 @@ class LikedVideosEndpointTest {
     {
         mockMvc.perform(get("/videos/liked").header("Authorization", bearer(me)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].id").value(second.getId()))
-                .andExpect(jsonPath("$[1].id").value(first.getId()));
+                .andExpect(jsonPath("$.items", hasSize(2)))
+                .andExpect(jsonPath("$.items[0].id").value(second.getId()))
+                .andExpect(jsonPath("$.items[1].id").value(first.getId()));
     }
 
     @Test
@@ -118,7 +118,7 @@ class LikedVideosEndpointTest {
         User nobody = saveUser("begeni_testi_bos");
         mockMvc.perform(get("/videos/liked").header("Authorization", bearer(nobody)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.items", hasSize(0)));
     }
 
     @Test

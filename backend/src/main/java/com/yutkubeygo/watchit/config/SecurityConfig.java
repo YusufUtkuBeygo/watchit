@@ -34,9 +34,9 @@ public class SecurityConfig {
                         //Şifresini unutan giriş yapamaz: sıfırlama isteği ve yeni şifre girişsiz açık (doğrulama ve tekrar gönderme giriş ister)
                         .requestMatchers(HttpMethod.POST, "/auth/forgot-password", "/auth/reset-password").permitAll()
                         //Kendi kanalım giriş ister; alttaki açık /channels/** kuralından önce gelmeli (ilk uyan kural geçerli)
-                        .requestMatchers(HttpMethod.GET, "/channels/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/channels/me", "/channels/me/stats").authenticated()
                         //Beğendiğim videolar da kişiye özel; aynı sebeple açık /videos/** kuralından önce
-                        .requestMatchers(HttpMethod.GET, "/videos/liked").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/videos/liked", "/videos/subscriptions").authenticated()
                         .requestMatchers(HttpMethod.GET,
                                 "/videos/**", "/channels/**", "/categories/**", "/comments/**").permitAll()
                         //Herkese açık oynatma listeleri girişsiz de okunur (karar 19 Ekim).
@@ -44,11 +44,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/playlists/**", "/playlistvideos/**").permitAll()
                         //Kurs listesi ve tek klip (paylaşılan bağlantı) girişsiz okunur; /clips (kliplerim) giriş ister
                         .requestMatchers(HttpMethod.GET, "/courses", "/clips/*").permitAll()
+                        //Sağlık kontrolü (Docker, yük dengeleyici) girişsiz; yalnız {"status":"UP"} döner
+                        .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         //API dokümanı (Swagger) herkese açık; uçların kendisi yine kendi kurallarına tabi
                         .requestMatchers(HttpMethod.GET, "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        //Kategori ekleme/değiştirme/silme kimseye açık değil (rol sistemi yok, kategoriler veritabanından yönetilir)
-                        //Okuma üstteki GET kuralına uyduğu için buraya hiç gelmez
-                        .requestMatchers("/categories/**").denyAll()
+                        //Kategori ekleme/değiştirme/silme ve yönetim paneli yalnız yöneticiye (V22, rol veritabanından)
+                        //Kategori okuma üstteki GET kuralına uyduğu için buraya hiç gelmez. Giriş yoksa 401, yönetici değilse 403
+                        .requestMatchers("/categories/**", "/admin/**").hasRole("ADMIN")
                         //Görüntülenme sayımı girişsiz izleyiciye de açık (girişsizse IP ile tanınır, ViewLimiterService sınırlar)
                         .requestMatchers(HttpMethod.POST , "/videos/*/view").permitAll()
                         .anyRequest().authenticated()

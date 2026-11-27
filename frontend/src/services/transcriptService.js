@@ -19,3 +19,9 @@ export async function askVideo(videoId, question) {
   const response = await api.post(`/videos/${videoId}/questions`, { question }, { timeout: 45000 });
   return response.data;
 }
+
+//Otomatik bölümler: [{ startSeconds, title }], baştan sona. Bölüm yoksa (kısa video ya da henüz üretilmedi) boş liste
+export async function getChapters(videoId) {
+  const response = await api.get(`/videos/${videoId}/chapters`);
+  return response.data;
+}

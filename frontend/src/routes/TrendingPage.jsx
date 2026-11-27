@@ -4,7 +4,8 @@ import { Flame } from 'lucide-react';
 import VideoRow from '../components/VideoRow';
 import EmptyState from '../components/EmptyState';
 import { RowListSkeleton } from '../components/Skeleton';
-import { getAllVideos } from '../services/videoService';
+import { getVideos } from '../services/videoService';
+import usePagedList from '../hooks/usePagedList';
 import { getAllCategories } from '../services/categoryService';
 import { formatViews, timeAgo } from '../utils/format';
 import './ListPage.css';
@@ -25,27 +26,34 @@ const LIMIT = 50;
 function TrendingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = TABS.find((t) => t.key === searchParams.get('tab')) || TABS[0];
-  const [videos, setVideos] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [status, setStatus] = useState('loading');
+  //null: kategoriler henüz gelmedi
+  const [categories, setCategories] = useState(null);
+  const [categoriesFailed, setCategoriesFailed] = useState(false);
 
   useEffect(() => {
     let ignore = false;
-    Promise.all([getAllVideos(), getAllCategories()])
-      .then(([list, cats]) => { if (!ignore) { setVideos(list); setCategories(cats); setStatus('ready'); } })
+    getAllCategories()
+      .then((cats) => { if (!ignore) setCategories(cats); })
       .catch((error) => {
-        console.error('Popüler videolar yüklenemedi:', error);
-        if (!ignore) setStatus('error');
+        console.error('Kategoriler yüklenemedi:', error);
+        if (!ignore) setCategoriesFailed(true);
       });
     return () => { ignore = true; };
   }, []);
 
-  //Video cevabında kategori adı yok, id var: sekmenin kategori adı listeden id'ye çevrilir
-  const categoryId = tab.category ? categories.find((c) => c.name === tab.category)?.id : null;
-  const ranked = videos
-    .filter((v) => !tab.category || v.categoryId === categoryId)
-    .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-    .slice(0, LIMIT);
+  //Sekmenin kategori adı id'ye çevrilir; bu adda kategori yoksa -1 (boş liste)
+  const categoryId = !tab.category ? undefined
+    : categories ? (categories.find((c) => c.name === tab.category)?.id ?? -1) : null;
+  //En çok izlenen ilk 50: sıralama ve süzme backend'de (sort=popular), tek sayfa
+  const list = usePagedList(
+    (page) => (categoryId === -1
+      ? Promise.resolve({ items: [], page: 0, size: LIMIT, hasNext: false, total: 0 })
+      : getVideos({ categoryId, sort: 'popular', page, size: LIMIT })),
+    `trending-${tab.key}`,
+    { enabled: categoryId !== null },
+  );
+  const ranked = list.items;
+  const status = categoriesFailed ? 'error' : list.status;
 
   return (
     <div className="page">

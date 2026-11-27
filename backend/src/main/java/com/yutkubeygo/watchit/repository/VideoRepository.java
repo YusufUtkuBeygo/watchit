@@ -4,7 +4,10 @@ package com.yutkubeygo.watchit.repository;
 import com.yutkubeygo.watchit.entity.Video;
 import com.yutkubeygo.watchit.enums.VideoProcessingStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface VideoRepository extends JpaRepository<Video,Long> {
+public interface VideoRepository extends JpaRepository<Video,Long>, JpaSpecificationExecutor<Video> {
 
     //Kanalın videoları, en yeni en üstte (video.channel.id = ?)
     List<Video> findByChannelIdOrderByCreatedAtDesc(Long channelId);
@@ -27,12 +30,29 @@ public interface VideoRepository extends JpaRepository<Video,Long> {
     //Bütün videolar, en yeni en üstte
     List<Video> findAllByOrderByCreatedAtDesc();
 
-    //Başlıkta arama, Türkçe harf ve büyük/küçük harf fark etmez: "istanbul", "ISTANBUL", "İstanbul" hepsi eşleşir; en yeni en üstte.
-    //Hazır IgnoreCase upper() kullanıyor ve İ/i'yi eşleştiremiyor, bu yüzden elle yazılmış SQL (nativeQuery).
+    //Arama: başlıkta, açıklamada ya da kanal adında geçenler. Türkçe harf ve büyük/küçük harf fark etmez
+    //("istanbul", "ISTANBUL", "İstanbul" hepsi eşleşir). Hazır IgnoreCase upper() kullanıyor ve İ/i'yi eşleştiremiyor: elle SQL.
     //unaccent: İ/I/ı -> i, ş -> s, ç -> c... (V10). text içindeki %, _ ve \ önceden kaçırılmış olmalı (VideoService.searchVideos).
-    @Query(value = "SELECT * FROM videos WHERE lower(unaccent(title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\' ORDER BY created_at DESC",
+    //Sıralama: başlıkta geçenler önce, sonra kanal adında, sonra yalnız açıklamada; her grupta en yeni üstte.
+    //Sayfalı: toplam da sayılır (countQuery); id son sıralama, aynı saniyede yüklenenler sayfalar arasında kaymasın
+    @Query(value = """
+            SELECT v.* FROM videos v JOIN channels c ON c.id = v.channel_id
+            WHERE lower(unaccent(v.title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+               OR lower(unaccent(coalesce(v.description, ''))) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+               OR lower(unaccent(c.channel_name)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+            ORDER BY CASE WHEN lower(unaccent(v.title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\' THEN 0
+                          WHEN lower(unaccent(c.channel_name)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\' THEN 1
+                          ELSE 2 END,
+                     v.created_at DESC, v.id DESC
+            """,
+            countQuery = """
+            SELECT count(*) FROM videos v JOIN channels c ON c.id = v.channel_id
+            WHERE lower(unaccent(v.title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+               OR lower(unaccent(coalesce(v.description, ''))) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+               OR lower(unaccent(c.channel_name)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'
+            """,
             nativeQuery = true)
-    List<Video> searchByTitle(@Param("text") String text);
+    Page<Video> search(@Param("text") String text, Pageable pageable);
 
     @Modifying
     @Transactional
@@ -52,6 +72,75 @@ public interface VideoRepository extends JpaRepository<Video,Long> {
     //Silinecek kapak ya da HLS paketi başka bir videoda da kullanılıyor mu (StorageCleanupService)
     boolean existsByThumbnailUrl(String thumbnailUrl);
     boolean existsByHlsUrl(String hlsUrl);
+
+    //"Senin için" sıralaması: her videoya puan verilir, büyükten küçüğe. Basit ve açıklanabilir bir formül (makine öğrenmesi yok):
+    //  + ln(1 + görüntülenme)              popüler olan biraz öne (logaritma: 10 bin izlenen, 100 izlenenin 100 katı değil ~2 katı puan alır)
+    //  + 3   abone olduğum kanalsa
+    //  + 0,6 x (o kategoride izlediğim video sayısı, en fazla 5)   ilgi alanım
+    //  - yaş (gün) / 14                     her iki haftada 1 puan düşer: yeni videolar öne
+    //  - 5 bitirdiysem, - 1,5 yarım bıraktıysam (zaten gördüm)
+    //  - 3 kendi videomsa
+    //Girişsizde (userId null) kişisel kısımlar 0 olur: popülerlik + yenilik kalır. categoryId verilirse yalnız o kategori.
+    @Query(value = """
+            SELECT v.* FROM videos v
+            JOIN channels ch ON ch.id = v.channel_id
+            LEFT JOIN subscriptions s ON s.channel_id = v.channel_id AND s.subscriber_id = CAST(:userId AS bigint)
+            LEFT JOIN watch_history_log h ON h.video_id = v.id AND h.user_id = CAST(:userId AS bigint)
+            LEFT JOIN (SELECT wv.category, count(*) AS cnt FROM watch_history_log w JOIN videos wv ON wv.id = w.video_id
+                       WHERE w.user_id = CAST(:userId AS bigint) GROUP BY wv.category) interest ON interest.category = v.category
+            WHERE CAST(:categoryId AS bigint) IS NULL OR v.category = CAST(:categoryId AS bigint)
+            ORDER BY ( ln(1 + v.view_count)
+                     + CASE WHEN s.id IS NOT NULL THEN 3 ELSE 0 END
+                     + LEAST(coalesce(interest.cnt, 0), 5) * 0.6
+                     - EXTRACT(EPOCH FROM (now() - v.created_at)) / 86400.0 / 14
+                     - CASE WHEN h.is_completed THEN 5 WHEN h.id IS NOT NULL THEN 1.5 ELSE 0 END
+                     - CASE WHEN ch.owner_id = CAST(:userId AS bigint) THEN 3 ELSE 0 END ) DESC,
+                     v.id DESC
+            """,
+            countQuery = "SELECT count(*) FROM videos v WHERE CAST(:categoryId AS bigint) IS NULL OR v.category = CAST(:categoryId AS bigint)",
+            nativeQuery = true)
+    Page<Video> findForYou(@Param("userId") Long userId, @Param("categoryId") Long categoryId, Pageable pageable);
+
+    //Günlük sayaç (V25): o günün satırı yoksa 1 ile açılır, varsa 1 artar. Tek sorgu (upsert): iki izleyici aynı anda gelse de kayıp olmaz
+    @Modifying
+    @Transactional
+    @Query(value = """
+            INSERT INTO video_view_daily (video_id, day, views) VALUES (:id, CURRENT_DATE, 1)
+            ON CONFLICT (video_id, day) DO UPDATE SET views = video_view_daily.views + 1
+            """, nativeQuery = true)
+    int incrementDailyViews(@Param("id") Long videoId);
+
+    //Kanalın son günlerdeki günlük görüntülenmeleri: [gün, toplam] (izlenme olmayan günler satır olarak gelmez)
+    @Query(value = """
+            SELECT d.day, SUM(d.views) FROM video_view_daily d JOIN videos v ON v.id = d.video_id
+            WHERE v.channel_id = :channelId AND d.day >= :since
+            GROUP BY d.day ORDER BY d.day
+            """, nativeQuery = true)
+    List<Object[]> dailyViewsOfChannel(@Param("channelId") Long channelId, @Param("since") java.time.LocalDate since);
+
+    @Query("SELECT COALESCE(SUM(v.viewCount), 0) FROM Video v WHERE v.channel.id = :channelId")
+    long totalViewsOfChannel(@Param("channelId") Long channelId);
+
+    //Otomatik kapak: yalnız video hâlâ kapaksızsa yazılır (sahibi bu arada kendi kapağını eklediyse 0 döner)
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE videos SET thumbnail_url = :url WHERE id = :id AND (thumbnail_url IS NULL OR thumbnail_url = '')", nativeQuery = true)
+    int setThumbnailIfMissing(@Param("id") Long videoId, @Param("url") String url);
+
+    //Yorumu sabitle (commentId null: sabiti kaldır)
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE videos SET pinned_comment_id = :commentId WHERE id = :id", nativeQuery = true)
+    int setPinnedComment(@Param("id") Long videoId, @Param("commentId") Long commentId);
+
+    //Videoyu tek DELETE ile siler; yorumlar, beğeniler, transkript, klipler... veritabanında zincirle gider (ON DELETE CASCADE).
+    //Neden delete(video) değil: o yol Hibernate'in hafızasındaki bağlı kayıtları (ör. aynı işlemde yüklenmiş bir yorum) da
+    //düşünmek zorunda kalıyor ve "silinmiş videoya bağlı yorum" diye işlemi durduruyordu.
+    //flushAutomatically: önce bekleyen yazmalar (ör. bildirim) gider; clearAutomatically: sonra hafıza temizlenir, eski kayıt kalmaz
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Transactional
+    @Query("DELETE FROM Video v WHERE v.id = :id")
+    int deleteVideoById(@Param("id") Long id);
 
     //Hesap silinirken: kullanıcının videolarının yalnız dosya adresleri. Entity değil projeksiyon (yalnız bu sütunlar okunur):
     //entity yüklenseydi Hibernate onu hafızasında tutar, kullanıcı silinince "sahibi silinmiş kayıt" diye işlemi durdururdu

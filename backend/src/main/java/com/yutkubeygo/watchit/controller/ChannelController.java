@@ -47,6 +47,19 @@ public class ChannelController {
     }
 
     //Giriş yapan kullanıcının kanalı; kanalı yoksa 404 (frontend "önce kanal oluştur" der)
+    //GET /channels/me/stats?days=28 (7-90): Stüdyo grafiği. Kanalım yoksa 404
+    @GetMapping("/me/stats")
+    public ResponseEntity<com.yutkubeygo.watchit.dto.ChannelStatsDto> getMyStats(@AuthenticationPrincipal Long userId,
+                                                                               @RequestParam(defaultValue = "28") int days)
+    {
+        if(days < 7 || days > 90)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        com.yutkubeygo.watchit.dto.ChannelStatsDto stats = channelService.getMyStats(userId, days);
+        if(stats == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.ok(stats);
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ChannelResponseDto> getMyChannel(@AuthenticationPrincipal Long userId)
     {

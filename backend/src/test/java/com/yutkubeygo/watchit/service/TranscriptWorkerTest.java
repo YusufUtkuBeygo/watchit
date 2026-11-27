@@ -49,7 +49,7 @@ class TranscriptWorkerTest {
     {
         //Gerçek TransactionTemplate, sahte transaction yöneticisiyle: içindeki kod normal çalışır
         TransactionTemplate transactionTemplate = new TransactionTemplate(mock(PlatformTransactionManager.class));
-        worker = new TranscriptWorker(transcriptRepository, segmentRepository, transcriptionClient, transactionTemplate, indexer, summarizer);
+        worker = new TranscriptWorker(transcriptRepository, segmentRepository, transcriptionClient, transactionTemplate, indexer, summarizer, org.mockito.Mockito.mock(ChapterService.class));
 
         Video video = new Video();
         video.setId(7L);

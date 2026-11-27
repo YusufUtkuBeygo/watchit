@@ -1,5 +1,8 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import com.yutkubeygo.watchit.util.Paging;
+import java.util.Map;
 import com.yutkubeygo.watchit.dto.NotificationResponseDto;
 import com.yutkubeygo.watchit.service.NotificationService;
 import org.springframework.http.HttpStatus;
@@ -22,9 +25,26 @@ public class NotificationController {
 
     //Bana gelen bildirimler, en yeni en üstte
     @GetMapping
-    public List<NotificationResponseDto> getMyNotifications(@AuthenticationPrincipal Long userId)
+    public PageResponseDto<NotificationResponseDto> getMyNotifications(@AuthenticationPrincipal Long userId,
+                                                                       @RequestParam(required = false) Integer page,
+                                                                       @RequestParam(required = false) Integer size)
     {
-        return notificationService.getMyNotifications(userId);
+        return notificationService.getMyNotifications(userId, Paging.of(page, size));
+    }
+
+    //PUT /notifications/read-all: bana gelen bütün okunmamışlar okundu olur, 204
+    @PutMapping("/read-all")
+    public ResponseEntity<Void> markAllRead(@AuthenticationPrincipal Long userId)
+    {
+        notificationService.markAllRead(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    //GET /notifications/unread-count -> {"count": 3}
+    @GetMapping("/unread-count")
+    public Map<String, Long> getUnreadCount(@AuthenticationPrincipal Long userId)
+    {
+        return Map.of("count", notificationService.countUnread(userId));
     }
 
     @GetMapping("/{id}")

@@ -129,6 +129,27 @@ public class FileService {
         }
     }
 
+    //Otomatik kapak (ThumbnailService): kapaklar/<uuid>.jpg
+    public String uploadThumbnail(Path file)
+    {
+        try
+        {
+            prepareBucket();
+            String key = "kapaklar/" + UUID.randomUUID() + ".jpg";
+            minioClient.uploadObject(UploadObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(key)
+                    .filename(file.toString())
+                    .contentType("image/jpeg")
+                    .build());
+            return minioUrl + "/" + bucketName + "/" + key;
+        }
+        catch(Exception e)
+        {
+            throw new IllegalStateException("Kapak depoya yazılamadı: " + e.getMessage(), e);
+        }
+    }
+
     //Bizim kovamızdaki bir dosyayı siler (adres başka bir yeri gösteriyorsa ya da boşsa hiçbir şey yapmaz)
     public void deleteOwnFile(String url)
     {

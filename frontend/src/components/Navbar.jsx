@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Menu, Search, Plus, LogOut, CircleUser, UserSquare2, Settings, History, ListVideo, Clapperboard, ThumbsUp, Clock } from 'lucide-react';
+import { Menu, Search, Plus, LogOut, CircleUser, UserSquare2, Settings, History, ListVideo, Clapperboard, ThumbsUp, Clock, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import UploadModal from './UploadModal';
 import LoginModal from './LoginModal';
@@ -180,6 +180,11 @@ function UserMenu({ user, onSignOut }) {
           <Link to="/account" className="dropdown-item" role="menuitem" onClick={close}>
             <Settings size={20} /> Hesap ayarları
           </Link>
+          {user.role === 'ADMIN' && (
+            <Link to="/admin" className="dropdown-item" role="menuitem" onClick={close}>
+              <ShieldCheck size={20} /> Yönetim paneli
+            </Link>
+          )}
           <button className="dropdown-item" role="menuitem" onClick={() => { close(); onSignOut(); }}>
             <LogOut size={20} /> Çıkış yap
           </button>

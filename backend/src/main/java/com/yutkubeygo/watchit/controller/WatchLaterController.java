@@ -1,5 +1,7 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import com.yutkubeygo.watchit.util.Paging;
 import com.yutkubeygo.watchit.dto.VideoResponseDto;
 import com.yutkubeygo.watchit.dto.WatchLaterRequestDto;
 import com.yutkubeygo.watchit.service.WatchLaterService;
@@ -25,9 +27,11 @@ public class WatchLaterController {
 
     //Listemdeki videolar, son eklenen en üstte
     @GetMapping
-    public List<VideoResponseDto> getMyList(@AuthenticationPrincipal Long userId)
+    public PageResponseDto<VideoResponseDto> getMyList(@AuthenticationPrincipal Long userId,
+                                                       @RequestParam(required = false) Integer page,
+                                                       @RequestParam(required = false) Integer size)
     {
-        return watchLaterService.getMyList(userId);
+        return watchLaterService.getMyList(userId, Paging.of(page, size));
     }
 
     //Eklendiyse 201, zaten listedeyse 200, video yoksa 404

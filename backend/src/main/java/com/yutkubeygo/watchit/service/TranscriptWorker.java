@@ -29,11 +29,13 @@ public class TranscriptWorker {
     private final TransactionTemplate transactionTemplate;
     private final TranscriptIndexer indexer;
     private final TranscriptSummarizer summarizer;
+    private final ChapterService chapterService;
 
     public TranscriptWorker(VideoTranscriptRepository transcriptRepository, TranscriptSegmentRepository segmentRepository,
                             TranscriptionClient transcriptionClient, TransactionTemplate transactionTemplate,
-                            TranscriptIndexer indexer, TranscriptSummarizer summarizer)
+                            TranscriptIndexer indexer, TranscriptSummarizer summarizer, ChapterService chapterService)
     {
+        this.chapterService = chapterService;
         this.transcriptRepository = transcriptRepository;
         this.segmentRepository = segmentRepository;
         this.transcriptionClient = transcriptionClient;
@@ -107,6 +109,15 @@ public class TranscriptWorker {
         }
 
         writeSummary(transcript, saved);
+        //Bölümler de isteğe bağlı; ChapterService kendi hatasını yakalar
+        try
+        {
+            chapterService.generate(videoId);
+        }
+        catch(Exception e)
+        {
+            log.warn("Bölümler çıkarılamadı: video {}: {}", videoId, e.getMessage());
+        }
     }
 
     //Özellik sonradan eklendi: özeti olmayan hazır transkriptler için açılışta çağrılır

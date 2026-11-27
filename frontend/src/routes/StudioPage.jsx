@@ -6,11 +6,12 @@ import VideoEditModal from '../components/VideoEditModal';
 import UploadModal from '../components/UploadModal';
 import ChannelCreateForm from '../components/ChannelCreateForm';
 import { getMyChannel } from '../services/channelService';
-import { getVideosByChannelId, deleteVideoById } from '../services/videoService';
+import { getAllChannelVideos, deleteVideoById } from '../services/videoService';
 import { getTranscript } from '../services/transcriptService';
 import { formatCount, formatViews, timeAgo } from '../utils/format';
 import { RowListSkeleton } from '../components/Skeleton';
 import './ListPage.css';
+import ViewsChart from '../components/ViewsChart';
 import './StudioPage.css';
 
 //Bir video işlenirken liste bu aralıkla yeniden okunur
@@ -70,7 +71,7 @@ function Studio() {
   const load = useCallback(async () => {
     const myChannel = await getMyChannel();
     if (!myChannel) return { channel: null, videos: [] };
-    const list = await getVideosByChannelId(myChannel.id);
+    const list = await getAllChannelVideos(myChannel.id);
     const withTranscripts = await Promise.all(list.map(async (video) => {
       try {
         return { ...video, transcript: await getTranscript(video.id) };
@@ -161,6 +162,8 @@ function Studio() {
         <div className="studio-stat"><dt>Görüntülenme</dt><dd>{formatCount(totalViews)}</dd></div>
         <div className="studio-stat"><dt>Abone</dt><dd>{formatCount(channel.subscriberCount)}</dd></div>
       </dl>
+
+      {videos.length > 0 && <ViewsChart />}
 
       {videos.length === 0 ? (
         <div className="card studio-empty">

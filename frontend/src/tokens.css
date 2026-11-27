@@ -27,6 +27,7 @@
   --pill-active-bg: #ececec;
   --pill-active-text: #121212;
   --accent: #f2c230;            /* sarı: ana düğme, seçili, rozet */
+  --chart-bar: #b38a12;         /* grafik çubuğu: koyu zeminde göz almayan hardal (doğrulandı: kontrast >= 3:1) */
   --accent-hover: #f7d25c;
   --on-accent: #121212;         /* sarının üstündeki yazı */
   --accent-text: #f2c230;       /* sarı yazı ve bağlantı */
@@ -79,6 +80,7 @@
   --pill-active-bg: #141414;
   --pill-active-text: #f6f4ee;
   --accent: #f2c230;
+  --chart-bar: #a67c00;         /* beyaz zeminde sarı görünmez: koyu hardal (kontrast >= 3:1) */
   --accent-hover: #e5b21c;
   --on-accent: #141414;
   --accent-text: #7a5700;       /* açık zeminde sarı yazı okunmaz: koyu hardal (seçili zeminde 5:1) */

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   getMyPlaylists, getVisiblePlaylistVideos, addVideoToPlaylist, removePlaylistEntry, createPlaylist,
 } from '../services/playlistService';
+import { TOO_MANY_REQUESTS, isTooManyRequests } from '../utils/errors';
 import './SaveToPlaylist.css';
 
 //İzleme sayfasındaki "Kaydet" düğmesi: açılan kutuda listelerim tik kutularıyla,
@@ -87,7 +88,7 @@ export default function SaveToPlaylist({ videoId }) {
       }
     } catch (error) {
       console.error('Liste güncellenemedi:', error);
-      setMessage('Liste güncellenemedi.');
+      setMessage(isTooManyRequests(error) ? TOO_MANY_REQUESTS : 'Liste güncellenemedi.');
     } finally {
       setBusyId(null);
     }
@@ -108,7 +109,7 @@ export default function SaveToPlaylist({ videoId }) {
       setNewTitle('');
     } catch (error) {
       console.error('Liste oluşturulamadı:', error);
-      setMessage('Liste oluşturulamadı.');
+      setMessage(isTooManyRequests(error) ? TOO_MANY_REQUESTS : 'Liste oluşturulamadı.');
     }
   };
 

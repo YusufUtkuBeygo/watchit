@@ -40,6 +40,10 @@ public class VideoTranscript {
     @Column(length = 2000)
     private String summary;
 
+    //Bölüm çıkarma denendi mi (V23). Dosya değişince false olur, yeni transkriptten yeniden üretilir
+    @Column(nullable = false)
+    private boolean chaptersDone = false;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

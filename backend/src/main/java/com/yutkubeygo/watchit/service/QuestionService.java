@@ -101,9 +101,13 @@ public class QuestionService {
             org.springframework.ai.google.genai.common.GoogleGenAiThinkingLevel.MINIMAL;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
+    private final AnswerCache answerCache;
+
     public QuestionService(VideoRepository videoRepository, VideoTranscriptRepository transcriptRepository,
-                           TranscriptRetriever retriever, QuestionLimiterService limiter, ChatModel chatModel)
+                           TranscriptRetriever retriever, QuestionLimiterService limiter, ChatModel chatModel,
+                           AnswerCache answerCache)
     {
+        this.answerCache = answerCache;
         this.videoRepository = videoRepository;
         this.transcriptRepository = transcriptRepository;
         this.retriever = retriever;
@@ -122,16 +126,38 @@ public class QuestionService {
         if(transcript == null || transcript.getStatus() != TranscriptStatus.READY)
             throw new ConflictException();
 
+        String cleanQuestion = question.trim();
+        //Aynı soru daha önce cevaplandıysa Gemini'ye gitmeden; kotayı ve kullanıcının soru hakkını harcamaz
+        QuestionResponseDto cached = answerCache.get(videoId, transcript.getUpdatedAt(), cleanQuestion);
+        if(cached != null)
+            return cached;
+
         if(!limiter.tryAcquire(userId))
             throw new TooManyRequestsException();
 
-        String cleanQuestion = question.trim();
         QuestionIntent intent = QuestionIntent.of(cleanQuestion);
         try
         {
             //Özet sorusu ve özet hazırsa: parça yerine özet verilir (kaynak listesi boş)
+            QuestionResponseDto result;
             if(intent.type() == QuestionIntent.Type.SUMMARY && transcript.getSummary() != null)
-                return answer(buildSummaryMessage(video.getTitle(), transcript.getSummary(), cleanQuestion), List.of());
+                result = answer(buildSummaryMessage(video.getTitle(), transcript.getSummary(), cleanQuestion), List.of());
+            else
+                result = answerFromTranscript(video, transcript, videoId, intent, cleanQuestion);
+            answerCache.put(videoId, transcript.getUpdatedAt(), cleanQuestion, result);
+            return result;
+        }
+        catch(RuntimeException e)
+        {
+            log.warn("Soru cevaplanamadı (video {}): {}", videoId, rootMessage(e));
+            throw new ServiceUnavailableException(e);
+        }
+    }
+
+    private QuestionResponseDto answerFromTranscript(Video video, VideoTranscript transcript, Long videoId,
+                                                     QuestionIntent intent, String cleanQuestion)
+    {
+        {
 
             List<QuestionResponseDto.Source> sources = switch(intent.type())
             {
@@ -143,11 +169,6 @@ public class QuestionService {
             //İlgili parça yoksa da sorulur (27 Kasım): soru genel bilgiyle cevaplanabilir ("teleskop nedir").
             //Model videonun özetini görür, böylece genel cevabı videoya bağlayabilir; cevap [GENEL] etiketlenir
             return answer(buildUserMessage(video.getTitle(), transcript.getSummary(), sources, cleanQuestion), sources);
-        }
-        catch(RuntimeException e)
-        {
-            log.warn("Soru cevaplanamadı (video {}): {}", videoId, rootMessage(e));
-            throw new ServiceUnavailableException(e);
         }
     }
 

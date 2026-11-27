@@ -12,22 +12,31 @@ export async function saveWatchProgress(videoId, watchedSeconds, isCompleted)
   });
 }
 
-//Kendi izleme kayıtlarım, en son izlenen en üstte
-export async function getMyWatchHistory()
+//Kendi izleme kayıtlarım, en son izlenen en üstte (sayfalı)
+export async function getMyWatchHistory(page = 0)
 {
-  const response = await api.get('/watchHistory');
+  const response = await api.get('/watchHistory', { params: { page } });
   return response.data;
 }
 
 //Kayıtları video bilgileriyle birlikte getirir (geçmiş sayfası için)
 //Backend kayıtta yalnız videoId verir; videolar ayrı ayrı istenir, silinmiş olanlar listeden düşer
-export async function getMyWatchHistoryWithVideos()
+//Bu videodaki kaydım (yoksa null): oynatıcı kaldığı yerden devam etsin diye
+export async function getMyEntryForVideo(videoId)
 {
-  const history = await getMyWatchHistory();
-  const results = await Promise.allSettled(history.map((entry) => getVideoById(entry.videoId)));
-  return history
+  const response = await api.get('/watchHistory', { params: { videoId } });
+  return response.data.items[0] ?? null;
+}
+
+//Sayfa sayfa: yalnız o sayfadaki kayıtların videoları istenir
+export async function getMyWatchHistoryWithVideos(page = 0)
+{
+  const history = await getMyWatchHistory(page);
+  const results = await Promise.allSettled(history.items.map((entry) => getVideoById(entry.videoId)));
+  const items = history.items
     .map((entry, i) => ({ ...entry, video: results[i].status === 'fulfilled' ? results[i].value : null }))
     .filter((entry) => entry.video);
+  return { ...history, items };
 }
 
 export async function deleteWatchHistory(id)

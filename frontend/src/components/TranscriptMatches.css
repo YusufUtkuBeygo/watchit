@@ -1,0 +1,117 @@
+.transcript-matches {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.transcript-matches-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--fs-lg);
+}
+
+.transcript-matches-note {
+  margin: 4px 0 16px;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.transcript-match-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 900px;
+}
+
+.transcript-match {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.transcript-match-thumb {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  width: 200px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--thumb-bg);
+}
+
+.transcript-match-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.transcript-match-video {
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.transcript-match-video:hover {
+  text-decoration: underline;
+}
+
+.transcript-match-meta {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.transcript-match-lines {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.transcript-match-line {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 4px 8px;
+  margin-left: -8px;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+  font-size: var(--fs-sm);
+}
+
+.transcript-match-line:hover {
+  background: var(--hover-color);
+}
+
+.transcript-match-time {
+  flex-shrink: 0;
+  min-width: 40px;
+  color: var(--accent-text);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.transcript-match-text {
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .transcript-match {
+    flex-direction: column;
+  }
+
+  .transcript-match-thumb {
+    width: 100%;
+  }
+}

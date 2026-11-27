@@ -62,4 +62,13 @@ public class CommentLikeController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+
+    //Beğeniyi yorum id'siyle kaldır: DELETE /commentLikes?commentId=5 (beğeni token + yorum ile bulunur, başkasınınki silinemez). 204 / 404
+    @DeleteMapping
+    public ResponseEntity<Void> unlike(@RequestParam Long commentId, @AuthenticationPrincipal Long userId)
+    {
+        if(!commentLikeService.unlike(commentId, userId))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.noContent().build();
+    }
 }

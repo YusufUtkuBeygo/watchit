@@ -1,5 +1,8 @@
 package com.yutkubeygo.watchit.security;
 
+import com.yutkubeygo.watchit.enums.UserRole;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import com.yutkubeygo.watchit.repository.UserRepository;
 import com.yutkubeygo.watchit.service.JwtService;
 import io.jsonwebtoken.JwtException;
@@ -46,10 +49,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             //JWT "durumsuz"dur: imzası doğruysa kendi başına geçerlidir, sunucu onu geri çağıramaz.
             //Bu yüzden imzadan sonra veritabanına da bakıyoruz: hesap silinmişse ya da token şifre değişmeden
             //önce verilmişse kabul etmiyoruz. Böylece şifre değişince/sıfırlanınca eski bütün oturumlar kapanır.
-            if (isStillValid(info))
+            UserRepository.TokenCheck user = userRepository.findTokenCheckById(info.userId()).orElse(null);
+            if (isStillValid(info, user))
             {
+                //Rol token'a yazılmaz, her istekte veritabanından okunur: yöneticilik geri alınınca hemen geçerli olur.
+                //Spring Security'de rol "ROLE_" önekli yetkidir: hasRole("ADMIN") = "ROLE_ADMIN" yetkisi
+                List<SimpleGrantedAuthority> authorities = user.getRole() == UserRole.ADMIN
+                        ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN")) : List.of();
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(info.userId(), null, List.of());
+                        new UsernamePasswordAuthenticationToken(info.userId(), null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
@@ -62,9 +70,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     }
 
-    private boolean isStillValid(JwtService.TokenInfo info)
+    private boolean isStillValid(JwtService.TokenInfo info, UserRepository.TokenCheck user)
     {
-        UserRepository.TokenCheck user = userRepository.findTokenCheckById(info.userId()).orElse(null);
         if (user == null)
             return false;   //hesap silinmiş
 

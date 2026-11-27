@@ -8,3 +8,6 @@ CLAUDE.md
 .claude/
 # Skill kurulum kaydı (npx skills); .claude/ gibi kişisel araç dosyası
 skills-lock.json
+
+# Yayın ayarları (şifreler)
+.env.prod

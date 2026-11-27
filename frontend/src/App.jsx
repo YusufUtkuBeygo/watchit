@@ -5,6 +5,7 @@ import './App.css';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import HomePage from './routes/HomePage';
+import AdminPage from './routes/AdminPage';
 import NotFoundPage from './routes/NotFoundPage';
 import WatchPage from './routes/WatchPage';
 import ChannelPage from './routes/ChannelPage';
@@ -92,7 +93,8 @@ function App() {
             <Route path="/about" element={<InfoPage page="about" />} />
             <Route path="/terms" element={<InfoPage page="terms" />} />
             <Route path="/privacy" element={<InfoPage page="privacy" />} />
-            <Route path="*" element={<NotFoundPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+          <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
       </div>

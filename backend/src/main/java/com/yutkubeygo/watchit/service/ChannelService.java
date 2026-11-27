@@ -164,4 +164,32 @@ public class ChannelService {
         if(!fileService.isOwnFileUrl(request.getProfilePictureUrl()) || !fileService.isOwnFileUrl(request.getBannerImageUrl()))
             throw new BadRequestException();
     }
+
+    //Stüdyo: kendi kanalımın toplamları ve son "days" günün günlük görüntülenmesi. Kanalım yoksa null (404)
+    public com.yutkubeygo.watchit.dto.ChannelStatsDto getMyStats(Long userId, int days)
+    {
+        Channel channel = channelRepository.findByOwnerId(userId).orElse(null);
+        if(channel == null)
+            return null;
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate since = today.minusDays(days - 1L);
+        java.util.Map<java.time.LocalDate, Long> byDay = new java.util.HashMap<>();
+        for(Object[] row : videoRepository.dailyViewsOfChannel(channel.getId(), since))
+        {
+            //Sürücü günü LocalDate (yeni) ya da java.sql.Date (eski) olarak verebilir
+            java.time.LocalDate day = row[0] instanceof java.sql.Date sql ? sql.toLocalDate() : (java.time.LocalDate) row[0];
+            byDay.put(day, ((Number) row[1]).longValue());
+        }
+        List<com.yutkubeygo.watchit.dto.ChannelStatsDto.Day> daily = new java.util.ArrayList<>();
+        long period = 0;
+        for(java.time.LocalDate d = since; !d.isAfter(today); d = d.plusDays(1))
+        {
+            long views = byDay.getOrDefault(d, 0L);
+            period += views;
+            daily.add(new com.yutkubeygo.watchit.dto.ChannelStatsDto.Day(d, views));
+        }
+        return new com.yutkubeygo.watchit.dto.ChannelStatsDto(videoRepository.totalViewsOfChannel(channel.getId()),
+                subscriptionRepository.countByChannelId(channel.getId()), videoRepository.countByChannelId(channel.getId()),
+                period, daily);
+    }
 }

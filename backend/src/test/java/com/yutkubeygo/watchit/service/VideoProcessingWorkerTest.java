@@ -38,6 +38,7 @@ class VideoProcessingWorkerTest {
     @Mock private FileService fileService;
     @Mock private TranscriptService transcriptService;
     @Mock private HlsService hlsService;
+    @Mock private ThumbnailService thumbnailService;
     @InjectMocks private VideoProcessingWorker worker;
 
     private Video video;
@@ -81,6 +82,8 @@ class VideoProcessingWorkerTest {
         verify(transcriptService).start(video);
         //Çoklu kalite yeni dosyadan sıraya girer
         verify(hlsService).start(1L);
+        //Kapaksız yüklenmişse kapak çıkarılır (servis kendisi bakar)
+        verify(thumbnailService).ensureThumbnail(1L);
         assertThat(tempFile).doesNotExist();
     }
 

@@ -1,5 +1,8 @@
 package com.yutkubeygo.watchit.service;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.yutkubeygo.watchit.dto.WatchHistoryRequestDto;
 import com.yutkubeygo.watchit.dto.WatchHistoryResponseDto;
 import com.yutkubeygo.watchit.entity.User;
@@ -98,11 +101,16 @@ public class WatchHistoryService {
         return true;
     }
 
-    public List<WatchHistoryResponseDto> getWatchHistoryByUserId(Long userId) {
-        List<WatchHistory> userHistory = watchHistoryRepository.findByUserIdOrderByLastWatchedAtDesc(userId);
+    public PageResponseDto<WatchHistoryResponseDto> getMyEntryForVideo(Long userId, Long videoId)
+    {
+        List<WatchHistoryResponseDto> items = watchHistoryRepository.findByUserIdAndVideoId(userId, videoId)
+                .map(entry -> List.of(watchHistoryMapper.toDto(entry))).orElse(List.of());
+        return new PageResponseDto<>(items, 0, 1, false, items.size());
+    }
 
-
-        return watchHistoryMapper.toDtoList(userHistory);
+    public PageResponseDto<WatchHistoryResponseDto> getWatchHistoryByUserId(Long userId, Pageable pageable) {
+        Page<WatchHistory> page = watchHistoryRepository.findByUserIdOrderByLastWatchedAtDescIdDesc(userId, pageable);
+        return PageResponseDto.of(page, watchHistoryMapper.toDtoList(page.getContent()));
     }
 
 }

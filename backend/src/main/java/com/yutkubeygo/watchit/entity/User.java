@@ -1,4 +1,6 @@
 package com.yutkubeygo.watchit.entity;
+
+import com.yutkubeygo.watchit.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,6 +47,11 @@ public class User {
     //Şifre en son ne zaman değişti. JwtAuthFilter bundan ÖNCE verilmiş giriş anahtarlarını (JWT) reddeder:
     //şifre değişince ya da sıfırlanınca bütün eski oturumlar kapanır. Hiç değişmediyse boş.
     private LocalDateTime passwordChangedAt;
+
+    //Rol (V22): USER ya da ADMIN. Yönetici veritabanından atanır
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole role = UserRole.USER;
 
     //Kullanıcının sahip olduğu kanalları listelemek için kullanılır
     //Foreign key Channel tablosunda

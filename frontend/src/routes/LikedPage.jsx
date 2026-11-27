@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from '../components/LoadMore';
 import { X, ThumbsUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import RequireLogin from '../components/RequireLogin';
@@ -20,20 +21,9 @@ function LikedPage() {
 }
 
 function LikedList() {
-  const [videos, setVideos] = useState([]);
-  //'loading' | 'ready' | 'error'
-  const [status, setStatus] = useState('loading');
-
-  useEffect(() => {
-    let ignore = false;
-    getLikedVideos()
-      .then((list) => { if (!ignore) { setVideos(list); setStatus('ready'); } })
-      .catch((error) => {
-        console.error('Beğenilen videolar yüklenemedi:', error);
-        if (!ignore) setStatus('error');
-      });
-    return () => { ignore = true; };
-  }, []);
+  //Sayfa sayfa; aşağı kaydırdıkça devamı gelir
+  const list = usePagedList((page) => getLikedVideos(page), 'liked');
+  const { items: videos, status, setItems: setVideos } = list;
 
   const handleUnlike = async (videoId) => {
     try {
@@ -73,6 +63,7 @@ function LikedList() {
           </li>
         ))}
       </ul>
+      <LoadMore list={list} />
     </div>
   );
 }

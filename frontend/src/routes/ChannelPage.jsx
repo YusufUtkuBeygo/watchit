@@ -4,12 +4,14 @@ import { Pencil, Clapperboard } from 'lucide-react';
 import { getChannelById, getMyChannel } from '../services/channelService';
 import { useAuth } from '../context/AuthContext';
 import ChannelEditModal from '../components/ChannelEditModal';
-import { getVideosByChannelId } from '../services/videoService';
+import { getVideos } from '../services/videoService';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from '../components/LoadMore';
 import SubscribeButton from '../components/SubscribeButton';
 import Avatar from '../components/Avatar';
 import ChannelBanner from '../components/ChannelBanner';
 import VideoCard from '../components/VideoCard';
-import { ChannelSkeleton } from '../components/Skeleton';
+import { ChannelSkeleton, VideoGridSkeleton } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
 import '../components/VideoGrid.css';
 import './ChannelPage.css';
@@ -20,7 +22,6 @@ function ChannelPage() {
   const { id } = useParams();
 
   const [channel, setChannel] = useState(null);
-  const [videos, setVideos] = useState([]);
   //'loading' | 'ready' | 'notFound' | 'error'
   const [status, setStatus] = useState('loading');
   const { user } = useAuth();
@@ -44,14 +45,9 @@ function ChannelPage() {
     async function loadChannel() {
       setStatus('loading');
       try {
-        //Kanal ve videoları aynı anda iste
-        const [channelData, videoList] = await Promise.all([
-          getChannelById(id),
-          getVideosByChannelId(id),
-        ]);
+        const channelData = await getChannelById(id);
         if (ignore) return;
         setChannel(channelData);
-        setVideos(videoList);
         setStatus('ready');
       } catch (error) {
         if (ignore) return;
@@ -62,6 +58,10 @@ function ChannelPage() {
     loadChannel();
     return () => { ignore = true; };
   }, [id]);
+
+  //Kanalın videoları sayfa sayfa (kanal bilgisiyle aynı anda istenir)
+  const list = usePagedList((page) => getVideos({ channelId: id, page }), `channel-${id}`);
+  const videos = list.items;
 
   if (status === 'loading') {
     return <ChannelSkeleton />;
@@ -89,7 +89,7 @@ function ChannelPage() {
           <div className="channel-meta">
             {channel.handle && <span>@{channel.handle}</span>}
             <span>{channel.subscriberCount ?? 0} abone</span>
-            <span>{videos.length} video</span>
+            <span>{channel.videoCount ?? list.total} video</span>
           </div>
           {channel.description && <p className="channel-description">{channel.description}</p>}
           {/* Abone olunca bu sayfadaki kanal bilgisi (abone sayısı) güncellenir */}
@@ -101,7 +101,9 @@ function ChannelPage() {
       </div>
 
       <h2 className="channel-section-title">Videolar</h2>
-      {videos.length === 0 ? (
+      {list.status === 'loading' && <VideoGridSkeleton count={4} label="Videolar yükleniyor…" />}
+      {list.status === 'error' && <p className="grid-message">Videolar yüklenemedi. Biraz sonra tekrar dene.</p>}
+      {list.status === 'ready' && (videos.length === 0 ? (
         <EmptyState
           icon={Clapperboard}
           title="Bu kanalda henüz video yok"
@@ -113,7 +115,8 @@ function ChannelPage() {
             <VideoCard key={video.id} video={video} />
           ))}
         </div>
-      )}
+      ))}
+      <LoadMore list={list} />
 
       {isEditing && (
         <ChannelEditModal

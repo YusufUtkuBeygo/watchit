@@ -38,8 +38,13 @@ The backend follows a layered structure: `controller` → `service` → `reposit
 - **Accounts:** register, login with JWT, profile and password change, account deletion
 - **Channels:** one channel per user, channel page
 - **Videos:** upload with thumbnail, categories, watch page, view counter
-- **Search:** find videos by title, case- and accent-insensitive (`GET /videos?search=`)
-- **Social:** comments, video and comment likes (`likeCount`, `likedByMe`), subscriptions
+- **Home feed:** "for you" ranking (popularity, subscribed channels, watched categories, freshness; watched videos sink), infinite scroll on every list
+- **Search:** title, description and channel name, case- and accent-insensitive; plus a separate "said in the video" section that finds the exact word in transcripts and links to the second it is spoken (`?t=`)
+- **Chapters:** generated once per video from the transcript, clickable on the watch page
+- **Social:** comments (newest / top, pinned by the video owner), video and comment likes, subscriptions
+- **Moderation:** report a video or comment; admin panel to remove content (owner is notified) or dismiss; admin role is set in the database
+- **Studio:** your videos with processing status, daily views chart (last 28 days)
+- **Abuse protection:** per-user / per-IP rate limits on comments, likes, subscriptions, uploads and sign-ups (429 + `Retry-After`)
 - **Ask the video:** a panel on the watch page; ask a question in any language and get an answer grounded only in what is said in the video, with clickable minutes that jump the player there. Questions about a moment ("what happens at the start / at 03:20?") pick chunks by time, "what is this video about?" uses a summary written once per video.
 - **Notifications:** new subscriber, comment, reply, like and new video from a subscribed channel
 - **Playlists:** public and private playlists
@@ -105,19 +110,36 @@ npm run dev
 
 Open `http://localhost:5173`.
 
+### Running everything with Docker
+
+`compose.prod.yaml` builds and runs the whole stack (PostgreSQL, MinIO, media service, backend, frontend behind nginx):
+
+```bash
+cp .env.prod.example .env.prod   # fill in the secrets; .env.prod is git-ignored
+docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
+```
+
+The site is served on port 80, `/api` is proxied to the backend, `GET /api/actuator/health` returns `{"status":"UP"}`.
+Secrets are passed as environment variables only; they are never copied into the images.
+
 ## API overview
 
 | Resource | Endpoints |
 |---|---|
 | Users | `POST /users` · `POST /users/login` · `GET/PUT/DELETE /users/me` · `PUT /users/me/password` · `GET /users/{id}` |
 | Channels | `/channels` CRUD · `GET /channels/me` |
-| Videos | `GET/POST /videos/{id}/transcript` · `POST /videos/{id}/questions` · `/videos` CRUD · `GET /videos?search=` / `?channelId=` / `?categoryId=` · `POST /videos/{id}/view` |
+| Videos | `/videos` CRUD · `GET /videos?sort=foryou\|new\|popular&categoryId=&channelId=&maxDuration=&search=&page=&size=` · `GET /videos/subscriptions` · `GET /videos/liked` · `GET /videos/transcript-search?q=` · `POST /videos/{id}/view` |
+| AI | `GET/POST /videos/{id}/transcript` · `POST /videos/{id}/questions` · `GET /videos/{id}/chapters` |
+| Studio | `GET /channels/me/stats?days=28` |
+| Moderation | `POST /reports` · `GET /admin/reports` · `POST /admin/reports/{id}/remove-content` · `POST /admin/reports/{id}/dismiss` · `GET /admin/feedback` |
 | Files | `POST /api/files/upload-url` (presigned URL) |
-| Comments | `/comments` CRUD · `/commentLikes` |
+| Comments | `/comments` CRUD · `GET /comments?videoId=&sort=new\|top` · `PUT /comments/{id}/pin` · `/commentLikes` |
 | Likes | `/videoLikes` |
 | Subscriptions | `/subscriptions` |
 | Playlists | `/playlists` · `/playlistvideos` |
-| Others | `/categories` · `/notifications` · `/watchHistory` |
+| Others | `/categories` · `/notifications` (+ `unread-count`, `read-all`) · `/watchHistory` · `/actuator/health` |
+
+All list endpoints are paginated: `?page=0&size=24` (max 50) → `{ items, page, size, hasNext, total }`.
 
 ## Roadmap
 
@@ -129,7 +151,9 @@ Open `http://localhost:5173`.
 - [x] "Ask the video" panel on the watch page (time and summary questions, clickable minutes)
 - [x] Evaluation of "Ask the video" on 3 videos and 30 questions: Hit@3 100%, accuracy 95%, "not found" 100% ([report, in Turkish](docs/soru-cevap-degerlendirme.md), `./gradlew eval`)
 - [x] Background video conversion to 720p H.264/AAC MP4
-- [ ] Wider test coverage
+- [x] Pagination on every list, rate limits, reports and admin role
+- [x] Automatic chapters, transcript word search, answer cache, automatic thumbnails, studio chart
+- [x] Docker images (backend, frontend + nginx), health endpoint, production compose file
 - [ ] Deployment
 
 ## Author

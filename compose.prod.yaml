@@ -1,0 +1,95 @@
+# WatchIt yayın paketi: bütün servisler tek komutla (veritabanı, dosya deposu, medya servisi, backend, frontend).
+# Kullanım (sunucuda, repo kökünde):
+#   cp .env.prod.example .env.prod   # değerleri doldur, .env.prod repoya girmez
+#   docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
+# Geliştirmedeki backend/compose.yaml'dan farkı: backend ve frontend de konteynerde, portlar dışarı açılmaz
+# (yalnız frontend 80 ve dosyalar için MinIO 9000), Mailpit yok (gerçek SMTP servisi kullanılır).
+services:
+  db:
+    image: pgvector/pgvector:0.8.7-pg15-trixie
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD gerekli}
+      POSTGRES_DB: watchit
+    volumes:
+      - postgres_kasa:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d watchit"]
+      interval: 10s
+      retries: 10
+    restart: unless-stopped
+
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?MINIO_SECRET_KEY gerekli}
+    command: server /data
+    # Video ve resimler tarayıcıya doğrudan buradan gider (imzalı yükleme de buraya)
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_kasa:/data
+    restart: unless-stopped
+
+  media:
+    build: ./whisper-servisi
+    environment:
+      WHISPER_MODEL: large-v3-turbo
+      WHISPER_DEVICE: cpu
+      WHISPER_COMPUTE_TYPE: int8
+      # Veritabanındaki adresler tarayıcıya göre (PUBLIC_FILE_URL); konteynerin içinden MinIO'ya servis adıyla gidilir
+      PUBLIC_FILE_URL: ${PUBLIC_FILE_URL:-http://localhost:9000}
+      INTERNAL_FILE_URL: http://minio:9000
+    volumes:
+      - whisper_modeller:/modeller
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/watchit
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET gerekli}
+      TOKEN_PEPPER: ${TOKEN_PEPPER:-}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-admin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      # Not: backend bu adresi hem MinIO'ya bağlanmak hem de tarayıcıya giden dosya adreslerini yazmak için kullanıyor.
+      # Bu yüzden tarayıcının da ulaşabildiği adres olmalı (ör. https://dosya.alanadi.com). İkiye ayırmak yayın adımında.
+      MINIO_URL: ${PUBLIC_FILE_URL:-http://localhost:9000}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      WHISPER_URL: http://media:8000
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_SMTP_AUTH: "true"
+      MAIL_STARTTLS: "true"
+      MAIL_FROM: ${MAIL_FROM:-WatchIt <no-reply@watchit.local>}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    # Sağlık ucu: {"status":"UP"} (veritabanı bağlantısı dahil). Frontend backend sağlıklı olunca başlar
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      start_period: 60s
+      retries: 5
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_kasa:
+  minio_kasa:
+  whisper_modeller:

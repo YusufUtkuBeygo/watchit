@@ -28,10 +28,13 @@ public class VideoProcessingWorker {
     private final FileService fileService;
     private final TranscriptService transcriptService;
     private final HlsService hlsService;
+    private final ThumbnailService thumbnailService;
 
     public VideoProcessingWorker(VideoRepository videoRepository, VideoProcessingClient client,
-                                 FileService fileService, TranscriptService transcriptService, HlsService hlsService)
+                                 FileService fileService, TranscriptService transcriptService, HlsService hlsService,
+                                 ThumbnailService thumbnailService)
     {
+        this.thumbnailService = thumbnailService;
         this.videoRepository = videoRepository;
         this.client = client;
         this.fileService = fileService;
@@ -77,6 +80,8 @@ public class VideoProcessingWorker {
             //Transkript hemen sıraya girer (sayfa "transkript yok" görmesin), sonra eski dosya silinir
             startTranscript(videoId, newUrl);
             //Çoklu kalite (HLS) yeni dosyadan; aynı sırada, bu işten sonra çalışır
+            //Kapaksız yüklendiyse videodan kapak çıkarılır
+            thumbnailService.ensureThumbnail(videoId);
             startHls(videoId);
             //Eski dosya artık kullanılmıyor (başka bir video da onu göstermiyorsa) silinir
             if(!videoRepository.existsByVideoUrl(sourceUrl))
@@ -99,6 +104,7 @@ public class VideoProcessingWorker {
         //Dönüştürülemedi: transkript orijinal dosyadan çıkarılır (soru-cevap yine çalışsın).
         //HLS de denenir: HLS her kaliteyi zaten baştan kodladığı için tarayıcının açamadığı biçimi de çevirebilir
         startTranscript(videoId, sourceUrl);
+        thumbnailService.ensureThumbnail(videoId);
         startHls(videoId);
     }
 

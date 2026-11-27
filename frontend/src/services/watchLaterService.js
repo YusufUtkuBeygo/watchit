@@ -1,9 +1,9 @@
 import api from './api';
 
-//"Daha sonra izle" listesi (giriş ister). Liste doğrudan videolardır, son eklenen en üstte
-export async function getWatchLater()
+//"Daha sonra izle" listesi (giriş ister), sayfalı. Kayıtlar doğrudan videolardır, son eklenen en üstte
+export async function getWatchLater(page = 0)
 {
-  const response = await api.get('/watchLater');
+  const response = await api.get('/watchLater', { params: { page } });
   return response.data;
 }
 
