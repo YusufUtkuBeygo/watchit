@@ -87,8 +87,18 @@ public class QuestionService {
     private double temperature = 0.2;
     @Value("${spring.ai.google.genai.chat.options.max-output-tokens:400}")
     private int maxOutputTokens = 400;
-    @Value("${spring.ai.google.genai.chat.options.thinking-budget:0}")
-    private int thinkingBudget = 0;
+    //Zincirin ilk halkası: ayar dosyasındaki asıl model
+    @Value("${spring.ai.google.genai.chat.options.model:}")
+    private String primaryModel = "";
+    //Kotaya ya da zaman aşımına takılan model bu süre boyunca hiç denenmez (her soruda boşuna beklenmesin).
+    //Ücretsiz katmanda güçlü modelin günlük hakkı 20 soru: dolunca 10 dk'da bir tek soruyla yeniden yoklanır
+    @Value("${qa.model-cooldown-minutes:10}")
+    private long cooldownMinutes = 10;
+    //Model adı -> ne zamana kadar atlanacak. Bellekte: uygulama yeniden başlayınca sıfırlanır (zararsız, bir kez daha denenir)
+    private final java.util.Map<String, java.time.Instant> cooldownUntil = new java.util.concurrent.ConcurrentHashMap<>();
+    @Value("${spring.ai.google.genai.chat.options.thinking-level:MINIMAL}")
+    private org.springframework.ai.google.genai.common.GoogleGenAiThinkingLevel thinkingLevel =
+            org.springframework.ai.google.genai.common.GoogleGenAiThinkingLevel.MINIMAL;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public QuestionService(VideoRepository videoRepository, VideoTranscriptRepository transcriptRepository,
@@ -204,24 +214,38 @@ public class QuestionService {
     }
 
     //Hangi denemede hangi model: 1 = asıl model (null), 2 = ilk yedek, ... yedekler bitince başa döner
-    private String modelFor(int attempt)
+    //Bu soru için denenecek modeller, sırayla: asıl model + yedekler, atlama süresindekiler hariç.
+    //Hepsi atlanıyorsa (ör. hepsi az önce takıldı) yine hepsi denenir: hiç denemeden 503 dönmekten iyidir
+    List<String> modelChain()
     {
-        List<String> models = fallbackModels.stream().filter(m -> m != null && !m.isBlank()).toList();
-        if(attempt == 1 || models.isEmpty())
-            return null;
-        return models.get((attempt - 2) % models.size());
+        java.time.Instant now = java.time.Instant.now();
+        List<String> all = java.util.stream.Stream.concat(java.util.stream.Stream.of(primaryModel), fallbackModels.stream())
+                .filter(m -> m != null && !m.isBlank())
+                .distinct()
+                .toList();
+        List<String> available = all.stream()
+                .filter(m -> cooldownUntil.getOrDefault(m, java.time.Instant.MIN).isBefore(now))
+                .toList();
+        return available.isEmpty() ? all : available;
     }
 
-    private Prompt promptFor(List<org.springframework.ai.chat.messages.Message> messages, int attempt)
+    //Model kotaya ya da zaman aşımına takıldı: bir süre zincirden çıkar
+    private void coolDown(String model)
     {
-        String model = modelFor(attempt);
-        if(model == null)
+        if(model != null)
+            cooldownUntil.put(model, java.time.Instant.now().plus(java.time.Duration.ofMinutes(cooldownMinutes)));
+    }
+
+    //Her istek modelini açıkça söyler (zincirdeki hangi halkaysa); öbür ayarlar asıl modelinkilerle aynı
+    private Prompt promptFor(List<org.springframework.ai.chat.messages.Message> messages, String model)
+    {
+        if(model == null || model.isBlank())
             return new Prompt(messages);
         return new Prompt(messages, GoogleGenAiChatOptions.builder()
                 .model(model)
                 .temperature(temperature)
                 .maxOutputTokens(maxOutputTokens)
-                .thinkingBudget(thinkingBudget)
+                .thinkingLevel(thinkingLevel)
                 .build());
     }
 
@@ -234,16 +258,18 @@ public class QuestionService {
         //Aynı istek yeniden gönderilince genelde hemen gelir. Bu yüzden tek uzun bekleme yerine kısa denemeler:
         //her deneme attemptSeconds sn, takılırsa iptal edip bir daha (toplam süre yine timeoutSeconds'ı aşmaz).
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds);
+        List<String> chain = modelChain();
         for(int attempt = 1; answer == null; attempt++)
         {
+            //Zincirdeki sıradaki model (sona gelinirse başa döner); zincir boşsa ayardaki varsayılan model
+            String model = chain.isEmpty() ? null : chain.get((attempt - 1) % chain.size());
             //Milisaniye: saniyeye aşağı yuvarlansa son kalan kısım (ör. 0,9 sn) hiç denenmezdi
             long remaining = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
             long wait = Math.min(TimeUnit.SECONDS.toMillis(attemptSeconds), remaining);
             if(wait <= 0)
                 throw new IllegalStateException("Gemini " + timeoutSeconds + " saniyede cevap vermedi");
 
-            //1. deneme ayardaki asıl model (seçenek verilmez), sonrakiler sırayla yedek modeller
-            Prompt prompt = promptFor(messages, attempt);
+            Prompt prompt = promptFor(messages, model);
             Future<String> call = executor.submit(() -> chatModel.call(prompt).getResult().getOutput().getText());
             try
             {
@@ -254,16 +280,19 @@ public class QuestionService {
             catch(TimeoutException e)
             {
                 call.cancel(true);
-                log.info("Gemini {}. denemede ({}) {} ms içinde cevap vermedi, yeniden deneniyor", attempt, modelFor(attempt), wait);
+                //Takılma çoğunlukla kotadan (kütüphane 429'u sessizce bekletiyor): model bir süre atlanır
+                coolDown(model);
+                log.info("Gemini {}. denemede ({}) {} ms içinde cevap vermedi, {} dk atlanacak", attempt, model, wait, cooldownMinutes);
             }
             catch(ExecutionException e)
             {
                 //Kota dolu (429) ya da model yoğun (5xx): beklemeden sıradaki modele geç; başka hata hemen döner
                 if(isBusyOrQuota(e.getCause()))
                 {
-                    log.info("Gemini {}. denemede ({}) meşgul/kota dolu, sıradaki model deneniyor", attempt, modelFor(attempt));
-                    //Her model en fazla iki kez denenir; yoksa ikisi de anında 429 dönerse döngü kotayı daha da harcardı
-                    if(attempt >= 2 * (1 + fallbackModels.size()))
+                    coolDown(model);
+                    log.info("Gemini {}. denemede ({}) meşgul/kota dolu, {} dk atlanacak", attempt, model, cooldownMinutes);
+                    //Her model en fazla iki kez denenir; yoksa hepsi anında 429 dönerse döngü kotayı daha da harcardı
+                    if(attempt >= 2 * chain.size())
                         throw new IllegalStateException("Gemini modellerinin hepsi meşgul ya da kotası dolu", e.getCause());
                     sleepQuietly(500);
                     continue;
