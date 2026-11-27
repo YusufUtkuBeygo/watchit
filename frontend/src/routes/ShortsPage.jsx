@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Smartphone, Volume2, VolumeX, Play } from 'lucide-react';
-import { getAllVideos } from '../services/videoService';
+import { getVideos } from '../services/videoService';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from '../components/LoadMore';
 import { formatViews } from '../utils/format';
 import EmptyState from '../components/EmptyState';
 import Avatar from '../components/Avatar';
@@ -13,24 +15,11 @@ const MAX_SECONDS = 180;
 //Kısa videolar (/shorts): 3 dk ve altı videolar dikey akışta, kaydırdıkça bir sonrakine geçilir.
 //Yalnız ekranda görünen oynar; akış sessiz başlar (habersiz ses çıkmasın), ses düğmesiyle açılır ve öyle kalır.
 function ShortsPage() {
-  const [videos, setVideos] = useState([]);
-  const [status, setStatus] = useState('loading');
+  //Süre süzgeci backend'de (maxDuration); aşağı kaydırdıkça sonraki 24 gelir
+  const list = usePagedList((page) => getVideos({ maxDuration: MAX_SECONDS, page }), 'shorts');
+  const { status } = list;
+  const videos = list.items.filter((v) => v.videoUrl && v.durationInSeconds > 0);
   const [muted, setMuted] = useState(true);
-
-  useEffect(() => {
-    let ignore = false;
-    getAllVideos()
-      .then((list) => {
-        if (ignore) return;
-        setVideos(list.filter((v) => v.videoUrl && v.durationInSeconds > 0 && v.durationInSeconds <= MAX_SECONDS));
-        setStatus('ready');
-      })
-      .catch((error) => {
-        console.error('Kısa videolar yüklenemedi:', error);
-        if (!ignore) setStatus('error');
-      });
-    return () => { ignore = true; };
-  }, []);
 
   if (status === 'loading') return <div className="page"><p className="grid-message">Kısa videolar yükleniyor…</p></div>;
   if (status === 'error') return <div className="page"><p className="grid-message">Kısa videolar yüklenemedi. Biraz sonra tekrar dene.</p></div>;
@@ -50,6 +39,7 @@ function ShortsPage() {
       {videos.map((video) => (
         <ShortItem key={video.id} video={video} muted={muted} onToggleMute={() => setMuted((m) => !m)} />
       ))}
+      <LoadMore list={list} />
     </div>
   );
 }

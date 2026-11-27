@@ -1,5 +1,9 @@
 package com.yutkubeygo.watchit.service;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import java.util.ArrayList;
 import com.yutkubeygo.watchit.dto.CommentRequestDto;
 import com.yutkubeygo.watchit.dto.CommentResponseDto;
 import com.yutkubeygo.watchit.entity.Comment;
@@ -115,14 +119,22 @@ public class CommentService {
 
     }
 
-    public List<CommentResponseDto> getCommentsByVideoId(Long videoId)
+    //Videonun yorumları sayfa sayfa; video yoksa null (404).
+    //Sayfalanan üst yorumlardır; o sayfadaki üst yorumların cevapları da (hepsi) aynı listede gelir, frontend gruplar.
+    //total: cevaplar dahil bütün yorumların sayısı ("12 yorum" yazısı için)
+    public PageResponseDto<CommentResponseDto> getCommentsByVideoId(Long videoId, Pageable pageable)
     {
         if(!videoRepository.existsById(videoId))
             return null;
 
-        List<Comment> comments = commentRepository.findByVideoIdOrderByCreatedAtDesc(videoId);
-        return commentMapper.toDtoList(comments);
+        Page<Comment> topLevel = commentRepository.findByVideoIdAndParentCommentIsNull(videoId, pageable);
+        List<Comment> comments = new ArrayList<>(topLevel.getContent());
+        if(!comments.isEmpty())
+            comments.addAll(commentRepository.findByParentCommentIdInOrderByCreatedAtDesc(
+                    topLevel.getContent().stream().map(Comment::getId).toList()));
 
+        return new PageResponseDto<>(commentMapper.toDtoList(comments), topLevel.getNumber(), topLevel.getSize(),
+                topLevel.hasNext(), commentRepository.countByVideoId(videoId));
     }
 
 

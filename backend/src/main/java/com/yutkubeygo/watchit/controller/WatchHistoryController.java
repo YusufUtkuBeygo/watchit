@@ -1,5 +1,7 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import com.yutkubeygo.watchit.util.Paging;
 import com.yutkubeygo.watchit.dto.WatchHistoryRequestDto;
 import com.yutkubeygo.watchit.dto.WatchHistoryResponseDto;
 import com.yutkubeygo.watchit.service.WatchHistoryService;
@@ -46,9 +48,15 @@ public class WatchHistoryController {
     }
 
     @GetMapping
-    public List<WatchHistoryResponseDto> getAllWatchHistory(@AuthenticationPrincipal Long userId)
+    //?videoId=5 verilirse yalnız o videonun kaydım (0 ya da 1 kayıt; oynatıcı "kaldığın yerden devam" için)
+    public PageResponseDto<WatchHistoryResponseDto> getAllWatchHistory(@AuthenticationPrincipal Long userId,
+                                                                       @RequestParam(required = false) Long videoId,
+                                                                       @RequestParam(required = false) Integer page,
+                                                                       @RequestParam(required = false) Integer size)
     {
-        return watchHistoryService.getWatchHistoryByUserId(userId);
+        if(videoId != null)
+            return watchHistoryService.getMyEntryForVideo(userId, videoId);
+        return watchHistoryService.getWatchHistoryByUserId(userId, Paging.of(page, size));
     }
 
     @DeleteMapping("/{id}")

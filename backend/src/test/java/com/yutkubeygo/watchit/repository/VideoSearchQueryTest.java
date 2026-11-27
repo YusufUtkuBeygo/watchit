@@ -64,7 +64,7 @@ class VideoSearchQueryTest {
 
     private List<String> titles(String text)
     {
-        return videoRepository.searchByTitle(text).stream().map(Video::getTitle).toList();
+        return videoRepository.searchByTitle(text, org.springframework.data.domain.PageRequest.of(0, 50)).stream().map(Video::getTitle).toList();
     }
 
     @Test

@@ -107,9 +107,9 @@ class WatchLaterEndpointTest {
 
         mockMvc.perform(get("/watchLater").header("Authorization", bearer(me)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].id").value(second.getId()))
-                .andExpect(jsonPath("$[1].id").value(first.getId()));
+                .andExpect(jsonPath("$.items", hasSize(2)))
+                .andExpect(jsonPath("$.items[0].id").value(second.getId()))
+                .andExpect(jsonPath("$.items[1].id").value(first.getId()));
     }
 
     @Test
@@ -140,7 +140,7 @@ class WatchLaterEndpointTest {
     {
         add(me, first, 201);
         mockMvc.perform(get("/watchLater").header("Authorization", bearer(other)))
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.items", hasSize(0)));
         //Başkası benim kaydımı silemez: onun listesinde yok
         mockMvc.perform(delete("/watchLater").param("videoId", first.getId().toString()).header("Authorization", bearer(other)))
                 .andExpect(status().isNotFound());

@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from './LoadMore';
 import { getCommentsByVideoId, createComment, deleteComment, updateComment } from '../services/commentService';
 import './CommentSection.css';
 import Avatar from './Avatar';
@@ -13,34 +15,11 @@ const MAX_LENGTH = 1000;
 //İzleme sayfasının altındaki yorum bölümü
 export default function CommentSection({ videoId }) {
   const { user } = useAuth();
-  const [comments, setComments] = useState([]);
-  //'loading' | 'ready' | 'error'
-  const [status, setStatus] = useState('loading');
-  //Yorum eklenince/silinince artar, liste yeniden çekilir
-  const [reloadKey, setReloadKey] = useState(0);
+  //Sayfa sayfa: her sayfada 24 üst yorum + cevapları. Yorum eklenince/silinince liste baştan yüklenir (reload)
+  const list = usePagedList((page) => getCommentsByVideoId(videoId, page), `comments-${videoId}`);
+  const { items: comments, status, reload } = list;
   //Hangi yoruma cevap yazılıyor (üst yorumun id'si), yoksa null
   const [replyingTo, setReplyingTo] = useState(null);
-
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadComments() {
-      try {
-        const data = await getCommentsByVideoId(videoId);
-        if (ignore) return;
-        setComments(data);
-        setStatus('ready');
-      } catch (error) {
-        console.error('Yorumlar yüklenemedi:', error);
-        if (!ignore) setStatus('error');
-      }
-    }
-
-    loadComments();
-    return () => { ignore = true; };
-  }, [videoId, reloadKey]);
-
-  const reload = () => setReloadKey((key) => key + 1);
 
   const handleDelete = async (commentId) => {
     if (!window.confirm('Yorum silinsin mi?')) return;
@@ -72,7 +51,7 @@ export default function CommentSection({ videoId }) {
     <section className="comments">
       <h2 className="comments-title">
         Yorumlar
-        {status === 'ready' && comments.length > 0 && <span className="comments-count">{comments.length}</span>}
+        {status === 'ready' && list.total > 0 && <span className="comments-count">{list.total}</span>}
       </h2>
 
       {user ? (
@@ -134,6 +113,7 @@ export default function CommentSection({ videoId }) {
           </li>
         ))}
       </ul>
+      <LoadMore list={list} label="Daha fazla yorum" />
     </section>
   );
 }

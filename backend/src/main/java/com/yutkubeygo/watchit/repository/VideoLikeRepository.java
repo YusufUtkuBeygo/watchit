@@ -1,5 +1,7 @@
 package com.yutkubeygo.watchit.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.yutkubeygo.watchit.entity.VideoLike;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,5 +18,8 @@ public interface VideoLikeRepository extends JpaRepository<VideoLike,Long> {
         List<VideoLike> findByUserId(Long userId);
         //Beğendiğim videolar sayfası: en son beğenilen en üstte (aynı anda beğenilenlerde sonra eklenen önce)
         List<VideoLike> findByUserIdOrderByCreatedAtDescIdDesc(Long userId);
+
+    //Beğendiklerim, sayfa sayfa
+    Page<VideoLike> findByUserIdOrderByCreatedAtDescIdDesc(Long userId, Pageable pageable);
 
 }

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from '../components/LoadMore';
 import { X, History } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import RequireLogin from '../components/RequireLogin';
@@ -19,20 +20,9 @@ function HistoryPage() {
 }
 
 function HistoryList() {
-  const [entries, setEntries] = useState([]);
-  //'loading' | 'ready' | 'error'
-  const [status, setStatus] = useState('loading');
-
-  useEffect(() => {
-    let ignore = false;
-    getMyWatchHistoryWithVideos()
-      .then((list) => { if (!ignore) { setEntries(list); setStatus('ready'); } })
-      .catch((error) => {
-        console.error('Geçmiş yüklenemedi:', error);
-        if (!ignore) setStatus('error');
-      });
-    return () => { ignore = true; };
-  }, []);
+  //Sayfa sayfa; aşağı kaydırdıkça devamı gelir
+  const list = usePagedList((page) => getMyWatchHistoryWithVideos(page), 'history');
+  const { items: entries, status, setItems: setEntries } = list;
 
   const handleRemove = async (id) => {
     try {
@@ -73,6 +63,7 @@ function HistoryList() {
           </li>
         ))}
       </ul>
+      <LoadMore list={list} />
     </div>
   );
 }

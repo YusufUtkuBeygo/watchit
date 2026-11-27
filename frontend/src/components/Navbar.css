@@ -310,3 +310,19 @@
 .notification-actions {
   display: flex;
 }
+
+/* Zil menüsünün altındaki "Bütün bildirimler" bağlantısı */
+.notification-all {
+  display: block;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.notification-all:hover,
+.notification-all:focus-visible {
+  background: var(--hover-color);
+}

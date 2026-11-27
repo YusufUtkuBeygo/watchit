@@ -1,20 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bell, Check, Trash2 } from 'lucide-react';
-import { getMyNotifications, markNotificationRead, deleteNotification } from '../services/notificationService';
+import { Link } from 'react-router-dom';
+import { getMyNotifications, getUnreadNotificationCount, markNotificationRead, deleteNotification } from '../services/notificationService';
 import { timeAgo } from '../utils/format';
 
 //Üst çubuktaki zil: okunmamış sayısı rozeti, tıklayınca bildirim listesi
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
+  //Rozetteki sayı backend'den gelir: menüde yalnız son 10 bildirim var
+  const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [hasError, setHasError] = useState(false);
   const boxRef = useRef(null);
 
-  //Açılışta ve her menü açılışında liste yenilenir
+  //Açılışta ve her menü açılışında son 10 bildirim ve okunmamış sayısı yenilenir
   useEffect(() => {
     let ignore = false;
-    getMyNotifications()
-      .then((list) => { if (!ignore) { setNotifications(list); setHasError(false); } })
+    Promise.all([getMyNotifications(0, 10), getUnreadNotificationCount()])
+      .then(([page, count]) => {
+        if (ignore) return;
+        setNotifications(page.items);
+        setUnreadCount(count);
+        setHasError(false);
+      })
       .catch(() => { if (!ignore) setHasError(true); });
     return () => { ignore = true; };
   }, [isOpen]);
@@ -34,12 +42,11 @@ export default function NotificationBell() {
     };
   }, [isOpen]);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-
   const handleRead = async (id) => {
     try {
       const updated = await markNotificationRead(id);
       setNotifications((list) => list.map((n) => (n.id === id ? updated : n)));
+      setUnreadCount((count) => Math.max(0, count - 1));
     } catch (error) {
       console.error('Bildirim okundu yapılamadı:', error);
     }
@@ -48,7 +55,9 @@ export default function NotificationBell() {
   const handleDelete = async (id) => {
     try {
       await deleteNotification(id);
+      const removed = notifications.find((n) => n.id === id);
       setNotifications((list) => list.filter((n) => n.id !== id));
+      if (removed && !removed.isRead) setUnreadCount((count) => Math.max(0, count - 1));
     } catch (error) {
       console.error('Bildirim silinemedi:', error);
     }
@@ -94,6 +103,11 @@ export default function NotificationBell() {
               </li>
             ))}
           </ul>
+          {!hasError && notifications.length > 0 && (
+            <Link to="/notifications" className="notification-all" onClick={() => setIsOpen(false)}>
+              Bütün bildirimler
+            </Link>
+          )}
         </div>
       )}
     </div>

@@ -1,5 +1,7 @@
 package com.yutkubeygo.watchit.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import  com.yutkubeygo.watchit.entity.Comment;
 import  org.springframework.data.jpa.repository.JpaRepository;
 import  org.springframework.stereotype.Repository;
@@ -11,5 +13,11 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
 
 
     List<Comment> findByVideoIdOrderByCreatedAtDesc(Long videoId);
+
+    //Yorumlar sayfa sayfa: sayfalanan yalnız üst yorumlar, cevapları ayrıca hepsi gelir (cevabı yarım kalan konuşma olmasın)
+    Page<Comment> findByVideoIdAndParentCommentIsNull(Long videoId, Pageable pageable);
+    List<Comment> findByParentCommentIdInOrderByCreatedAtDesc(List<Long> parentIds);
+
+    long countByVideoId(Long videoId);
 
 }

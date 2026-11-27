@@ -1,5 +1,8 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import com.yutkubeygo.watchit.util.Paging;
+import org.springframework.data.domain.Sort;
 import com.yutkubeygo.watchit.service.EmailVerificationService;
 
 import com.yutkubeygo.watchit.dto.CommentRequestDto;
@@ -53,9 +56,13 @@ public class CommentController {
 
 
     @GetMapping
-    public ResponseEntity<List<CommentResponseDto>> getCommentsByVideoId(@RequestParam Long videoId)
+    //GET /comments?videoId=5&page=0&size=20: en yeni üst yorumlar + cevapları
+    public ResponseEntity<PageResponseDto<CommentResponseDto>> getCommentsByVideoId(@RequestParam Long videoId,
+                                                                                    @RequestParam(required = false) Integer page,
+                                                                                    @RequestParam(required = false) Integer size)
     {
-        List <CommentResponseDto> comments = commentService.getCommentsByVideoId(videoId);
+        PageResponseDto<CommentResponseDto> comments = commentService.getCommentsByVideoId(videoId,
+                Paging.of(page, size, Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"))));
         if(comments == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         return ResponseEntity.ok(comments);

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from '../components/LoadMore';
 import { X, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import RequireLogin from '../components/RequireLogin';
@@ -19,20 +20,9 @@ function WatchLaterPage() {
 }
 
 function WatchLaterList() {
-  const [videos, setVideos] = useState([]);
-  //'loading' | 'ready' | 'error'
-  const [status, setStatus] = useState('loading');
-
-  useEffect(() => {
-    let ignore = false;
-    getWatchLater()
-      .then((list) => { if (!ignore) { setVideos(list); setStatus('ready'); } })
-      .catch((error) => {
-        console.error('Daha sonra izle listesi yüklenemedi:', error);
-        if (!ignore) setStatus('error');
-      });
-    return () => { ignore = true; };
-  }, []);
+  //Sayfa sayfa; aşağı kaydırdıkça devamı gelir
+  const list = usePagedList((page) => getWatchLater(page), 'watch-later');
+  const { items: videos, status, setItems: setVideos } = list;
 
   const handleRemove = async (videoId) => {
     try {
@@ -72,6 +62,7 @@ function WatchLaterList() {
           </li>
         ))}
       </ul>
+      <LoadMore list={list} />
     </div>
   );
 }

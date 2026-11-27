@@ -1,5 +1,11 @@
 package com.yutkubeygo.watchit.service;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import com.yutkubeygo.watchit.repository.VideoSpecs;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import com.yutkubeygo.watchit.dto.VideoRequestDto;
 import com.yutkubeygo.watchit.dto.VideoResponseDto;
 import com.yutkubeygo.watchit.entity.Category;
@@ -76,40 +82,48 @@ public class VideoService {
         return dto;
     }
 
-    //VideoMapperdaki list methoduna dikkat et hata cikarsa return
-    public List<VideoResponseDto> getAllVideos()
+    //Liste sıralamaları: yeni (en yeni en üstte) ve popüler (en çok izlenen). İkinci sıra id: eşit değerlerde sayfalar arasında kayma olmasın
+    public static final Sort NEWEST = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+    public static final Sort POPULAR = Sort.by(Sort.Order.desc("viewCount"), Sort.Order.desc("id"));
+
+    public static Sort sortOf(String sort)
     {
-        List<Video> videos=videoRepository.findAllByOrderByCreatedAtDesc();
-        return videoMapper.toDtoList(videos);
+        if(sort == null || sort.equals("new"))
+            return NEWEST;
+        if(sort.equals("popular"))
+            return POPULAR;
+        throw new BadRequestException();
+    }
+
+    //GET /videos: süzgeçlerin hepsi isteğe bağlı (verilmeyen atlanır). Kanal ya da kategori verilmiş ama yoksa null (controller 404)
+    public PageResponseDto<VideoResponseDto> listVideos(Long channelId, Long categoryId, Integer maxDuration, Pageable pageable)
+    {
+        if(channelId != null && !channelRepository.existsById(channelId))
+            return null;
+        if(categoryId != null && !categoryRepository.existsById(categoryId))
+            return null;
+
+        Specification<Video> spec = VideoSpecs.allOf(
+                VideoSpecs.inChannel(channelId), VideoSpecs.inCategory(categoryId), VideoSpecs.maxDuration(maxDuration));
+        return toPage(videoRepository.findAll(spec, pageable));
+    }
+
+    //Abonelik akışı: abone olduğum kanalların videoları, en yeni en üstte (eskiden tarayıcı her kanalı ayrı ayrı çekiyordu)
+    public PageResponseDto<VideoResponseDto> getSubscriptionFeed(Long userId, Pageable pageable)
+    {
+        return toPage(videoRepository.findAll(VideoSpecs.subscribedBy(userId), pageable));
     }
 
     //Giriş yapan kullanıcının beğendiği videolar, en son beğenilen en üstte
-    public List<VideoResponseDto> getLikedVideos(Long userId)
+    public PageResponseDto<VideoResponseDto> getLikedVideos(Long userId, Pageable pageable)
     {
-        List<Video> videos = videoLikeRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId).stream()
-                .map(VideoLike::getVideo)
-                .toList();
-        return videoMapper.toDtoList(videos);
+        Page<VideoLike> likes = videoLikeRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId, pageable);
+        return PageResponseDto.of(likes, videoMapper.toDtoList(likes.map(VideoLike::getVideo).getContent()));
     }
 
-    //Kanalın videoları; kanal yoksa null (controller 404 döner)
-    public List<VideoResponseDto> getVideosByChannelId(Long channelId)
+    private PageResponseDto<VideoResponseDto> toPage(Page<Video> page)
     {
-        if(!channelRepository.existsById(channelId))
-            return null;
-
-        List<Video> videos=videoRepository.findByChannelIdOrderByCreatedAtDesc(channelId);
-        return videoMapper.toDtoList(videos);
-    }
-
-    //Kategorinin videoları; kategori yoksa null (controller 404 döner)
-    public List<VideoResponseDto> getVideosByCategoryId(Long categoryId)
-    {
-        if(!categoryRepository.existsById(categoryId))
-            return null;
-
-        List<Video> videos=videoRepository.findByCategoryIdOrderByCreatedAtDesc(categoryId);
-        return videoMapper.toDtoList(videos);
+        return PageResponseDto.of(page, videoMapper.toDtoList(page.getContent()));
     }
 
     //Video ve kanalın bütün abonelerine giden bildirimler tek transaction'da yazılır
@@ -243,14 +257,13 @@ public class VideoService {
 
     }
 
-    //Başlıkta arama; metin boşsa veritabanına gitmeden boş liste
-    public List<VideoResponseDto> searchVideos(String searchText)
+    //Başlıkta arama; metin boşsa veritabanına gitmeden boş sayfa
+    public PageResponseDto<VideoResponseDto> searchVideos(String searchText, Pageable pageable)
     {
         String textK=searchText.trim();
         if(textK.isBlank())
-            return List.of();
-        List<Video> searchList = videoRepository.searchByTitle(escapeLike(textK));
-        return videoMapper.toDtoList(searchList);
+            return new PageResponseDto<>(List.of(), pageable.getPageNumber(), pageable.getPageSize(), false, 0);
+        return toPage(videoRepository.searchByTitle(escapeLike(textK), pageable));
     }
 
     //LIKE'ta % (her şey) ve _ (tek karakter) joker; kullanıcı yazdıysa düz karakter olarak aransın diye önüne \ konur.

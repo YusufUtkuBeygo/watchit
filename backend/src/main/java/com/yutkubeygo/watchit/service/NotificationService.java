@@ -1,5 +1,8 @@
 package com.yutkubeygo.watchit.service;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.yutkubeygo.watchit.dto.NotificationResponseDto;
 import com.yutkubeygo.watchit.entity.Notification;
 import com.yutkubeygo.watchit.entity.User;
@@ -60,9 +63,21 @@ public class NotificationService {
     }
 
     //Yalnız bana gelenler: sorgu baştan alıcı id'siyle yapılır, kontrol gerekmez
-    public List<NotificationResponseDto> getMyNotifications(Long userId)
+    public PageResponseDto<NotificationResponseDto> getMyNotifications(Long userId, Pageable pageable)
     {
-        return notificationMapper.toDtoList(notificationRepository.findByReceiverIdOrderByCreatedAtDesc(userId));
+        Page<Notification> page = notificationRepository.findByReceiverIdOrderByCreatedAtDescIdDesc(userId, pageable);
+        return PageResponseDto.of(page, notificationMapper.toDtoList(page.getContent()));
+    }
+
+    public int markAllRead(Long userId)
+    {
+        return notificationRepository.markAllRead(userId);
+    }
+
+    //Zildeki okunmamış sayısı (liste sayfalı, tarayıcı sayamaz)
+    public long countUnread(Long userId)
+    {
+        return notificationRepository.countByReceiverIdAndIsReadFalse(userId);
     }
 
     //Bildirim yoksa null (404), başkasına gelmişse ForbiddenException (403)

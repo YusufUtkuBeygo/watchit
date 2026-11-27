@@ -4,7 +4,10 @@ package com.yutkubeygo.watchit.repository;
 import com.yutkubeygo.watchit.entity.Video;
 import com.yutkubeygo.watchit.enums.VideoProcessingStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface VideoRepository extends JpaRepository<Video,Long> {
+public interface VideoRepository extends JpaRepository<Video,Long>, JpaSpecificationExecutor<Video> {
 
     //Kanalın videoları, en yeni en üstte (video.channel.id = ?)
     List<Video> findByChannelIdOrderByCreatedAtDesc(Long channelId);
@@ -30,9 +33,12 @@ public interface VideoRepository extends JpaRepository<Video,Long> {
     //Başlıkta arama, Türkçe harf ve büyük/küçük harf fark etmez: "istanbul", "ISTANBUL", "İstanbul" hepsi eşleşir; en yeni en üstte.
     //Hazır IgnoreCase upper() kullanıyor ve İ/i'yi eşleştiremiyor, bu yüzden elle yazılmış SQL (nativeQuery).
     //unaccent: İ/I/ı -> i, ş -> s, ç -> c... (V10). text içindeki %, _ ve \ önceden kaçırılmış olmalı (VideoService.searchVideos).
-    @Query(value = "SELECT * FROM videos WHERE lower(unaccent(title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\' ORDER BY created_at DESC",
+
+    //Sayfalı: sayfa için toplam da sayılır (countQuery); sıralamaya id eklendi, aynı saniyede yüklenenler sayfalar arasında kaymasın
+    @Query(value = "SELECT * FROM videos WHERE lower(unaccent(title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\' ORDER BY created_at DESC, id DESC",
+            countQuery = "SELECT count(*) FROM videos WHERE lower(unaccent(title)) LIKE '%' || lower(unaccent(:text)) || '%' ESCAPE '\\'",
             nativeQuery = true)
-    List<Video> searchByTitle(@Param("text") String text);
+    Page<Video> searchByTitle(@Param("text") String text, Pageable pageable);
 
     @Modifying
     @Transactional

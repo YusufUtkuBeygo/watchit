@@ -1,10 +1,10 @@
 import api from './api';
 
-//Videonun yorumları, en yeni en üstte (cevaplar da aynı listede, parentCommentId dolu)
+//Videonun yorumları sayfa sayfa: o sayfadaki üst yorumlar + hepsinin cevapları (parentCommentId dolu); total = bütün yorumlar
 //Video yoksa backend 404 döner, axios hata fırlatır
-export async function getCommentsByVideoId(videoId)
+export async function getCommentsByVideoId(videoId, page = 0)
 {
-  const response = await api.get('/comments', { params: { videoId } });
+  const response = await api.get('/comments', { params: { videoId, page } });
   return response.data;
 }
 

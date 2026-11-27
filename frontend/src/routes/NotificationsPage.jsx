@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from '../components/LoadMore';
 import { Bell, Check, Trash2 } from 'lucide-react';
 import RequireLogin from '../components/RequireLogin';
 import EmptyState from '../components/EmptyState';
 import { RowListSkeleton } from '../components/Skeleton';
-import { getMyNotifications, markNotificationRead, deleteNotification } from '../services/notificationService';
+import {
+  getMyNotifications, getUnreadNotificationCount, markAllNotificationsRead, markNotificationRead, deleteNotification,
+} from '../services/notificationService';
 import { timeAgo } from '../utils/format';
 import './InfoPages.css';
 
@@ -17,17 +21,15 @@ function NotificationsPage() {
 }
 
 function NotificationList() {
-  const [items, setItems] = useState([]);
-  const [status, setStatus] = useState('loading');
+  //Sayfa sayfa; aşağı kaydırdıkça eskiler gelir
+  const list = usePagedList((page) => getMyNotifications(page), 'notifications');
+  const { items, status, setItems } = list;
+  //Okunmamış sayısı backend'den (henüz yüklenmemiş sayfalardakiler de sayılsın)
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     let ignore = false;
-    getMyNotifications()
-      .then((list) => { if (!ignore) { setItems(list); setStatus('ready'); } })
-      .catch((error) => {
-        console.error('Bildirimler yüklenemedi:', error);
-        if (!ignore) setStatus('error');
-      });
+    getUnreadNotificationCount().then((count) => { if (!ignore) setUnreadCount(count); }).catch(() => {});
     return () => { ignore = true; };
   }, []);
 
@@ -35,6 +37,7 @@ function NotificationList() {
     try {
       const updated = await markNotificationRead(id);
       setItems((list) => list.map((n) => (n.id === id ? { ...n, ...updated, isRead: true } : n)));
+      setUnreadCount((count) => Math.max(0, count - 1));
     } catch (error) {
       console.error('Bildirim okundu yapılamadı:', error);
     }
@@ -43,20 +46,23 @@ function NotificationList() {
   const remove = async (id) => {
     try {
       await deleteNotification(id);
+      if (items.some((n) => n.id === id && !n.isRead)) setUnreadCount((count) => Math.max(0, count - 1));
       setItems((list) => list.filter((n) => n.id !== id));
     } catch (error) {
       console.error('Bildirim silinemedi:', error);
     }
   };
 
-  //Okunmamışların hepsi tek tek okundu yapılır (backend'de toplu uç yok, sayı azken yeterli)
+  //Tek istekte hepsi (yüklenmemiş sayfalardakiler de)
   const markAllRead = async () => {
-    const unread = items.filter((n) => !n.isRead);
-    await Promise.allSettled(unread.map((n) => markNotificationRead(n.id)));
-    setItems((list) => list.map((n) => ({ ...n, isRead: true })));
+    try {
+      await markAllNotificationsRead();
+      setItems((list) => list.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Bildirimler okundu yapılamadı:', error);
+    }
   };
-
-  const unreadCount = items.filter((n) => !n.isRead).length;
 
   return (
     <div className="page info-page">
@@ -95,6 +101,7 @@ function NotificationList() {
           </li>
         ))}
       </ul>
+      <LoadMore list={list} />
     </div>
   );
 }

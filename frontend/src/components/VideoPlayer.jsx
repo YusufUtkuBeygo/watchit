@@ -31,7 +31,7 @@ import {
   VolumeX,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getMyWatchHistory, saveWatchProgress } from '../services/watchHistoryService';
+import { getMyEntryForVideo, saveWatchProgress } from '../services/watchHistoryService';
 import { recordView } from '../services/videoService';
 import { getTranscript } from '../services/transcriptService';
 import './VideoPlayer.css';
@@ -605,9 +605,8 @@ export default function VideoPlayer({ video, onError, exposeRef, marks = [], the
   useEffect(() => {
     if (!isLoggedIn) return;
     let ignore = false;
-    getMyWatchHistory()
-      .then((history) => {
-        const entry = history.find((h) => h.videoId === videoId);
+    getMyEntryForVideo(videoId)
+      .then((entry) => {
         const player = playerRef.current;
         if (ignore || !player || !entry || entry.isCompleted || !entry.watchedSeconds) return;
         //Kullanıcı bu arada kendisi sarmadıysa

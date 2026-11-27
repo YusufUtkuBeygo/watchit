@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllVideos, getVideosByCategoryId, getVideosByChannelId } from '../services/videoService';
+import { getVideos } from '../services/videoService';
 import { formatDuration, formatViews, timeAgo } from '../utils/format';
 import Thumbnail from './Thumbnail';
 import { Skeleton } from './Skeleton';
@@ -34,15 +34,16 @@ export default function RelatedVideos({ video }) {
     async function load() {
       //Kanal ve kategori aynı anda istenir; biri patlarsa diğeriyle devam edilir
       const [byChannel, byCategory] = await Promise.allSettled([
-        channelId ? getVideosByChannelId(channelId) : Promise.resolve([]),
-        categoryId ? getVideosByCategoryId(categoryId) : Promise.resolve([]),
+        channelId ? getVideos({ channelId, size: MAX_RELATED + 1 }) : Promise.resolve({ items: [] }),
+        categoryId ? getVideos({ categoryId, size: MAX_RELATED + 1 }) : Promise.resolve({ items: [] }),
       ]);
-      const pick = (r) => (r.status === 'fulfilled' ? r.value : []);
+      //Her listenin yalnız ilk sayfası yeter (en fazla 12 gösterilir; +1 açık olan videonun kendisi için)
+      const pick = (r) => (r.status === 'fulfilled' ? r.value.items : []);
       let related = mergeRelated(id, pick(byChannel), pick(byCategory));
       //Hiçbiri yoksa genel listeye düş
       if (related.length === 0) {
         try {
-          related = mergeRelated(id, await getAllVideos());
+          related = mergeRelated(id, (await getVideos({ size: MAX_RELATED + 1 })).items);
         } catch {
           related = [];
         }

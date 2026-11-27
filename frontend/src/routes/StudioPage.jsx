@@ -6,7 +6,7 @@ import VideoEditModal from '../components/VideoEditModal';
 import UploadModal from '../components/UploadModal';
 import ChannelCreateForm from '../components/ChannelCreateForm';
 import { getMyChannel } from '../services/channelService';
-import { getVideosByChannelId, deleteVideoById } from '../services/videoService';
+import { getAllChannelVideos, deleteVideoById } from '../services/videoService';
 import { getTranscript } from '../services/transcriptService';
 import { formatCount, formatViews, timeAgo } from '../utils/format';
 import { RowListSkeleton } from '../components/Skeleton';
@@ -70,7 +70,7 @@ function Studio() {
   const load = useCallback(async () => {
     const myChannel = await getMyChannel();
     if (!myChannel) return { channel: null, videos: [] };
-    const list = await getVideosByChannelId(myChannel.id);
+    const list = await getAllChannelVideos(myChannel.id);
     const withTranscripts = await Promise.all(list.map(async (video) => {
       try {
         return { ...video, transcript: await getTranscript(video.id) };

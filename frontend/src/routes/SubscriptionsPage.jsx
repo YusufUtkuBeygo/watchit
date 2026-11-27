@@ -4,7 +4,9 @@ import RequireLogin from '../components/RequireLogin';
 import Avatar from '../components/Avatar';
 import VideoCard from '../components/VideoCard';
 import { getMySubscribedChannels } from '../services/channelService';
-import { getVideosByChannelId } from '../services/videoService';
+import { getSubscriptionFeed } from '../services/videoService';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from '../components/LoadMore';
 import { VideoGridSkeleton } from '../components/Skeleton';
 import { Users } from 'lucide-react';
 import EmptyState from '../components/EmptyState';
@@ -22,7 +24,9 @@ function SubscriptionsPage() {
 
 function SubscriptionsFeed() {
   const [channels, setChannels] = useState([]);
-  const [videos, setVideos] = useState([]);
+  //Abone olunan kanalların videoları backend'de tek sorguda, sayfa sayfa
+  const list = usePagedList((page) => getSubscriptionFeed(page), 'subscription-feed');
+  const videos = list.items;
   //'loading' | 'ready' | 'error'
   const [status, setStatus] = useState('loading');
 
@@ -32,15 +36,8 @@ function SubscriptionsFeed() {
     async function load() {
       try {
         const channelList = await getMySubscribedChannels();
-        //Her kanalın videoları aynı anda istenir, hepsi tek listede en yeniden eskiye sıralanır
-        const results = await Promise.allSettled(channelList.map((c) => getVideosByChannelId(c.id)));
-        const allVideos = results
-          .filter((r) => r.status === 'fulfilled')
-          .flatMap((r) => r.value)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         if (ignore) return;
         setChannels(channelList);
-        setVideos(allVideos);
         setStatus('ready');
       } catch (error) {
         console.error('Abonelikler yüklenemedi:', error);
@@ -85,13 +82,16 @@ function SubscriptionsFeed() {
       </ul>
 
       <h2 className="sub-section-title">En yeni videolar</h2>
-      {videos.length === 0 ? (
+      {list.status === 'loading' && <VideoGridSkeleton count={4} label="Videolar yükleniyor…" />}
+      {list.status === 'error' && <p className="grid-message">Videolar yüklenemedi. Biraz sonra tekrar dene.</p>}
+      {list.status === 'ready' && (videos.length === 0 ? (
         <p className="grid-message">Abone olduğun kanallarda henüz video yok.</p>
       ) : (
         <div className="video-grid">
           {videos.map((video) => <VideoCard key={video.id} video={video} />)}
         </div>
-      )}
+      ))}
+      <LoadMore list={list} />
     </div>
   );
 }

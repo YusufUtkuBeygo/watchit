@@ -36,7 +36,7 @@ public class SecurityConfig {
                         //Kendi kanalım giriş ister; alttaki açık /channels/** kuralından önce gelmeli (ilk uyan kural geçerli)
                         .requestMatchers(HttpMethod.GET, "/channels/me").authenticated()
                         //Beğendiğim videolar da kişiye özel; aynı sebeple açık /videos/** kuralından önce
-                        .requestMatchers(HttpMethod.GET, "/videos/liked").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/videos/liked", "/videos/subscriptions").authenticated()
                         .requestMatchers(HttpMethod.GET,
                                 "/videos/**", "/channels/**", "/categories/**", "/comments/**").permitAll()
                         //Herkese açık oynatma listeleri girişsiz de okunur (karar 19 Ekim).

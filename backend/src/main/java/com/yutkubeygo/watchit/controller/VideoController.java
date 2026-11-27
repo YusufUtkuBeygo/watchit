@@ -1,5 +1,8 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import com.yutkubeygo.watchit.util.Paging;
+import org.springframework.data.domain.Sort;
 import com.yutkubeygo.watchit.service.EmailVerificationService;
 
 import com.yutkubeygo.watchit.dto.VideoRequestDto;
@@ -54,47 +57,51 @@ public class VideoController {
 
     }
 
-    //db'den eleman getirilecek/get edilecek
-    //GET /videos -> bütün videolar, GET /videos?channelId=3 -> yalnız o kanalın videoları,
-    //GET /videos?categoryId=2 -> yalnız o kategorinin videoları
-    //GET /videos?search=kod -> başlığında "kod" geçen videolar (100 karakterden uzunsa 400)
+    //Video listesi, sayfa sayfa (?page=0&size=24; size en fazla 50). Süzgeçler isteğe bağlı ve birlikte kullanılabilir:
+    //channelId (kanalın videoları), categoryId, maxDuration (kısa videolar, saniye), sort=new|popular.
+    //search verilirse başlıkta arar (100 karakterden uzunsa 400; arama kendi sıralamasını kullanır).
+    //Olmayan kanal ya da kategori 404, geçersiz sayfa/sıralama 400.
     @GetMapping
-    public ResponseEntity<List<VideoResponseDto>> getAllVideos(@RequestParam(required = false) Long channelId,
-                                                               @RequestParam(required = false) Long categoryId,
-                                                               @RequestParam(required = false) String search)
+    public ResponseEntity<PageResponseDto<VideoResponseDto>> getAllVideos(@RequestParam(required = false) Long channelId,
+                                                                          @RequestParam(required = false) Long categoryId,
+                                                                          @RequestParam(required = false) String search,
+                                                                          @RequestParam(required = false) Integer maxDuration,
+                                                                          @RequestParam(required = false) String sort,
+                                                                          @RequestParam(required = false) Integer page,
+                                                                          @RequestParam(required = false) Integer size)
     {
         if(search != null)
         {
             if(search.length()>100)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-
-            else
-                return ResponseEntity.ok(videoService.searchVideos(search));
-
+            return ResponseEntity.ok(videoService.searchVideos(search, Paging.of(page, size)));
         }
 
-        //İkisi de verilmediyse eskisi gibi hepsi
-        if(channelId == null && categoryId == null)
-            return ResponseEntity.ok(videoService.getAllVideos());
-
-        List<VideoResponseDto> videos = channelId != null
-                ? videoService.getVideosByChannelId(channelId)
-                : videoService.getVideosByCategoryId(categoryId);
+        PageResponseDto<VideoResponseDto> videos = videoService.listVideos(channelId, categoryId, maxDuration,
+                Paging.of(page, size, VideoService.sortOf(sort)));
 
         //Servis null döndüyse kanal ya da kategori yoktur
         if(videos == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
-
-
         return ResponseEntity.ok(videos);
     }
 
     //Beğendiğim videolar (giriş ister: SecurityConfig'te açık /videos/** kuralından önce)
     @GetMapping("/liked")
-    public ResponseEntity<List<VideoResponseDto>> getLikedVideos(@AuthenticationPrincipal Long userId)
+    public ResponseEntity<PageResponseDto<VideoResponseDto>> getLikedVideos(@AuthenticationPrincipal Long userId,
+                                                                            @RequestParam(required = false) Integer page,
+                                                                            @RequestParam(required = false) Integer size)
     {
-        return ResponseEntity.ok(videoService.getLikedVideos(userId));
+        return ResponseEntity.ok(videoService.getLikedVideos(userId, Paging.of(page, size)));
+    }
+
+    //Abone olduğum kanalların videoları, en yeni en üstte (giriş ister, /liked gibi)
+    @GetMapping("/subscriptions")
+    public ResponseEntity<PageResponseDto<VideoResponseDto>> getSubscriptionFeed(@AuthenticationPrincipal Long userId,
+                                                                                 @RequestParam(required = false) Integer page,
+                                                                                 @RequestParam(required = false) Integer size)
+    {
+        return ResponseEntity.ok(videoService.getSubscriptionFeed(userId, Paging.of(page, size, VideoService.NEWEST)));
     }
 
     @GetMapping("/{id}")

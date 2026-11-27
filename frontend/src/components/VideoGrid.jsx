@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
 import VideoCard from './VideoCard';
 import './VideoGrid.css';
-import { getAllVideos, getVideosByCategoryId } from '../services/videoService';
+import { getVideos } from '../services/videoService';
+import usePagedList from '../hooks/usePagedList';
+import LoadMore from './LoadMore';
 import { VideoGridSkeleton } from './Skeleton';
 import { Link } from 'react-router-dom';
 import { Clapperboard } from 'lucide-react';
@@ -9,33 +10,12 @@ import EmptyState from './EmptyState';
 
 //Ana sayfadaki video ızgarası; kategori seçiliyse yalnız o kategorinin videoları
 function VideoGrid({ selectedCategory }) {
-  const [videos, setVideos] = useState([]);
-  //'loading' | 'ready' | 'error'
-  const [status, setStatus] = useState('loading');
-
-  //Sayfa açılınca ve kategori değişince çalışır
-  useEffect(() => {
-    //Kullanıcı istek bitmeden başka kategoriye geçerse eski cevabı yok say
-    let ignore = false;
-
-    async function loadVideos() {
-      setStatus('loading');
-      try {
-        const data = selectedCategory
-          ? await getVideosByCategoryId(selectedCategory)
-          : await getAllVideos();
-        if (ignore) return;
-        setVideos(data);
-        setStatus('ready');
-      } catch (error) {
-        console.error('Videolar yüklenemedi:', error);
-        if (!ignore) setStatus('error');
-      }
-    }
-
-    loadVideos();
-    return () => { ignore = true; };
-  }, [selectedCategory]);
+  //Sayfa sayfa (24'er); kategori değişince liste baştan yüklenir
+  const list = usePagedList(
+    (page) => getVideos({ categoryId: selectedCategory || undefined, page }),
+    `grid-${selectedCategory ?? 'all'}`,
+  );
+  const { items: videos, status } = list;
 
   if (status === 'loading') return <VideoGridSkeleton />;
   if (status === 'error') return <p className="grid-message">Videolar yüklenemedi. Biraz sonra tekrar dene.</p>;
@@ -57,11 +37,14 @@ function VideoGrid({ selectedCategory }) {
   }
 
   return (
-    <div className="video-grid">
-      {videos.map((video) => (
-        <VideoCard key={video.id} video={video} />
-      ))}
-    </div>
+    <>
+      <div className="video-grid">
+        {videos.map((video) => (
+          <VideoCard key={video.id} video={video} />
+        ))}
+      </div>
+      <LoadMore list={list} />
+    </>
   );
 }
 

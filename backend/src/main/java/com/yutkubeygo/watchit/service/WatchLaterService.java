@@ -1,5 +1,8 @@
 package com.yutkubeygo.watchit.service;
 
+import com.yutkubeygo.watchit.dto.PageResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.yutkubeygo.watchit.dto.VideoResponseDto;
 import com.yutkubeygo.watchit.entity.User;
 import com.yutkubeygo.watchit.entity.Video;
@@ -32,12 +35,10 @@ public class WatchLaterService {
         this.videoMapper = videoMapper;
     }
 
-    public List<VideoResponseDto> getMyList(Long userId)
+    public PageResponseDto<VideoResponseDto> getMyList(Long userId, Pageable pageable)
     {
-        List<Video> videos = watchLaterRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId).stream()
-                .map(WatchLater::getVideo)
-                .toList();
-        return videoMapper.toDtoList(videos);
+        Page<WatchLater> page = watchLaterRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId, pageable);
+        return PageResponseDto.of(page, videoMapper.toDtoList(page.map(WatchLater::getVideo).getContent()));
     }
 
     //Zaten listedeyse hata değil: düğmeye iki kez basılması sorun çıkarmasın
