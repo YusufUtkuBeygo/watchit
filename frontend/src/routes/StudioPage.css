@@ -1,7 +1,7 @@
 /* Stüdyo: üstte üç sayı, altında video satırları */
 .studio-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: var(--space-3);
 }
 
@@ -22,6 +22,12 @@
   font-size: var(--fs-2xl);
   font-weight: var(--fw-semibold);
   font-variant-numeric: tabular-nums;
+}
+
+.studio-stat-of {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-regular);
+  color: var(--text-secondary);
 }
 
 .studio-empty {

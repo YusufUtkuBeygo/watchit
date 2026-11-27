@@ -1,3 +1,4 @@
+import { uploadErrorMessage } from '../utils/errors';
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import ImagePicker from './ImagePicker';
@@ -41,7 +42,7 @@ export default function VideoEditModal({ video, onClose, onSaved }) {
       onSaved(saved);
     } catch (error) {
       const status = error.response ? error.response.status : null;
-      setErrorMessage(
+      setErrorMessage(uploadErrorMessage(error) ||
         status === 400 ? 'Bilgileri kontrol et: başlık boş olamaz, kapak resmi geçerli olmalı.'
           : status === 403 ? 'Bu video senin değil.'
             : status === 401 ? 'Oturumun süresi dolmuş, tekrar giriş yap.'

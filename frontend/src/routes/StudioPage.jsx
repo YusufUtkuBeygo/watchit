@@ -8,7 +8,8 @@ import ChannelCreateForm from '../components/ChannelCreateForm';
 import { getMyChannel } from '../services/channelService';
 import { getAllChannelVideos, deleteVideoById } from '../services/videoService';
 import { getTranscript } from '../services/transcriptService';
-import { formatCount, formatViews, timeAgo } from '../utils/format';
+import { formatBytes, formatCount, formatViews, timeAgo } from '../utils/format';
+import { getQuota } from '../services/fileService';
 import { RowListSkeleton } from '../components/Skeleton';
 import './ListPage.css';
 import ViewsChart from '../components/ViewsChart';
@@ -66,12 +67,14 @@ function Studio() {
   const [status, setStatus] = useState('loading');
   const [editing, setEditing] = useState(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  //Kullanılan / izin verilen yükleme alanı; okunamazsa kutu gösterilmez
+  const [quota, setQuota] = useState(null);
 
   //Kanal + videolar + her videonun transkript durumu. Transkript okunamazsa video yine listelenir
   const load = useCallback(async () => {
     const myChannel = await getMyChannel();
-    if (!myChannel) return { channel: null, videos: [] };
-    const list = await getAllChannelVideos(myChannel.id);
+    if (!myChannel) return { channel: null, videos: [], quota: null };
+    const [list, quota] = await Promise.all([getAllChannelVideos(myChannel.id), getQuota().catch(() => null)]);
     const withTranscripts = await Promise.all(list.map(async (video) => {
       try {
         return { ...video, transcript: await getTranscript(video.id) };
@@ -79,7 +82,7 @@ function Studio() {
         return { ...video, transcript: null };
       }
     }));
-    return { channel: myChannel, videos: withTranscripts };
+    return { channel: myChannel, videos: withTranscripts, quota };
   }, []);
 
   //Veriyi okur, sonuç gelince ekrana yazar. ref.ignore: sayfadan çıkıldıysa (ya da yeni okuma başladıysa) eski sonuç yazılmaz
@@ -88,6 +91,7 @@ function Studio() {
       if (ref.ignore) return;
       setChannel(data.channel);
       setVideos(data.videos);
+      setQuota(data.quota);
       setStatus(data.channel ? 'ready' : 'noChannel');
     })
     .catch((error) => {
@@ -161,6 +165,15 @@ function Studio() {
         <div className="studio-stat"><dt>Video</dt><dd>{videos.length}</dd></div>
         <div className="studio-stat"><dt>Görüntülenme</dt><dd>{formatCount(totalViews)}</dd></div>
         <div className="studio-stat"><dt>Abone</dt><dd>{formatCount(channel.subscriberCount)}</dd></div>
+        {quota && (
+          <div className="studio-stat">
+            <dt>Depolama</dt>
+            <dd>
+              {formatBytes(quota.usedBytes)}
+              <span className="studio-stat-of"> / {formatBytes(quota.totalBytes)}</span>
+            </dd>
+          </div>
+        )}
       </dl>
 
       {videos.length > 0 && <ViewsChart />}

@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getMyChannelStats } from '../services/channelService';
 import { formatCount } from '../utils/format';
 import './ViewsChart.css';
 
 const DAYS = 28;
-const W = 640;
 const H = 180;
 const PAD_LEFT = 36;
 const PAD_BOTTOM = 22;
@@ -25,6 +24,20 @@ export default function ViewsChart() {
   const [stats, setStats] = useState(null);
   const [failed, setFailed] = useState(false);
   const [active, setActive] = useState(null);
+  //Grafik kutunun gerçek genişliğinde çizilir (SVG birimi = piksel): sabit genişlikten küçültülseydi telefonda
+  //eksen yazıları 5-6 piksele inip okunmaz olurdu
+  const boxRef = useRef(null);
+  const [W, setW] = useState(640);
+
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box) return undefined;
+    const measure = () => setW(Math.max(240, Math.round(box.clientWidth)));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [stats]);
 
   useEffect(() => {
     let ignore = false;
@@ -56,7 +69,8 @@ export default function ViewsChart() {
           <span>{shown ? `${dayLabel(shown.date)}: ${formatCount(shown.views)}` : 'toplam'}</span>
         </p>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="views-chart-svg" role="img"
+      <div ref={boxRef}>
+      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="views-chart-svg" role="img"
         aria-label={`Son ${DAYS} günde ${stats.periodViews} görüntülenme; günlük ayrıntı aşağıdaki tabloda`}
         onMouseLeave={() => setActive(null)}>
         {/* Izgara: yalnız 0 ve üst değer (sade) */}
@@ -94,6 +108,7 @@ export default function ViewsChart() {
           </text>
         ))}
       </svg>
+      </div>
       <table className="sr-only">
         <caption>Günlük görüntülenme</caption>
         <thead><tr><th scope="col">Gün</th><th scope="col">Görüntülenme</th></tr></thead>

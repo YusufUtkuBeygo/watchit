@@ -1,3 +1,4 @@
+import { uploadErrorMessage } from '../utils/errors';
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { X, UploadCloud } from 'lucide-react';
@@ -155,7 +156,10 @@ export default function UploadModal({ onClose }) {
     } catch (error) {
       console.error('Yükleme hatası:', error);
       const status = error.response ? error.response.status : null;
-      if (status === 401) {
+      const uploadMessage = uploadErrorMessage(error);
+      if (uploadMessage) {
+        setErrorMessage(uploadMessage);
+      } else if (status === 401) {
         setErrorMessage('Oturumun süresi dolmuş, tekrar giriş yap.');
       } else if (status === 400) {
         setErrorMessage('Başlık ve kategori zorunlu.');

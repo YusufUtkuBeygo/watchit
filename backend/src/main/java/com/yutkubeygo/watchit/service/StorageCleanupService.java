@@ -7,10 +7,13 @@ import com.yutkubeygo.watchit.repository.VideoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -28,6 +31,11 @@ public class StorageCleanupService {
     private final VideoRepository videoRepository;
     private final ChannelRepository channelRepository;
     private final Executor executor;
+
+    @Value("${storage.orphan-cleanup.enabled:true}")
+    private boolean orphanCleanupEnabled = true;
+    @Value("${storage.orphan-cleanup.after-hours:24}")
+    private long orphanAfterHours = 24;
 
     public StorageCleanupService(FileService fileService, VideoRepository videoRepository, ChannelRepository channelRepository,
                                  @Qualifier("storageExecutor") Executor executor)
@@ -172,11 +180,48 @@ public class StorageCleanupService {
         }
     }
 
+    //Sahipsiz yüklemeler: tarayıcı dosyayı MinIO'ya yükleyip video/kanal kaydını hiç oluşturmazsa (pencere kapandı,
+    //hata oldu ya da biri bilerek depoyu şişirmek istiyor) dosya sonsuza kadar kalırdı. Her 6 saatte bir,
+    //yükleme klasöründe (yuklemeler/) orphanAfterHours'tan eski ve hiçbir kayıtta geçmeyen dosyalar silinir.
+    //Bekleme süresi: o an formu doldurmakta olan kullanıcının dosyası silinmesin
+    @Scheduled(fixedDelay = 6 * 60 * 60 * 1000L, initialDelay = 15 * 60 * 1000L)
+    public void cleanOrphanUploads()
+    {
+        if(!orphanCleanupEnabled)
+            return;
+        int deleted = 0;
+        try
+        {
+            for(String url : fileService.listUploadsOlderThan(ZonedDateTime.now().minusHours(orphanAfterHours)))
+            {
+                if(isStillUsed(url))
+                    continue;
+                try
+                {
+                    fileService.deleteOwnFile(url);
+                    deleted++;
+                }
+                catch(Exception e)
+                {
+                    log.warn("Sahipsiz dosya silinemedi: {}: {}", url, e.getMessage());
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            log.warn("Sahipsiz dosya temizliği yapılamadı: {}", e.getMessage());
+            return;
+        }
+        if(deleted > 0)
+            log.info("Sahipsiz yükleme temizliği: {} dosya silindi", deleted);
+    }
+
     //Dosya adresi herhangi bir videoda ya da kanalda geçiyor mu
     private boolean isStillUsed(String url)
     {
         return videoRepository.existsByVideoUrl(url)
                 || videoRepository.existsByThumbnailUrl(url)
+                || videoRepository.existsByHlsSourceUrl(url)
                 || channelRepository.existsByProfilePictureUrl(url)
                 || channelRepository.existsByBannerImageUrl(url);
     }

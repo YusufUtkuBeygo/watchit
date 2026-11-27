@@ -18,14 +18,35 @@ function safeFileName(name)
 //Dosyayı iki adımda yükler, dosya backend'den geçmez:
 //1) Backend'den imzalı form bilgilerini al  2) Dosyayı bu formla doğrudan MinIO'ya gönder
 //onProgress(yüzde) verilirse yükleme ilerledikçe çağrılır
+//Tek dosya sınırı (backend'deki upload.max-file-bytes ile aynı): kotaya sormadan önce tarayıcıda yakalanır
+const MAX_FILE_BYTES = 2 * 1024 * 1024 * 1024;
+
+function sizeError(code)
+{
+  const error = new Error(code);
+  error.code = code;
+  return error;
+}
+
+//Kullanılan ve kalan yükleme alanı (Stüdyo)
+export async function getQuota()
+{
+  const response = await api.get('/api/files/quota');
+  return response.data;
+}
+
 export async function uploadFile(file, onProgress)
 {
+  if (file.size === 0) throw sizeError('FILE_EMPTY');
+  if (file.size > MAX_FILE_BYTES) throw sizeError('FILE_TOO_LARGE');
+
   //Dosya tipi (ör. "video/mp4"). Backend yalnız video/... ve image/... kabul eder ve imzayı bu tipe kilitler
   const contentType = file.type;
 
   //Backend adresi /api/files/upload-url; baştaki /api proxy için (bkz. api.js)
   const response = await api.post('/api/files/upload-url', null, {
-    params: { fileName: safeFileName(file.name), contentType },
+    //Boyut baştan söylenir: backend kotaya bakar, imzayı bu boyuta kilitler (daha büyük dosya MinIO'da reddedilir)
+    params: { fileName: safeFileName(file.name), contentType, fileSize: file.size },
   });
   const { uploadUrl, fileUrl, formData } = response.data;
 

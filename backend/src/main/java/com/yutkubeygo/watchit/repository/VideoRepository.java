@@ -146,6 +146,13 @@ public interface VideoRepository extends JpaRepository<Video,Long>, JpaSpecifica
     //entity yüklenseydi Hibernate onu hafızasında tutar, kullanıcı silinince "sahibi silinmiş kayıt" diye işlemi durdururdu
     List<VideoFiles> findFilesByChannelOwnerId(Long ownerId);
 
+    //Kullanıcının kanalındaki videoların toplam boyutu (toplam yükleme kotası)
+    @Query("SELECT COALESCE(SUM(v.sizeBytes), 0) FROM Video v WHERE v.channel.owner.id = :userId")
+    long sumSizeBytesByOwnerId(@Param("userId") Long userId);
+
+    //Sahipsiz dosya temizliği: dosya HLS'nin kaynağı olarak hâlâ kayıtlı mı
+    boolean existsByHlsSourceUrl(String hlsSourceUrl);
+
     interface VideoFiles {
         Long getId();
         String getVideoUrl();

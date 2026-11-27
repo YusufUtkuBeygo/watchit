@@ -13,6 +13,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -63,6 +64,22 @@ class StorageCleanupServiceTest {
         verify(fileService).deleteHlsPackage(BASE + "hls/123/master.m3u8");
         //videoUrl ile hlsSourceUrl aynı dosya: bir kez silinir
         verify(fileService, times(2)).deleteOwnFile(anyString());
+    }
+
+    @Test
+    void orphanUploadsAreDeletedButUsedOnesAreKept()
+    {
+        String used = BASE + "yuklemeler/kullanilan.mp4";
+        String orphan = BASE + "yuklemeler/sahipsiz.mp4";
+        String thumb = BASE + "yuklemeler/kapak.jpg";
+        when(fileService.listUploadsOlderThan(any())).thenReturn(List.of(used, orphan, thumb));
+        when(videoRepository.existsByVideoUrl(used)).thenReturn(true);
+        when(channelRepository.existsByBannerImageUrl(thumb)).thenReturn(true);
+
+        service.cleanOrphanUploads();
+
+        verify(fileService).deleteOwnFile(orphan);
+        verify(fileService, times(1)).deleteOwnFile(anyString());
     }
 
     @Test

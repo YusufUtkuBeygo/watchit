@@ -162,6 +162,8 @@ public class VideoService {
 
         video.setChannel(channel);
         video.setCategory(category);
+        //Dosyanın gerçek boyutu MinIO'dan okunur (tarayıcının söylediğine güvenilmez): toplam yükleme kotası bunu toplar
+        video.setSizeBytes(fileService.objectSize(video.getVideoUrl()));
 
         Video savedVideo= videoRepository.save(video);
 
@@ -207,6 +209,8 @@ public class VideoService {
         video.setThumbnailUrl(videoRequestDto.getThumbnailUrl());
         boolean fileChanged = !java.util.Objects.equals(video.getVideoUrl(), videoRequestDto.getVideoUrl());
         video.setVideoUrl(videoRequestDto.getVideoUrl());
+        if(fileChanged)
+            video.setSizeBytes(fileService.objectSize(videoRequestDto.getVideoUrl()));
         video.setDurationInSeconds(videoRequestDto.getDurationInSeconds());
 
         Video savedVideo=videoRepository.save(video);

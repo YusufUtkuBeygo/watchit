@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MinioConfig {
 
+    //Backend'in MinIO'ya bağlandığı İÇ adres (yayında konteyner adı: http://minio:9000).
+    //Tarayıcıya giden dosya adresleri ayrı: minio.public-url (FileService)
     @Value("${minio.url}")
     private String url;
 

@@ -174,7 +174,7 @@ class EmailAccountFlowTest {
                         .contentType(MediaType.APPLICATION_JSON).content("{\"content\":\"merhaba\",\"videoId\":1}"))
                 .andExpect(status().isForbidden());
         mockMvc.perform(post("/api/files/upload-url").header("Authorization", bearer(user))
-                        .param("fileName", "a.mp4").param("contentType", "video/mp4"))
+                        .param("fileName", "a.mp4").param("contentType", "video/mp4").param("fileSize", "1000"))
                 .andExpect(status().isForbidden());
     }
 

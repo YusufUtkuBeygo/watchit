@@ -32,6 +32,9 @@ public class Video {
     private String videoUrl;
     private Integer durationInSeconds;
 
+    //Yüklenen asıl dosyanın boyutu (V27, kota için). Eski videolarda boş
+    private Long sizeBytes;
+
     //Dönüştürme durumu (en fazla 720p H.264/AAC MP4). Eski videolarda boş: hiç dönüştürülmedi, olduğu gibi oynar
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
