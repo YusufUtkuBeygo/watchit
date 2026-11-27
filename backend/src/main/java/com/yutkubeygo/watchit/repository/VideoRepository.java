@@ -147,6 +147,7 @@ public interface VideoRepository extends JpaRepository<Video,Long>, JpaSpecifica
     List<VideoFiles> findFilesByChannelOwnerId(Long ownerId);
 
     interface VideoFiles {
+        Long getId();
         String getVideoUrl();
         String getThumbnailUrl();
         String getHlsSourceUrl();

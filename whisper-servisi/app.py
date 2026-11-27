@@ -241,7 +241,57 @@ def thumbnail(request: TranscribeRequest):
             raise
 
 
-# HLS kalite basamakları: (yükseklik, görüntü bit hızı, ses bit hızı). Kaynaktan büyük basamak üretilmez.
+class FramesRequest(BaseModel):
+    url: str
+    times: list[float]
+
+
+MAX_FRAMES = 30
+FRAME_HEIGHT = 360
+
+
+@app.post("/frames")
+def frames(request: FramesRequest):
+    """Bölüm kareleri: verilen her saniyeden bir küçük resim (JPEG, en fazla 360 piksel yükseklik).
+    Video bir kez indirilir; kareler 000.jpg, 001.jpg... adıyla, istek sırasıyla tek zip'te döner.
+    Kare bölümün tam başından değil 2 sn sonrasından ve kısa bir aralığın en temsil edici karesinden seçilir:
+    sahne geçişindeki siyah ya da bulanık kare gelmesin."""
+    if not request.times or len(request.times) > MAX_FRAMES:
+        raise HTTPException(status_code=422, detail=f"1-{MAX_FRAMES} arası zaman verilmeli.")
+    with thumbnail_lock:
+        tmp = tempfile.mkdtemp()
+        try:
+            source = os.path.join(tmp, "kaynak")
+            download(request.url, source)
+            info = probe(source)
+            if not any(s.get("codec_type") == "video" for s in info.get("streams", [])):
+                raise HTTPException(status_code=422, detail="Dosyada görüntü yok.")
+            duration = float(info.get("format", {}).get("duration") or 0)
+            zip_path = os.path.join(tmp, "kareler.zip")
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_STORED) as z:
+                for i, t in enumerate(request.times):
+                    at = max(0.0, t + 2)
+                    if duration > 0:
+                        at = min(at, max(0.0, duration - 1))
+                    output = os.path.join(tmp, f"{i:03d}.jpg")
+                    # -ss girişten önce: doğrudan o saniyeye atlar (baştan çözmez, uzun videoda da hızlı)
+                    result = subprocess.run(
+                        ["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-ss", f"{at:.2f}", "-i", source,
+                         "-vf", f"thumbnail=24,scale=-2:'min({FRAME_HEIGHT},ih)'", "-frames:v", "1", "-q:v", "5", output],
+                        capture_output=True, text=True)
+                    if result.returncode != 0 or not os.path.exists(output):
+                        log.warning("Kare çıkarılamadı (%.1f sn): %s", at, result.stderr[-300:])
+                        raise HTTPException(status_code=422, detail="Kare çıkarılamadı.")
+                    z.write(output, f"{i:03d}.jpg")
+            log.info("Bölüm kareleri çıkarıldı: %d kare", len(request.times))
+            os.remove(source)
+            return FileResponse(zip_path, media_type="application/zip", background=BackgroundTask(shutil.rmtree, tmp, True))
+        except Exception:
+            shutil.rmtree(tmp, True)
+            raise
+
+
+# HLS kalite basamakları:(yükseklik, görüntü bit hızı, ses bit hızı). Kaynaktan büyük basamak üretilmez.
 # Bit hızları YouTube'un önerdiği aralıkların altında: okul/ev bağlantısında takılmadan oynasın.
 HLS_LADDER = [(720, 2800, 128), (480, 1400, 128), (360, 800, 96), (240, 400, 64)]
 HLS_SEGMENT_SECONDS = int(os.getenv("HLS_SEGMENT_SECONDS", "4"))

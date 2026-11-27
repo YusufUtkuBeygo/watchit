@@ -150,6 +150,41 @@ public class FileService {
         }
     }
 
+    //Bölüm karesi: her videonun kareleri kendi klasöründe (bolum-kareleri/v<id>/). Video silinince klasör toptan silinir,
+    //tek tek adres toplamak gerekmez (bölüm satırları veritabanında zincirle gidiyor, adresleri sonradan okunamaz)
+    public String uploadChapterFrame(Long videoId, InputStream in, long size)
+    {
+        try
+        {
+            prepareBucket();
+            String key = chapterFramePrefix(videoId) + UUID.randomUUID() + ".jpg";
+            minioClient.putObject(PutObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(key)
+                    .stream(in, size, -1)
+                    .contentType("image/jpeg")
+                    .build());
+            return minioUrl + "/" + bucketName + "/" + key;
+        }
+        catch(Exception e)
+        {
+            throw new IllegalStateException("Bölüm karesi depoya yazılamadı: " + e.getMessage(), e);
+        }
+    }
+
+    //Videonun bütün bölüm karelerini siler
+    public void deleteChapterFrames(Long videoId)
+    {
+        if(videoId == null)
+            return;
+        deleteFolder(chapterFramePrefix(videoId));
+    }
+
+    private static String chapterFramePrefix(Long videoId)
+    {
+        return "bolum-kareleri/v" + videoId + "/";
+    }
+
     //Bizim kovamızdaki bir dosyayı siler (adres başka bir yeri gösteriyorsa ya da boşsa hiçbir şey yapmaz)
     public void deleteOwnFile(String url)
     {
@@ -246,7 +281,7 @@ public class FileService {
         }
         catch(Exception e)
         {
-            throw new IllegalStateException("HLS klasörü silinemedi: " + e.getMessage(), e);
+            throw new IllegalStateException("Klasör silinemedi: " + e.getMessage(), e);
         }
     }
 

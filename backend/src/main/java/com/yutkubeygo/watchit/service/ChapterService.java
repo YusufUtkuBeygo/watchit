@@ -35,12 +35,17 @@ public class ChapterService {
     private final VideoRepository videoRepository;
     private final TransactionTemplate transactionTemplate;
     private final boolean runOnStartup;
+    private final ChapterFrameService frameService;
+    private final StorageCleanupService storageCleanupService;
 
     public ChapterService(ChapterGenerator generator, VideoChapterRepository chapterRepository,
                           VideoTranscriptRepository transcriptRepository, TranscriptSegmentRepository segmentRepository,
                           VideoRepository videoRepository, TransactionTemplate transactionTemplate,
-                          @Value("${chapters.run-on-startup:true}") boolean runOnStartup)
+                          @Value("${chapters.run-on-startup:true}") boolean runOnStartup,
+                          ChapterFrameService frameService, StorageCleanupService storageCleanupService)
     {
+        this.frameService = frameService;
+        this.storageCleanupService = storageCleanupService;
         this.runOnStartup = runOnStartup;
         this.generator = generator;
         this.chapterRepository = chapterRepository;
@@ -56,7 +61,7 @@ public class ChapterService {
         if(!videoRepository.existsById(videoId))
             return null;
         return chapterRepository.findByVideoIdOrderByStartSecondsAsc(videoId).stream()
-                .map(c -> new ChapterDto(c.getStartSeconds(), c.getTitle()))
+                .map(c -> new ChapterDto(c.getStartSeconds(), c.getTitle(), c.getThumbnailUrl()))
                 .toList();
     }
 
@@ -100,12 +105,26 @@ public class ChapterService {
         //Eski bölümleri silip yenilerini yazmak ve "denendi" işareti tek transaction
         List<ChapterDto> result = chapters;
         transactionTemplate.executeWithoutResult(status -> {
+            //Eski bölümlerin kareleri commit'ten sonra silinir (yeni bölümlere yeni kareler çıkarılacak)
+            StorageCleanupService.Files oldFrames = new StorageCleanupService.Files();
+            chapterRepository.findByVideoIdOrderByStartSecondsAsc(videoId).forEach(c -> oldFrames.addFile(c.getThumbnailUrl()));
+            storageCleanupService.deleteAfterCommit(oldFrames);
             chapterRepository.deleteByVideoId(videoId);
             for(ChapterDto c : result)
                 chapterRepository.save(new VideoChapter(video, c.startSeconds(), c.title()));
             transcriptRepository.markChaptersDone(videoId);
         });
         log.info("Bölümler yazıldı: video {}, {} bölüm", videoId, result.size());
+        //Kareler bölümler yazıldıktan sonra: kare çıkarılamazsa bile bölümler durur
+        if(!result.isEmpty())
+            frameService.generate(videoId);
+    }
+
+    //Karesi eksik bölümler (özellik sonradan eklendi ya da medya servisi o an kapalıydı); aynı kuyrukta
+    @Async("transcriptExecutor")
+    public void generateFramesAsync(Long videoId)
+    {
+        frameService.generate(videoId);
     }
 
     //Özellik sonradan eklendi: bölümü denenmemiş hazır transkriptler açılışta sıraya girer.
@@ -117,5 +136,7 @@ public class ChapterService {
             return;
         for(VideoTranscript t : transcriptRepository.findByStatusAndChaptersDoneFalse(TranscriptStatus.READY))
             generateAsync(t.getVideo().getId());
+        for(Long videoId : chapterRepository.findVideoIdsWithMissingFrames())
+            generateFramesAsync(videoId);
     }
 }
