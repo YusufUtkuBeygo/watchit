@@ -189,6 +189,55 @@ class QuestionServiceTest {
         assertThatThrownBy(() -> questionService.ask(1L, 5L, "Soru?")).isInstanceOf(ServiceUnavailableException.class);
     }
 
+    //Gemini isteği bazen asılı kalıyor: ilk deneme takılırsa iptal edilir, ikinci deneme cevabı getirir
+    @Test
+    void hangingGeminiCallIsRetried()
+    {
+        ReflectionTestUtils.setField(questionService, "timeoutSeconds", 5L);
+        ReflectionTestUtils.setField(questionService, "attemptSeconds", 1L);
+        when(retriever.findRelevant(anyLong(), anyString())).thenReturn(SOURCES);
+        java.util.concurrent.atomic.AtomicInteger calls = new java.util.concurrent.atomic.AtomicInteger();
+        when(chatModel.call(any(Prompt.class))).thenAnswer(inv -> {
+            if(calls.incrementAndGet() == 1)
+                Thread.sleep(10_000);
+            return new ChatResponse(List.of(new Generation(new AssistantMessage("İkinci denemede gelen cevap (00:05)."))));
+        });
+
+        var result = questionService.ask(1L, 5L, "Soru?");
+
+        assertThat(result.found()).isTrue();
+        assertThat(result.answer()).contains("İkinci denemede");
+        assertThat(calls.get()).isEqualTo(2);
+    }
+
+    //Asıl modelin kotası doluysa (429) beklemeden yedek modele geçilir
+    @Test
+    void quotaErrorSwitchesToFallbackModel()
+    {
+        ReflectionTestUtils.setField(questionService, "fallbackModels", List.of("yedek-model"));
+        when(retriever.findRelevant(anyLong(), anyString())).thenReturn(SOURCES);
+        java.util.concurrent.atomic.AtomicInteger calls = new java.util.concurrent.atomic.AtomicInteger();
+        when(chatModel.call(any(Prompt.class))).thenAnswer(inv -> {
+            if(calls.incrementAndGet() == 1)
+                throw new IllegalStateException("429 RESOURCE_EXHAUSTED: You exceeded your current quota");
+            return new ChatResponse(List.of(new Generation(new AssistantMessage("Yedek modelin cevabı (00:05)."))));
+        });
+
+        long started = System.currentTimeMillis();
+        var result = questionService.ask(1L, 5L, "Soru?");
+
+        assertThat(result.answer()).contains("Yedek modelin");
+        assertThat(calls.get()).isEqualTo(2);
+        assertThat(System.currentTimeMillis() - started).isLessThan(5000);
+    }
+
+    @Test
+    void otherErrorsAreNotRetried()
+    {
+        assertThat(QuestionService.isBusyOrQuota(new IllegalStateException("400 INVALID_ARGUMENT"))).isFalse();
+        assertThat(QuestionService.isBusyOrQuota(new RuntimeException("sarılmış", new IllegalStateException("503 UNAVAILABLE")))).isTrue();
+    }
+
     @Test
     void missingVideoReturnsNull()
     {

@@ -43,6 +43,7 @@ function hlsBadge(video) {
 
 function transcriptBadge(transcript) {
   const status = transcript?.status;
+  if (status === 'READY' && !(transcript.segments?.length > 0)) return { text: 'Konuşma yok', tone: 'muted', hint: 'Videoda konuşma bulunamadı; soru-cevap çalışmaz.' };
   if (status === 'READY') return { text: 'Soru-cevap açık', tone: 'accent' };
   if (status === 'PENDING' || status === 'PROCESSING') return { text: 'Yazıya çevriliyor', tone: 'muted' };
   if (status === 'FAILED') return { text: 'Soru-cevap kapalı', tone: 'danger', hint: transcript.errorMessage };

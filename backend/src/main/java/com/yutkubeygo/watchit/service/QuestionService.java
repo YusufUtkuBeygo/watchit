@@ -15,6 +15,7 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +62,20 @@ public class QuestionService {
     //Çağrı sanal bir iş parçacığında yapılır, süre dolunca bırakılır ve 503 döner.
     @Value("${qa.timeout-seconds:30}")
     private long timeoutSeconds = 30;
+    //Tek denemenin süresi: takılan istek bu kadar beklenip yeniden gönderilir (toplam timeoutSeconds)
+    @Value("${qa.attempt-timeout-seconds:10}")
+    private long attemptSeconds = 10;
+    //Asıl model takılınca sonraki denemeler sırayla bu modellerle yapılır (boşsa hep asıl model).
+    //Sebep: Gemini'de bir model yoğunken (ör. ücretsiz katmanda) başka model genelde hemen cevap veriyor
+    @Value("${qa.fallback-models:}")
+    private List<String> fallbackModels = List.of();
+    //Yedek modele giden istek de asıl modelin ayarlarıyla gitsin (aynı ayar satırlarından okunur)
+    @Value("${spring.ai.google.genai.chat.options.temperature:0.2}")
+    private double temperature = 0.2;
+    @Value("${spring.ai.google.genai.chat.options.max-output-tokens:400}")
+    private int maxOutputTokens = 400;
+    @Value("${spring.ai.google.genai.chat.options.thinking-budget:0}")
+    private int thinkingBudget = 0;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public QuestionService(VideoRepository videoRepository, VideoTranscriptRepository transcriptRepository,
@@ -115,30 +130,107 @@ public class QuestionService {
         }
     }
 
-    private QuestionResponseDto answer(String userMessage, List<QuestionResponseDto.Source> sources)
+    private static void sleepQuietly(long millis)
     {
-        Future<String> call = executor.submit(() -> chatModel.call(new Prompt(List.of(
-                new SystemMessage(SYSTEM_PROMPT),
-                new UserMessage(userMessage))))
-                .getResult().getOutput().getText());
-        String answer;
         try
         {
-            answer = call.get(timeoutSeconds, TimeUnit.SECONDS);
-        }
-        catch(TimeoutException e)
-        {
-            call.cancel(true);
-            throw new IllegalStateException("Gemini " + timeoutSeconds + " saniyede cevap vermedi", e);
-        }
-        catch(ExecutionException e)
-        {
-            throw e.getCause() instanceof RuntimeException r ? r : new IllegalStateException(e.getCause());
+            Thread.sleep(millis);
         }
         catch(InterruptedException e)
         {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException(e);
+        }
+    }
+
+    //Hata zincirinde Gemini'nin 429 (kota) ya da 5xx (yoğun) cevabı var mı. Spring AI hatayı sarabildiği için
+    //zincir sonuna kadar dolaşılır; kod bulunamazsa mesajdaki koda bakılır
+    static boolean isBusyOrQuota(Throwable error)
+    {
+        for(Throwable t = error; t != null; t = t.getCause())
+        {
+            if(t instanceof com.google.genai.errors.ApiException api)
+                return api.code() == 429 || api.code() >= 500;
+            String message = String.valueOf(t.getMessage());
+            if(message.contains("429") || message.contains("RESOURCE_EXHAUSTED") || message.contains("503") || message.contains("UNAVAILABLE"))
+                return true;
+            if(t.getCause() == t)
+                break;
+        }
+        return false;
+    }
+
+    //Hangi denemede hangi model: 1 = asıl model (null), 2 = ilk yedek, ... yedekler bitince başa döner
+    private String modelFor(int attempt)
+    {
+        List<String> models = fallbackModels.stream().filter(m -> m != null && !m.isBlank()).toList();
+        if(attempt == 1 || models.isEmpty())
+            return null;
+        return models.get((attempt - 2) % models.size());
+    }
+
+    private Prompt promptFor(List<org.springframework.ai.chat.messages.Message> messages, int attempt)
+    {
+        String model = modelFor(attempt);
+        if(model == null)
+            return new Prompt(messages);
+        return new Prompt(messages, GoogleGenAiChatOptions.builder()
+                .model(model)
+                .temperature(temperature)
+                .maxOutputTokens(maxOutputTokens)
+                .thinkingBudget(thinkingBudget)
+                .build());
+    }
+
+    private QuestionResponseDto answer(String userMessage, List<QuestionResponseDto.Source> sources)
+    {
+        List<org.springframework.ai.chat.messages.Message> messages =
+                List.of(new SystemMessage(SYSTEM_PROMPT), new UserMessage(userMessage));
+        String answer = null;
+        //Ölçüm (25 Kasım): cevapların çoğu 1-5 sn'de gelir ama kabaca dörtte biri Gemini'de asılı kalır ve hiç dönmez.
+        //Aynı istek yeniden gönderilince genelde hemen gelir. Bu yüzden tek uzun bekleme yerine kısa denemeler:
+        //her deneme attemptSeconds sn, takılırsa iptal edip bir daha (toplam süre yine timeoutSeconds'ı aşmaz).
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds);
+        for(int attempt = 1; answer == null; attempt++)
+        {
+            //Milisaniye: saniyeye aşağı yuvarlansa son kalan kısım (ör. 0,9 sn) hiç denenmezdi
+            long remaining = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
+            long wait = Math.min(TimeUnit.SECONDS.toMillis(attemptSeconds), remaining);
+            if(wait <= 0)
+                throw new IllegalStateException("Gemini " + timeoutSeconds + " saniyede cevap vermedi");
+
+            //1. deneme ayardaki asıl model (seçenek verilmez), sonrakiler sırayla yedek modeller
+            Prompt prompt = promptFor(messages, attempt);
+            Future<String> call = executor.submit(() -> chatModel.call(prompt).getResult().getOutput().getText());
+            try
+            {
+                answer = call.get(wait, TimeUnit.MILLISECONDS);
+                if(answer == null)
+                    answer = "";
+            }
+            catch(TimeoutException e)
+            {
+                call.cancel(true);
+                log.info("Gemini {}. denemede ({}) {} ms içinde cevap vermedi, yeniden deneniyor", attempt, modelFor(attempt), wait);
+            }
+            catch(ExecutionException e)
+            {
+                //Kota dolu (429) ya da model yoğun (5xx): beklemeden sıradaki modele geç; başka hata hemen döner
+                if(isBusyOrQuota(e.getCause()))
+                {
+                    log.info("Gemini {}. denemede ({}) meşgul/kota dolu, sıradaki model deneniyor", attempt, modelFor(attempt));
+                    //Her model en fazla iki kez denenir; yoksa ikisi de anında 429 dönerse döngü kotayı daha da harcardı
+                    if(attempt >= 2 * (1 + fallbackModels.size()))
+                        throw new IllegalStateException("Gemini modellerinin hepsi meşgul ya da kotası dolu", e.getCause());
+                    sleepQuietly(500);
+                    continue;
+                }
+                throw e.getCause() instanceof RuntimeException r ? r : new IllegalStateException(e.getCause());
+            }
+            catch(InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
+            }
         }
 
         //Model bazen önce açıklama yazıp sonra BULUNAMADI diyor: nerede geçerse geçsin "bulunamadı" sayılır

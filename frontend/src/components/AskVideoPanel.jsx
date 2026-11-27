@@ -85,6 +85,8 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
 
   const status = transcript?.status;
   const isWorking = status === 'PENDING' || status === 'PROCESSING';
+  //Transkript hazır ama videoda konuşma yoksa (sessiz film, yalnız müzik) soru sorulacak bir şey yok
+  const speechCount = transcript?.segments ? transcript.segments.length : 0;
 
   //Transkript durumunu oku; hazırlanıyorsa birkaç saniyede bir yeniden oku
   useEffect(() => {
@@ -192,6 +194,15 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
         )}
       />
     );
+  } else if (speechCount === 0) {
+    body = (
+      <EmptyState
+        compact
+        icon={FileText}
+        title="Bu videoda konuşma yok"
+        text="Soru-cevap videodaki konuşmalardan çalışır. Bu video sessiz ya da yalnız müzik içeriyor, sorulacak bir şey bulunamadı."
+      />
+    );
   } else if (!user) {
     body = (
       <EmptyState
@@ -231,6 +242,10 @@ export default function AskVideoPanel({ videoId, isOwner, onSeek, videoProcessin
 
         {isAsking && <p className="ask-hint" role="status"><span className="ask-spinner" aria-hidden="true" />Cevap hazırlanıyor…</p>}
         {askError && <p className="form-error" role="alert">{askError}</p>}
+        {/* Birkaç cümlelik transkript çoğunlukla şarkı sözüdür: soru sorulabilir ama cevap bulunamayabilir */}
+        {speechCount > 0 && speechCount < 8 && history.length === 0 && (
+          <p className="ask-hint">Bu videoda çok az konuşma var (çoğu müzik); birçok soruya cevap bulunamayabilir.</p>
+        )}
 
         {history.length === 0 && (
           <div className="ask-suggestions">
