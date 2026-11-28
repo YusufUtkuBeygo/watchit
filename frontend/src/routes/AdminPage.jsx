@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ShieldCheck, Trash2, Check, MessageSquareText, Flag } from 'lucide-react';
+import { ShieldCheck, Trash2, Check, MessageSquareText, Flag, Bug } from 'lucide-react';
 import RequireLogin from '../components/RequireLogin';
 import EmptyState from '../components/EmptyState';
 import LoadMore from '../components/LoadMore';
@@ -8,7 +8,7 @@ import { RowListSkeleton } from '../components/Skeleton';
 import usePagedList from '../hooks/usePagedList';
 import { useAuth } from '../context/AuthContext';
 import {
-  getReports, dismissReport, removeReportedContent, getFeedback, reasonLabel,
+  getReports, dismissReport, removeReportedContent, getFeedback, getClientErrors, reasonLabel,
 } from '../services/reportService';
 import { timeAgo } from '../utils/format';
 import './AdminPage.css';
@@ -19,6 +19,7 @@ const TABS = [
   { key: 'resolved', label: 'Kaldırılan', status: 'RESOLVED' },
   { key: 'dismissed', label: 'Yoksayılan', status: 'DISMISSED' },
   { key: 'feedback', label: 'Geri bildirim' },
+  { key: 'errors', label: 'Hatalar' },
 ];
 
 //Yönetim paneli (/admin): şikayetleri incele (içeriği kaldır / yoksay) ve geri bildirimleri oku. Yalnız yönetici.
@@ -61,7 +62,8 @@ function AdminPanel() {
           </button>
         ))}
       </div>
-      {tab.status ? <ReportList key={tab.key} status={tab.status} /> : <FeedbackList />}
+      {tab.status ? <ReportList key={tab.key} status={tab.status} />
+        : tab.key === 'errors' ? <ClientErrorList /> : <FeedbackList />}
     </div>
   );
 }
@@ -170,6 +172,42 @@ function FeedbackList() {
               <span className="admin-meta">{timeAgo(f.createdAt)}{f.pageUrl ? ` • ${f.pageUrl}` : ''}</span>
             </div>
             <p className="admin-details admin-feedback">{f.message}</p>
+          </li>
+        ))}
+      </ul>
+      <LoadMore list={list} />
+    </>
+  );
+}
+
+//Tarayıcı hataları: kullanıcıların ekranında olan beklenmedik hatalar (en yeni önce, 30 gün tutulur)
+function ClientErrorList() {
+  const list = usePagedList((page) => getClientErrors(page), 'client-errors');
+  const { items } = list;
+  return (
+    <>
+      {list.status === 'loading' && <RowListSkeleton label="Hatalar yükleniyor…" />}
+      {list.status === 'error' && <p className="grid-message">Hatalar yüklenemedi.</p>}
+      {list.status === 'ready' && items.length === 0 && (
+        <EmptyState icon={Bug} title="Hata yok"
+          text="Bir kullanıcının ekranında beklenmedik bir hata olursa burada görünür." />
+      )}
+      <ul className="admin-list">
+        {items.map((e) => (
+          <li key={e.id} className="admin-card">
+            <div className="admin-card-head">
+              <strong className="admin-error-message">{e.message}</strong>
+              <span className="admin-meta">
+                {timeAgo(e.createdAt)}{e.pageUrl ? ` • ${e.pageUrl}` : ''}{e.userId ? ` • kullanıcı #${e.userId}` : ' • girişsiz'}
+              </span>
+            </div>
+            {e.userAgent && <p className="admin-meta">{e.userAgent}</p>}
+            {e.stack && (
+              <details className="admin-error-stack">
+                <summary>Ayrıntı</summary>
+                <pre>{e.stack}</pre>
+              </details>
+            )}
           </li>
         ))}
       </ul>

@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { TriangleAlert } from 'lucide-react';
+import { reportClientError } from '../services/errorReportService';
 
 //Hata yakalayıcı: içindeki bir bileşen çizilirken beklenmedik bir JavaScript hatası olursa bütün site bembeyaz
 //kalmasın; o alanda "Bir şeyler ters gitti" ekranı çıkar. Üst menü ve sol menü dışarıda kaldığı için çalışmaya devam eder.
@@ -23,8 +24,9 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    //Geliştirici konsolunda ayrıntı kalsın (yayında hata takibi eklenince oraya da gönderilecek)
+    //Geliştirici konsoluna ve yönetim panelindeki "Hatalar" sekmesine
     console.error('Sayfa çizilemedi:', error, info?.componentStack);
+    reportClientError(error, info?.componentStack || '');
   }
 
   render() {

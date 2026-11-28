@@ -19,7 +19,9 @@ public enum RateLimit {
     PLAYLIST(new Window(Duration.ofMinutes(1), 30), new Window(Duration.ofDays(1), 500)),
     REPORT(new Window(Duration.ofMinutes(1), 5), new Window(Duration.ofDays(1), 50)),
     //Kayıt girişsiz: IP adresine göre sayılır (aynı evdeki birkaç kişiyi engellemeyecek kadar geniş)
-    REGISTER(new Window(Duration.ofHours(1), 5), new Window(Duration.ofDays(1), 20));
+    REGISTER(new Window(Duration.ofHours(1), 5), new Window(Duration.ofDays(1), 20)),
+    //Tarayıcı hata bildirimi: bozuk bir sayfa aynı hatayı art arda gönderebilir; tabloyu doldurmasın
+    CLIENT_ERROR(new Window(Duration.ofMinutes(1), 10), new Window(Duration.ofDays(1), 100));
 
     public record Window(Duration duration, int max) {}
 

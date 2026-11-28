@@ -46,6 +46,13 @@ export async function removeReportedContent(id)
   await api.post(`/admin/reports/${id}/remove-content`);
 }
 
+//Tarayıcı hataları (hata takibi)
+export async function getClientErrors(page = 0)
+{
+  const response = await api.get('/admin/client-errors', { params: { page } });
+  return response.data;
+}
+
 export async function getFeedback(page = 0)
 {
   const response = await api.get('/admin/feedback', { params: { page } });
