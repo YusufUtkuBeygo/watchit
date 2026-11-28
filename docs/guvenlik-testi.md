@@ -64,10 +64,26 @@ Hepsi kalıcı testle sabitlendi: `FileServiceSecurityTest` (46 durum).
   olduğunu öğrenebilir. Yaygın kabul; kayıt IP başına saatte 5 ile sınırlı.
 - **Token `localStorage`'da:** XSS olursa çalınabilir. XSS yolları kapalı; çerez + CSRF korumasına geçmek büyük iş.
 - **Hız sınırı ve giriş kilidi bellekte:** tek sunucuda yeterli, yeniden başlatınca sıfırlanır.
-- **Statik tarama yapılmadı:** Strix'in kaynak kod araçları (semgrep, gitleaks, trivy) bu makinede kurulu değil;
-  Strix'in kutusu (`ghcr.io/usestrix/strix-sandbox:1.3.0`) indirilmedi. Yayından önce çalıştırılacak.
+- **Medya servisi konteyneri root ile çalışıyor** (trivy DS002). Yayında dışarıya port açmıyor, yalnız backend erişiyor.
+  Root olmayana çevirmek mevcut model deposunun (Docker volume) izinlerini bozup Whisper'ı durdurabilirdi; ayrı iş.
 
-## Yeniden çalıştırma
 
-Test betikleri repoda değil (geçici kullanıcı oluşturup siliyorlar). Yayından önce yeni uçlar eklenirse aynı
-kontrol listeleriyle yeniden yapılır.
+## Statik tarama (28 Kasım 2026)
+
+Strix'in kaynak kod adımı: gitleaks 8.21.2, trivy 0.57.1, semgrep 1.97.0 (resmî Docker imajları, repo salt okunur).
+Gizli ayar dosyaları (`application-local.properties`, `.env`, `compose.yaml`) araçlara verilmedi.
+
+| Araç | Ne aradı | Sonuç |
+|---|---|---|
+| gitleaks | git geçmişinde (152 commit) şifre/anahtar | 2 eşleşme, ikisi de bilerek konmuş sahte değer (`.env.prod.example`, CI'ın deneme anahtarı). Gerçek gizli dosyalar hiç commit'lenmemiş |
+| trivy (jar) | Java kütüphanelerinde bilinen açık | **27 yüksek/kritik** (Spring MVC uzaktan kod çalıştırma, Tomcat kimlik atlama, Jackson, PostgreSQL sürücüsü, MinIO, BouncyCastle, Guava, Snappy) → Spring Boot 4.1.3, Spring AI 2.0.3, MinIO 8.6.0 ve alt paketlere alt sınır → **0** |
+| trivy (fs) | frontend ve Python kütüphaneleri | 0 |
+| trivy (config) | Dockerfile ve compose ayarları | frontend root ile çalışıyordu → `nginx-unprivileged` (uid 101); medya servisi yukarıda |
+| semgrep | Java, React, Python kodunda tehlikeli kalıp (p/java, p/react, p/javascript, p/python, p/owasp-top-ten) | 1 yanlış alarm: ffmpeg komutu liste olarak, kabuksuz çalışıyor. `VideoPlayer.jsx` semgrep'in ayrıştırıcısına takıldı, taranamadı |
+
+Güncellemelerden sonra: testler 276/276 (MinIO'lu ve MinIO'suz), `ops/guvenlik-testi/saldiri.py` 143/143, gerçek MinIO yüklemesi denendi.
+
+## Yeniden çalıştırma (güncel)
+
+Saldırı betiği artık repoda: `python3 ops/guvenlik-testi/saldiri.py [http://localhost:8090]` (geçici kullanıcıları kendisi siler).
+Kalıcı yetki testleri `OwnershipAccessTest` her PR'da CI'da çalışır.
