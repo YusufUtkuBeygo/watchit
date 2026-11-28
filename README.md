@@ -23,7 +23,7 @@ Built as a personal full-stack project with a Spring Boot REST API and a React f
 
 ```
 React (Vite, :5173)
-   │  /api/*  ── Vite proxy ──►  Spring Boot REST API (:8080)
+   │  /api/*  ── Vite proxy ──►  Spring Boot REST API (:8090)
    │                                │            │
    │                                ▼            ▼
    │                          PostgreSQL     MinIO (presigned URL)
@@ -89,8 +89,8 @@ cp src/main/resources/application-local.properties.example src/main/resources/ap
 ./gradlew bootRun
 ```
 
-The API runs on `http://localhost:8080`. Flyway creates the schema on first start.
-Interactive API docs: `http://localhost:8080/swagger-ui.html` (use **Authorize** to paste a JWT).
+The API runs on `http://localhost:8090` (port 8080 in production, see `compose.prod.yaml`). Flyway creates the schema on first start.
+Interactive API docs: `http://localhost:8090/swagger-ui.html` (use **Authorize** to paste a JWT).
 
 **Optional demo data:** after the first start, load sample users, channels and videos into the empty database:
 

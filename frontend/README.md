@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Geliştirme sunucusu `http://localhost:5173` adresinde açılır. `/api` ile başlayan istekler `vite.config.js`'teki proxy ile backend'e (`http://localhost:8080`) gider; backend'in ayrıca çalışıyor olması gerekir.
+Geliştirme sunucusu `http://localhost:5173` adresinde açılır. `/api` ile başlayan istekler `vite.config.js`'teki proxy ile backend'e (`http://localhost:8090`) gider; backend'in ayrıca çalışıyor olması gerekir.
 
 ## Komutlar
 

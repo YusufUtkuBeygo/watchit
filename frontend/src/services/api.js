@@ -4,7 +4,7 @@ import axios from 'axios';
 export const TOKEN_KEY = 'watchit_token';
 
 //Bütün backend istekleri bu nesne üzerinden gider
-//baseURL '/api': vite.config.js'teki proxy bunu backend'e (8080) yönlendirir
+//baseURL '/api': vite.config.js'teki proxy bunu backend'e (8090) yönlendirir
 const api = axios.create({
   baseURL: '/api',
 });

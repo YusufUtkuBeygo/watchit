@@ -296,7 +296,7 @@ def safe_name(text):
 
 def main():
     p = argparse.ArgumentParser(description="Serbest arşivlerden demo videoları yükler.")
-    p.add_argument("--api", default="http://localhost:8080")
+    p.add_argument("--api", default="http://localhost:8090")
     p.add_argument("--sifre", required=True, help="Demo kanal hesaplarının şifresi (seed: demo12345)")
     p.add_argument("--liste", default=os.path.join(HERE, "videolar.json"))
     p.add_argument("--calisma", default=None, help="Geçici indirme klasörü (varsayılan: sistemin geçici klasörü)")
