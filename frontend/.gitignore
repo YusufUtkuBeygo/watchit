@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Uçtan uca test çıktıları (Playwright)
+test-results/
+playwright-report/
