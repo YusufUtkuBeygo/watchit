@@ -320,6 +320,7 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
         <nav className="sidebar-footer-links" aria-label="Yasal">
           <Link to="/terms">Şartlar</Link>
           <Link to="/privacy">Gizlilik</Link>
+          <Link to="/kvkk">KVKK</Link>
           <Link to="/terms">Politika ve Güvenlik</Link>
         </nav>
         <p className="sidebar-copyright">© 2026 WatchIt</p>

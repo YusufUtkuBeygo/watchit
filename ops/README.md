@@ -3,7 +3,8 @@
 ## Yedek (`yedek.sh`)
 
 Veritabanının tam dökümünü (`yedekler/veritabani/watchit-YYYYMMDD-HHMM.dump`, son 14 tanesi tutulur) alır
-ve MinIO dosyalarını `yedekler/dosyalar/` klasörüne eşitler (yalnız yeni/değişen dosyalar kopyalanır).
+ve MinIO dosyalarını `yedekler/dosyalar/` klasörüne eşitler (yalnız yeni/değişen dosyalar kopyalanır; depoda silinen
+dosya yedekten de silinir, böylece silinen hesabın videoları yedekte kalmaz).
 
 ```bash
 ops/yedek.sh

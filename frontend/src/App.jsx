@@ -100,6 +100,7 @@ function App() {
             <Route path="/about" element={<InfoPage page="about" />} />
             <Route path="/terms" element={<InfoPage page="terms" />} />
             <Route path="/privacy" element={<InfoPage page="privacy" />} />
+            <Route path="/kvkk" element={<InfoPage page="kvkk" />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

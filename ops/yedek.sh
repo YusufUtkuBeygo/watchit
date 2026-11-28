@@ -41,12 +41,13 @@ mv "$HEDEF.tmp" "$HEDEF"
 echo "$(date '+%F %T') veritabanı: $HEDEF ($(du -h "$HEDEF" | cut -f1))"
 
 # 2) Dosyalar: MinIO'nun diski (/data) yedek klasörüne eşitlenir. Yalnız yeni/değişen dosyalar kopyalanır
-#    (videolar büyük, her gün hepsini kopyalamak gereksiz). MinIO'da silinen dosya yedekte kalır (yanlışlıkla silmeye karşı)
+#    (videolar büyük, her gün hepsini kopyalamak gereksiz). MinIO'da silinen dosya yedekten de silinir: hesabını silen
+#    kullanıcının videoları yedekte kalmasın (KVKK, silme hakkı). Yanlışlıkla silmeye karşı veritabanı dökümleri 14 gün durur
 VOLUME=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/data"}}{{.Name}}{{end}}{{end}}' "$MINIO")
 [ -n "$VOLUME" ] || { echo "HATA: MinIO konteynerinde /data diski bulunamadı" >&2; exit 1; }
 # --user: yedek dosyaları root'un değil betiği çalıştıranın olsun (silmek/taşımak için sudo gerekmesin)
 docker run --rm --user "$(id -u):$(id -g)" -v "$VOLUME":/kaynak:ro -v "$YEDEK_DIZINI/dosyalar":/hedef alpine:3.20 \
-  sh -c 'cp -Ru /kaynak/. /hedef/'
+  sh -c 'cp -Ru /kaynak/. /hedef/ && cd /hedef && find . -type f | while read -r f; do [ -e "/kaynak/$f" ] || rm -f "$f"; done && find . -mindepth 1 -type d -empty -delete'
 echo "$(date '+%F %T') dosyalar: $YEDEK_DIZINI/dosyalar ($(du -sh "$YEDEK_DIZINI/dosyalar" | cut -f1))"
 
 # 3) Eski veritabanı yedekleri: en yeni $SAKLA tanesi kalır
