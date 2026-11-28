@@ -1,37 +1,38 @@
-import { useCallback, useState } from 'react';
+import { lazy, Suspense, useCallback, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import useMediaQuery from './hooks/useMediaQuery';
 import './App.css';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import HomePage from './routes/HomePage';
-import AdminPage from './routes/AdminPage';
+const AdminPage = lazy(() => import('./routes/AdminPage'));
 import NotFoundPage from './routes/NotFoundPage';
 import WatchPage from './routes/WatchPage';
-import ChannelPage from './routes/ChannelPage';
-import SearchPage from './routes/SearchPage';
-import HistoryPage from './routes/HistoryPage';
-import SubscriptionsPage from './routes/SubscriptionsPage';
-import PlaylistsPage from './routes/PlaylistsPage';
-import PlaylistPage from './routes/PlaylistPage';
-import AccountPage from './routes/AccountPage';
-import StudioPage from './routes/StudioPage';
-import LikedPage from './routes/LikedPage';
-import WatchLaterPage from './routes/WatchLaterPage';
-import ResetPasswordPage from './routes/ResetPasswordPage';
-import CoursesPage from './routes/CoursesPage';
-import ClipsPage from './routes/ClipsPage';
-import ClipPage from './routes/ClipPage';
-import DownloadsPage from './routes/DownloadsPage';
-import TrendingPage from './routes/TrendingPage';
-import ShortsPage from './routes/ShortsPage';
-import SettingsPage from './routes/SettingsPage';
-import NotificationsPage from './routes/NotificationsPage';
-import HelpPage from './routes/HelpPage';
-import FeedbackPage from './routes/FeedbackPage';
-import InfoPage from './routes/InfoPage';
+const ChannelPage = lazy(() => import('./routes/ChannelPage'));
+const SearchPage = lazy(() => import('./routes/SearchPage'));
+const HistoryPage = lazy(() => import('./routes/HistoryPage'));
+const SubscriptionsPage = lazy(() => import('./routes/SubscriptionsPage'));
+const PlaylistsPage = lazy(() => import('./routes/PlaylistsPage'));
+const PlaylistPage = lazy(() => import('./routes/PlaylistPage'));
+const AccountPage = lazy(() => import('./routes/AccountPage'));
+const StudioPage = lazy(() => import('./routes/StudioPage'));
+const LikedPage = lazy(() => import('./routes/LikedPage'));
+const WatchLaterPage = lazy(() => import('./routes/WatchLaterPage'));
+const ResetPasswordPage = lazy(() => import('./routes/ResetPasswordPage'));
+const CoursesPage = lazy(() => import('./routes/CoursesPage'));
+const ClipsPage = lazy(() => import('./routes/ClipsPage'));
+const ClipPage = lazy(() => import('./routes/ClipPage'));
+const DownloadsPage = lazy(() => import('./routes/DownloadsPage'));
+const TrendingPage = lazy(() => import('./routes/TrendingPage'));
+const ShortsPage = lazy(() => import('./routes/ShortsPage'));
+const SettingsPage = lazy(() => import('./routes/SettingsPage'));
+const NotificationsPage = lazy(() => import('./routes/NotificationsPage'));
+const HelpPage = lazy(() => import('./routes/HelpPage'));
+const FeedbackPage = lazy(() => import('./routes/FeedbackPage'));
+const InfoPage = lazy(() => import('./routes/InfoPage'));
 import VerifyEmailBanner from './components/VerifyEmailBanner';
 import ErrorBoundary from './components/ErrorBoundary';
+import { RowListSkeleton } from './components/Skeleton';
 //En son: bileşen stillerinin üstüne yazan mikro etkileşimler
 import './interactions.css';
 
@@ -69,6 +70,9 @@ function App() {
           <VerifyEmailBanner />
           {/* Bir sayfa çizilirken hata olursa yalnız bu alan "Bir şeyler ters gitti" olur; sayfa değişince sıfırlanır */}
           <ErrorBoundary resetKey={location.pathname}>
+          {/* Ana sayfa ve izleme sayfası ilk pakette; öteki sayfalar ilk açıldıklarında indirilir (ilk açılış hızlansın).
+              İnerken iskelet görünür */}
+          <Suspense fallback={<div className="page"><RowListSkeleton label="Sayfa yükleniyor…" /></div>}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/watch/:id" element={<WatchPage />} />
@@ -99,6 +103,7 @@ function App() {
             <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          </Suspense>
           </ErrorBoundary>
         </main>
       </div>
