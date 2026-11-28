@@ -24,7 +24,14 @@ export default function CommentSection({ videoId, isVideoOwner = false }) {
   const [sort, setSort] = useState('new');
   //Sayfa sayfa: her sayfada 24 üst yorum + cevapları. Yorum eklenince/silinince ya da sıralama değişince liste baştan yüklenir
   const list = usePagedList((page) => getCommentsByVideoId(videoId, page, sort), `comments-${videoId}-${sort}`);
-  const { items: comments, status, reload } = list;
+  const { items: comments, status, reload, setItems } = list;
+
+  //Yeni yorum: sunucunun döndürdüğü kayıt hemen listeye eklenir (yavaş internette yorumlar kaybolmasın),
+  //sonra liste arka planda yenilenir (sayılar, sıra)
+  const handlePosted = (created) => {
+    if (created?.id) setItems((prev) => [created, ...prev.filter((c) => c.id !== created.id)]);
+    reload();
+  };
   //Hangi yoruma cevap yazılıyor (üst yorumun id'si), yoksa null
   const [replyingTo, setReplyingTo] = useState(null);
 
@@ -81,7 +88,7 @@ export default function CommentSection({ videoId, isVideoOwner = false }) {
       </label>
 
       {user ? (
-        <CommentForm videoId={videoId} onPosted={reload} placeholder="Yorum ekle…" />
+        <CommentForm videoId={videoId} onPosted={handlePosted} placeholder="Yorum ekle…" />
       ) : (
         <p className="comments-hint">Yorum yapmak için giriş yap.</p>
       )}
@@ -136,7 +143,7 @@ export default function CommentSection({ videoId, isVideoOwner = false }) {
                       parentCommentId={comment.id}
                       placeholder="Yanıt ekle…"
                       autoFocus
-                      onPosted={() => { setReplyingTo(null); reload(); }}
+                      onPosted={(created) => { setReplyingTo(null); handlePosted(created); }}
                       onCancel={() => setReplyingTo(null)}
                     />
                   </li>
@@ -279,7 +286,7 @@ function CommentEditForm({ comment, onCancel, onSaved }) {
       {errorMessage && <p className="comment-error">{errorMessage}</p>}
       <div className="comment-form-actions">
         <button type="button" className="comment-cancel" onClick={onCancel}>İptal</button>
-        <button type="submit" className="comment-submit"
+        <button type="submit" className="comment-submit" aria-busy={isSubmitting}
           disabled={isSubmitting || !content.trim() || content.trim() === comment.content}>
           {isSubmitting ? 'Kaydediliyor…' : 'Kaydet'}
         </button>
@@ -299,9 +306,9 @@ function CommentForm({ videoId, parentCommentId = null, placeholder, autoFocus, 
     setErrorMessage('');
     setIsSubmitting(true);
     try {
-      await createComment({ content: content.trim(), videoId, parentCommentId });
+      const created = await createComment({ content: content.trim(), videoId, parentCommentId });
       setContent('');
-      onPosted();
+      onPosted(created);
     } catch (error) {
       const status = error.response ? error.response.status : null;
       setErrorMessage(
@@ -330,7 +337,7 @@ function CommentForm({ videoId, parentCommentId = null, placeholder, autoFocus, 
         {onCancel && (
           <button type="button" className="comment-cancel" onClick={onCancel}>İptal</button>
         )}
-        <button type="submit" className="comment-submit" disabled={isSubmitting || !content.trim()}>
+        <button type="submit" className="comment-submit" aria-busy={isSubmitting} disabled={isSubmitting || !content.trim()}>
           {isSubmitting ? 'Gönderiliyor…' : parentCommentId ? 'Yanıtla' : 'Yorum yap'}
         </button>
       </div>

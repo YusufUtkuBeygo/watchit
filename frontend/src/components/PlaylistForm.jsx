@@ -47,7 +47,7 @@ export default function PlaylistForm({ initial, submitLabel, onSubmit, onCancel 
       {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
       <div className="form-actions">
         {onCancel && <button type="button" className="btn btn-ghost" onClick={onCancel}>İptal</button>}
-        <button type="submit" className="btn btn-primary" disabled={isSubmitting || !title.trim()}>
+        <button type="submit" className="btn btn-primary" aria-busy={isSubmitting} disabled={isSubmitting || !title.trim()}>
           {isSubmitting ? 'Kaydediliyor…' : submitLabel}
         </button>
       </div>

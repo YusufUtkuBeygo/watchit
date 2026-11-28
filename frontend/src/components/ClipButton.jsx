@@ -126,7 +126,7 @@ export default function ClipButton({ video, getCurrentTime }) {
               {error && <p className="form-error" role="alert">{error}</p>}
               <div className="form-actions">
                 <button type="button" className="btn btn-ghost" onClick={() => setIsOpen(false)}>İptal</button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving || !title.trim()}>
+                <button type="submit" className="btn btn-primary" aria-busy={isSaving} disabled={isSaving || !title.trim()}>
                   {isSaving ? 'Kaydediliyor…' : 'Klibi kaydet'}
                 </button>
               </div>

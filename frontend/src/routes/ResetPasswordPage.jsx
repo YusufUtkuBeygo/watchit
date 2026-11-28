@@ -79,7 +79,7 @@ function ResetPasswordPage() {
         </label>
         {error && <p className="form-error" role="alert">{error}</p>}
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          <button type="submit" className="btn btn-primary" aria-busy={isSubmitting} disabled={isSubmitting}>
             {isSubmitting ? 'Kaydediliyor…' : 'Şifremi değiştir'}
           </button>
         </div>

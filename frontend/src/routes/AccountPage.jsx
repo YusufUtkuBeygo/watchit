@@ -124,7 +124,7 @@ function ProfileForm() {
         {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
         {successMessage && <p className="form-success" role="status">{successMessage}</p>}
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          <button type="submit" className="btn btn-primary" aria-busy={isSubmitting} disabled={isSubmitting}>
             {isSubmitting ? 'Kaydediliyor…' : 'Kaydet'}
           </button>
         </div>
@@ -200,7 +200,7 @@ function PasswordForm() {
         {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
         {successMessage && <p className="form-success" role="status">{successMessage}</p>}
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          <button type="submit" className="btn btn-primary" aria-busy={isSubmitting} disabled={isSubmitting}>
             {isSubmitting ? 'Değiştiriliyor…' : 'Şifreyi değiştir'}
           </button>
         </div>
