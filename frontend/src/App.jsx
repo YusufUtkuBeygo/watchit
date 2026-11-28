@@ -31,6 +31,7 @@ import HelpPage from './routes/HelpPage';
 import FeedbackPage from './routes/FeedbackPage';
 import InfoPage from './routes/InfoPage';
 import VerifyEmailBanner from './components/VerifyEmailBanner';
+import ErrorBoundary from './components/ErrorBoundary';
 //En son: bileşen stillerinin üstüne yazan mikro etkileşimler
 import './interactions.css';
 
@@ -66,6 +67,8 @@ function App() {
         <main id="icerik" tabIndex={-1} className={`content-area ${!isDrawer && isPinnedOpen ? 'with-sidebar' : ''}`}>
           {/* Adrese göre hangi sayfanın çizileceği burada seçilir */}
           <VerifyEmailBanner />
+          {/* Bir sayfa çizilirken hata olursa yalnız bu alan "Bir şeyler ters gitti" olur; sayfa değişince sıfırlanır */}
+          <ErrorBoundary resetKey={location.pathname}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/watch/:id" element={<WatchPage />} />
@@ -94,8 +97,9 @@ function App() {
             <Route path="/terms" element={<InfoPage page="terms" />} />
             <Route path="/privacy" element={<InfoPage page="privacy" />} />
             <Route path="/admin" element={<AdminPage />} />
-          <Route path="*" element={<NotFoundPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          </ErrorBoundary>
         </main>
       </div>
     </div>
