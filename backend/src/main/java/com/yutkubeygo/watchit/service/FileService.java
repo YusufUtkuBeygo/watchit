@@ -71,16 +71,41 @@ public class FileService {
     //Tip sonradan tarayıcıya aynen söylenir; HTML gibi bir tip olsaydı dosya web sayfası olarak açılırdı
     public boolean isAllowedContentType(String contentType)
     {
-        return contentType != null
-                && contentType.length() <= 100
-                && contentType.matches("(video|image)/[a-zA-Z0-9.+-]+");
+        return contentType != null && ALLOWED_TYPES.contains(contentType);
+    }
+
+    //Yüklenebilecek tiplerin tam listesi (güvenlik testi, 27 Kasım). Eskiden "image/..." ile başlayan her şey geçiyordu:
+    //image/svg+xml içine betik gömülebilir, MinIO onu resim değil çalışan bir sayfa gibi sunar (saklanan XSS).
+    //Yalnız tarayıcının resim/video olarak gösterdiği, betik taşımayan tipler
+    private static final java.util.Set<String> ALLOWED_TYPES = java.util.Set.of(
+            "video/mp4", "video/webm", "video/quicktime", "video/x-matroska", "video/ogg", "video/mpeg",
+            "video/x-msvideo", "video/3gpp", "video/x-m4v",
+            "image/jpeg", "image/png", "image/webp", "image/gif", "image/avif");
+
+    //Kovadaki dosya adı: klasörler "/" ile, her parça harf/rakam/./_/- ve nokta ile başlamaz.
+    //Böylece "../", "%2e", "\", "?", "#" gibi adresi başka dosyaya çevirebilecek her şey dışarıda kalır
+    private static final Pattern SAFE_KEY = Pattern.compile("[A-Za-z0-9_-][A-Za-z0-9._-]*(/[A-Za-z0-9_-][A-Za-z0-9._-]*)*");
+    //Tarayıcının verdiği dosya adı (klasörsüz): aynı kural, en fazla 150 karakter
+    private static final Pattern SAFE_FILE_NAME = Pattern.compile("[A-Za-z0-9_-][A-Za-z0-9._-]{0,149}");
+
+    public boolean isSafeFileName(String fileName)
+    {
+        return fileName != null && SAFE_FILE_NAME.matcher(fileName).matches() && !fileName.contains("..");
     }
 
     //Adres bizim kovamızdaki bir dosya mı? (videoUrl, thumbnailUrl, profil/kapak resmi için)
     //Boş adres (alan doldurulmamış) geçerli sayılır
     public boolean isOwnFileUrl(String url)
     {
-        return url == null || url.isEmpty() || url.startsWith(minioUrl + "/" + bucketName + "/");
+        if(url == null || url.isEmpty())
+            return true;
+        String base = minioUrl + "/" + bucketName + "/";
+        if(!url.startsWith(base))
+            return false;
+        //Yalnız önek yetmez: ".../watchit-images/x/../baska-dosya" önekten geçer ama başka bir dosyayı gösterir
+        //(güvenlik testi, 27 Kasım; bugün MinIO istemcisi ".." içeren adı reddediyor, biz ona güvenmiyoruz)
+        String key = url.substring(base.length());
+        return SAFE_KEY.matcher(key).matches() && !key.contains("..");
     }
 
     //Tarayıcının yüklediği dosyalar bu klasöre gider. Sahipsiz dosya temizliği yalnız burada arar

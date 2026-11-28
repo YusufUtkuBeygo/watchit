@@ -21,6 +21,13 @@ function safeFileName(name)
 //Tek dosya sınırı (backend'deki upload.max-file-bytes ile aynı): kotaya sormadan önce tarayıcıda yakalanır
 const MAX_FILE_BYTES = 2 * 1024 * 1024 * 1024;
 
+//Backend'in kabul ettiği tipler (FileService.ALLOWED_TYPES ile aynı). SVG gibi içine betik gömülebilen tipler yok
+const ALLOWED_TYPES = new Set([
+  'video/mp4', 'video/webm', 'video/quicktime', 'video/x-matroska', 'video/ogg', 'video/mpeg',
+  'video/x-msvideo', 'video/3gpp', 'video/x-m4v',
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',
+]);
+
 function sizeError(code)
 {
   const error = new Error(code);
@@ -37,6 +44,7 @@ export async function getQuota()
 
 export async function uploadFile(file, onProgress)
 {
+  if (!ALLOWED_TYPES.has(file.type)) throw sizeError('FILE_TYPE');
   if (file.size === 0) throw sizeError('FILE_EMPTY');
   if (file.size > MAX_FILE_BYTES) throw sizeError('FILE_TOO_LARGE');
 

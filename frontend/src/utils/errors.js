@@ -9,6 +9,7 @@ export function isTooManyRequests(error) {
 //Yükleme hataları: kota (413) ve tarayıcıda yakalanan boyut sınırı. Diğer hatalar için null (çağıran kendi mesajını yazar)
 export function uploadErrorMessage(error) {
   if (error?.code === 'FILE_TOO_LARGE') return 'Dosya çok büyük: tek dosya en fazla 2 GB olabilir.';
+  if (error?.code === 'FILE_TYPE') return 'Bu dosya türü desteklenmiyor. Video için MP4, WebM ya da MOV; resim için JPG, PNG, WebP ya da GIF seç.';
   if (error?.code === 'FILE_EMPTY') return 'Seçtiğin dosya boş.';
   const data = error?.response?.data;
   if (error?.response?.status === 413 && data?.error === 'QUOTA_EXCEEDED') {

@@ -43,7 +43,8 @@ public class FileController {
         emailVerificationService.requireVerified(userId);
         //Dosya adı 1-150 karakter: adres "MinIO adresi + kova + UUID_ad" diye kurulur (~74 + ad),
         //videos.video_url sütunu 255 karakter. Daha uzun ad, video kaydında sığmazdı
-        if(fileName.isBlank() || fileName.length() > 150)
+        //Ad yalnız harf/rakam/./_/- (en fazla 150): "../" ya da "\\" ile kovada başka klasöre yazılamasın
+        if(!fileService.isSafeFileName(fileName))
             return ResponseEntity.badRequest().build();
 
         //Yalnız video ve resim: HTML gibi dosyalar MinIO'dan web sayfası olarak açılabilirdi
