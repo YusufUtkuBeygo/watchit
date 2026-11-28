@@ -65,7 +65,7 @@ function FeedbackForm() {
         <p className="field-hint">{message.length}/{MAX_LENGTH}{fromPage && ` • Bulunduğun sayfa da eklenecek: ${fromPage}`}</p>
         {error && <p className="form-error" role="alert">{error}</p>}
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={status === 'sending'}>
+          <button type="submit" className="btn btn-primary" aria-busy={status === 'sending'} disabled={status === 'sending'}>
             {status === 'sending' ? 'Gönderiliyor…' : 'Gönder'}
           </button>
         </div>

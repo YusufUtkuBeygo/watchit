@@ -143,6 +143,13 @@
   position: relative;
 }
 
+/* Giriş durumu belli olana kadar profil dairesinin yerinde duran boş daire (aynı boyut: menü kaymasın) */
+.user-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+}
+
 .user-avatar-btn {
   width: 32px;
   height: 32px;

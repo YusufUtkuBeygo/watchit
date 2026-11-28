@@ -299,6 +299,7 @@ export default function UploadModal({ onClose }) {
               <button
                 type="submit"
                 className="upload-submit"
+                aria-busy={isSubmitting}
                 disabled={isSubmitting || !videoFile || !title.trim() || !categoryId}
               >
                 {isSubmitting ? statusText : 'Yayınla'}

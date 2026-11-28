@@ -83,7 +83,7 @@ export default function VideoEditModal({ video, onClose, onSaved }) {
         {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
         <div className="form-actions">
           <button type="button" className="btn btn-ghost" onClick={onClose}>İptal</button>
-          <button type="submit" className="btn btn-primary" disabled={isSubmitting || !title.trim() || !categoryId}>
+          <button type="submit" className="btn btn-primary" aria-busy={isSubmitting} disabled={isSubmitting || !title.trim() || !categoryId}>
             {isSubmitting ? 'Kaydediliyor…' : 'Kaydet'}
           </button>
         </div>

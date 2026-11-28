@@ -42,7 +42,7 @@ const CATEGORY_ICONS = {
 //Sol menü. isOpen: açık mı (App tutar), onClose: çekmeceyi kapatmak için,
 //isDrawer: çekmece hâli mi (dar ekran ya da izleme sayfası; App karar verir)
 const Sidebar = ({ isOpen, onClose, isDrawer }) => {
-  const { user } = useAuth();
+  const { user, authLoading } = useAuth();
   const location = useLocation();
   const [categories, setCategories] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
@@ -218,7 +218,7 @@ const Sidebar = ({ isOpen, onClose, isDrawer }) => {
             </>
           )}
         </>
-      ) : (
+      ) : authLoading ? null : (
         <div className="sidebar-section sidebar-login">
           <p>Videoları beğenmek, yorum yapmak ve abone olmak için oturum aç.</p>
           <button className="login-btn" onClick={() => setIsLoginOpen(true)}>

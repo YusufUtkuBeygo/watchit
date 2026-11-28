@@ -3,10 +3,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 //Sayfalı liste (backend: { items, page, size, hasNext, total }).
 //fetchPage(page) -> Promise<sayfa>. key değişince liste sıfırlanır ve ilk sayfa yeniden istenir (ör. kategori ya da arama değişti).
 //Aşağı kaydırınca sonraki sayfayı LoadMore bileşeni ister (loadMore).
-//Dönen: items, status ('loading' | 'ready' | 'error'), hasNext, loadingMore, moreFailed, total, loadMore, setItems, reload
+//Dönen: items, status ('loading' | 'ready' | 'error'), hasNext, loadingMore, moreFailed, total, refreshing, loadMore, setItems, reload
+//reload(): liste ekrandayken arka planda yeniler (eski kayıtlar görünmeye devam eder, iskelet çıkmaz);
+//yalnız key değişince (başka liste) iskelete dönülür
 export default function usePagedList(fetchPage, key, { enabled = true } = {}) {
   const [state, setState] = useState({
-    key: null, items: [], page: -1, hasNext: false, total: 0, failed: false, loadingMore: false, moreFailed: false,
+    key: null, version: -1, items: [], page: -1, hasNext: false, total: 0, failed: false, loadingMore: false, moreFailed: false,
   });
   const [reloadCount, setReloadCount] = useState(0);
   //fetchPage her çizimde yeni fonksiyon olabilir; etkiyi yeniden tetiklemesin diye son hâli ref'te tutulur
@@ -17,8 +19,6 @@ export default function usePagedList(fetchPage, key, { enabled = true } = {}) {
   //Hangi listeye ait istek: liste değiştiyse eski istekten gelen cevap yok sayılır
   const tokenRef = useRef(0);
 
-  const fullKey = `${key}#${reloadCount}`;
-
   useEffect(() => {
     if (!enabled) return;
     const token = ++tokenRef.current;
@@ -26,19 +26,22 @@ export default function usePagedList(fetchPage, key, { enabled = true } = {}) {
     fetchRef.current(0)
       .then((page) => {
         if (token !== tokenRef.current) return;
-        setState({ key: fullKey, items: page.items, page: page.page, hasNext: page.hasNext, total: page.total,
+        setState({ key, version: reloadCount, items: page.items, page: page.page, hasNext: page.hasNext, total: page.total,
           failed: false, loadingMore: false, moreFailed: false });
       })
       .catch((error) => {
         if (token !== tokenRef.current) return;
         console.error('Liste yüklenemedi:', error);
-        setState((s) => ({ ...s, key: fullKey, items: [], failed: true }));
+        //Yenileme başarısızsa eldeki liste kalır; ilk yükleme başarısızsa hata gösterilir
+        setState((s) => (s.key === key && !s.failed
+          ? { ...s, version: reloadCount }
+          : { ...s, key, version: reloadCount, items: [], failed: true }));
       })
       .finally(() => { if (token === tokenRef.current) busyRef.current = false; });
-  }, [fullKey, enabled]);
+  }, [key, reloadCount, enabled]);
 
   const loadMore = useCallback(() => {
-    if (busyRef.current || state.key !== fullKey || !state.hasNext) return;
+    if (busyRef.current || state.key !== key || !state.hasNext) return;
     busyRef.current = true;
     const token = tokenRef.current;
     setState((s) => ({ ...s, loadingMore: true, moreFailed: false }));
@@ -58,7 +61,7 @@ export default function usePagedList(fetchPage, key, { enabled = true } = {}) {
         setState((s) => ({ ...s, loadingMore: false, moreFailed: true }));
       })
       .finally(() => { if (token === tokenRef.current) busyRef.current = false; });
-  }, [state.key, state.hasNext, state.page, fullKey]);
+  }, [state.key, state.hasNext, state.page, key]);
 
   //Listeden bir kaydı yerinde çıkarmak/değiştirmek için (ör. geçmişten kaldır)
   const setItems = useCallback((update) => {
@@ -67,14 +70,18 @@ export default function usePagedList(fetchPage, key, { enabled = true } = {}) {
 
   const reload = useCallback(() => setReloadCount((n) => n + 1), []);
 
-  const current = state.key === fullKey;
+  //Aynı listenin verisi elde mi (yenileniyor olsa bile)
+  const current = state.key === key;
+  const refreshing = current && state.version !== reloadCount;
   return {
     items: current ? state.items : [],
-    status: !current ? 'loading' : state.failed ? 'error' : 'ready',
+    //Hata ekranındayken yeniden deneniyorsa iskelet (eski hata yazısı durmasın)
+    status: !current || (state.failed && refreshing) ? 'loading' : state.failed ? 'error' : 'ready',
     hasNext: current && state.hasNext,
     loadingMore: current && state.loadingMore,
     moreFailed: current && state.moreFailed,
     total: current ? state.total : 0,
+    refreshing,
     loadMore,
     setItems,
     reload,

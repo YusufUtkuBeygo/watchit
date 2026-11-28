@@ -12,11 +12,12 @@ import { MAX_SEARCH_LENGTH } from '../services/videoService';
 import { initialOf } from '../utils/format';
 import { nameColor } from '../utils/nameColor';
 import './Navbar.css';
+import './Skeleton.css';
 
 //Üst çubuk: menü düğmesi + logo, arama, "Oluştur", bildirimler ve kullanıcı menüsü
 //onMenuClick: sol menüyü açar/kapatır (App tutar)
 const Navbar = ({ onMenuClick, isMenuOpen }) => {
-  const { user, signOut } = useAuth();
+  const { user, authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,7 +86,10 @@ const Navbar = ({ onMenuClick, isMenuOpen }) => {
           <Plus size={20} />
           <span className="create-text">Oluştur</span>
         </button>
-        {user ? (
+        {authLoading ? (
+          //Giriş durumu henüz belli değil: profil dairesi yerinde boş bir daire
+          <span className="user-avatar-placeholder skeleton" aria-hidden="true" />
+        ) : user ? (
           <>
             <NotificationBell />
             <UserMenu user={user} onSignOut={() => { signOut(); navigate('/'); }} />

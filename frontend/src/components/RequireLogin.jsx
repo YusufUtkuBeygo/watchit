@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import LoginModal from './LoginModal';
+import { RowListSkeleton } from './Skeleton';
 
 //Giriş isteyen sayfaları sarar: giriş yoksa sayfa yerine "giriş yap" mesajı çizilir
 //message: neden giriş gerektiği (ör. "Geçmişini görmek için giriş yap.")
 export default function RequireLogin({ message, children }) {
-  const { user } = useAuth();
+  const { user, authLoading } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   if (user) return children;
+  //Giriş durumu henüz belli değil: "giriş yap" yazısı yerine iskelet (giriş yapmış kullanıcı yanlış mesaj görmesin)
+  if (authLoading) return <div className="page"><RowListSkeleton label="Yükleniyor…" /></div>;
 
   return (
     <div className="page-message">

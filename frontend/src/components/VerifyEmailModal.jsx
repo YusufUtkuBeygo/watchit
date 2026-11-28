@@ -110,7 +110,7 @@ export default function VerifyEmailModal({ email, reason, justRegistered, onVeri
         </label>
         {error && <p id="verify-error" className="form-error" role="alert">{error}</p>}
         {info && <p className="form-success" role="status">{info}</p>}
-        <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+        <button type="submit" className="btn btn-primary" aria-busy={isSubmitting} disabled={isSubmitting}>
           {isSubmitting ? 'Doğrulanıyor…' : 'Doğrula'}
         </button>
         <p className="verify-resend">

@@ -20,6 +20,15 @@ export function logout() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+//Tarayıcıda saklı token var mı (sayfa açılırken "giriş yapmış olabilir mi" sorusu; geçerli olup olmadığını sunucu söyler)
+export function hasStoredToken() {
+  try {
+    return Boolean(localStorage.getItem(TOKEN_KEY));
+  } catch {
+    return false;
+  }
+}
+
 //Saklı token hâlâ geçerliyse kullanıcıyı, değilse null döner
 export async function getCurrentUser() {
   if (!localStorage.getItem(TOKEN_KEY)) return null;

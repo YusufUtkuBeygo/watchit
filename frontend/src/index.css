@@ -309,3 +309,34 @@ input[type="checkbox"]:focus-visible {
   white-space: nowrap;
   border: 0;
 }
+
+/* Bekleyen düğme (aria-busy="true"): yazının solunda dönen küçük halka. Yavaş internette düğme donmuş gibi görünmesin.
+   Rengi düğmenin yazı rengi (currentColor); her temada ve her düğme türünde kendiliğinden uyar */
+button[aria-busy="true"] {
+  cursor: progress;
+}
+
+button[aria-busy="true"]::before {
+  content: "";
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.95em;
+  height: 0.95em;
+  margin-right: 0.5em;
+  vertical-align: -0.15em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: busy-spin 0.7s linear infinite;
+}
+
+@keyframes busy-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hareket azaltma tercihi: halka yavaşça döner (tamamen durursa "takıldı" gibi görünür) */
+@media (prefers-reduced-motion: reduce) {
+  button[aria-busy="true"]::before {
+    animation-duration: 2.4s;
+  }
+}

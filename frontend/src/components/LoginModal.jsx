@@ -160,7 +160,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                     autoComplete="email" spellCheck={false} required />
                 </label>
                 {errorMessage && <p className="login-error">{errorMessage}</p>}
-                <button type="submit" className="login-submit" disabled={isSubmitting}>
+                <button type="submit" className="login-submit" aria-busy={isSubmitting} disabled={isSubmitting}>
                   {isSubmitting ? 'Gönderiliyor…' : 'Bağlantı gönder'}
                 </button>
               </>
@@ -227,7 +227,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
           {errorMessage && <p className="login-error">{errorMessage}</p>}
 
-          <button type="submit" className="login-submit" disabled={isSubmitting}>
+          <button type="submit" className="login-submit" aria-busy={isSubmitting} disabled={isSubmitting}>
             {isSubmitting
               ? (isRegister ? 'Hesap oluşturuluyor…' : 'Giriş yapılıyor…')
               : (isRegister ? 'Hesap oluştur' : 'Giriş yap')}

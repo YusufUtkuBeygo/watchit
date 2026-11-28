@@ -75,7 +75,7 @@ export default function ReportModal({ targetType, targetId, onClose }) {
         {error && <p className="form-error" role="alert">{error}</p>}
         <div className="form-actions">
           <button type="button" className="btn" onClick={onClose}>Vazgeç</button>
-          <button type="submit" className="btn btn-primary" disabled={isSending}>
+          <button type="submit" className="btn btn-primary" aria-busy={isSending} disabled={isSending}>
             {isSending ? 'Gönderiliyor…' : 'Gönder'}
           </button>
         </div>

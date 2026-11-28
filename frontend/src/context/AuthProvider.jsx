@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AuthContext } from './AuthContext';
-import { login, register, logout, getCurrentUser } from '../services/authService';
+import { login, register, logout, getCurrentUser, hasStoredToken } from '../services/authService';
 import { EMAIL_NOT_VERIFIED_EVENT } from '../services/api';
 import VerifyEmailModal from '../components/VerifyEmailModal';
 
@@ -9,12 +9,15 @@ import VerifyEmailModal from '../components/VerifyEmailModal';
 export default function AuthProvider({ children }) {
   //Giriş yapmış kullanıcı; giriş yoksa null
   const [user, setUser] = useState(null);
+  //Sayfa açılırken saklı token varsa sunucu "bu kim" diye cevap verene kadar true: o sırada site ne "Giriş yap"
+  //ne profil gösterir (yavaş internette giriş yapmış kullanıcı bir anlığına çıkış yapmış gibi görmesin)
+  const [authLoading, setAuthLoading] = useState(hasStoredToken);
   //Doğrulama penceresi: null kapalı, { reason, justRegistered } açık
   const [verifyRequest, setVerifyRequest] = useState(null);
 
   //Sayfa açılınca: saklı token geçerliyse kullanıcıyı geri yükle
   useEffect(() => {
-    getCurrentUser().then(setUser);
+    getCurrentUser().then(setUser).finally(() => setAuthLoading(false));
   }, []);
 
   //Kullanıcı bilgisini sunucudan yeniden okur (ör. e-posta doğrulanınca emailVerified değişti)
@@ -60,7 +63,7 @@ export default function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signUp, signOut, updateUser, refreshUser, openVerify }}>
+    <AuthContext.Provider value={{ user, authLoading, signIn, signUp, signOut, updateUser, refreshUser, openVerify }}>
       {children}
       {user && verifyRequest && (
         <VerifyEmailModal
