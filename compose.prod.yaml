@@ -49,6 +49,8 @@ services:
     build: ./backend
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/watchit
+      # Konteynerin içinde başka program yok: 8080 (nginx ve sağlık kontrolü buna bakıyor). Geliştirmede varsayılan 8090
+      SERVER_PORT: "8080"
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET gerekli}
       TOKEN_PEPPER: ${TOKEN_PEPPER:-}

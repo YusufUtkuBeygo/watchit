@@ -8,7 +8,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-//Swagger sayfasının (http://localhost:8080/swagger-ui.html) başlığı ve token ayarı
+//Swagger sayfasının (http://localhost:8090/swagger-ui.html) başlığı ve token ayarı
 //Sayfadaki "Authorize" düğmesine login'den dönen token yapıştırılınca bütün istekler Authorization: Bearer <token> ile gider
 @Configuration
 public class OpenApiConfig {
