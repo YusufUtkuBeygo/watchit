@@ -8,23 +8,31 @@ import com.yutkubeygo.watchit.repository.ChannelRepository;
 import com.yutkubeygo.watchit.repository.UserRepository;
 import com.yutkubeygo.watchit.repository.VideoRepository;
 import com.yutkubeygo.watchit.service.JwtService;
+import io.minio.MinioClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 //Yükleme kotası (gerçek PostgreSQL ve MinIO, sonunda geri alınır). Sınırlar testte küçük:
-//tek dosya 1000 bayt, toplam video 3000 bayt, günde 2500 bayt
+//tek dosya 1000 bayt, toplam video 3000 bayt, günde 2500 bayt.
+//MinIO sahte (mock): test kota kurallarını sınıyor, depoyu değil. Eskiden gerçek MinIO'ya bağlanıyordu;
+//yerelde MinIO açık olduğu için geçiyor, GitHub'daki CI'da MinIO olmadığı için düşüyordu
 @SpringBootTest(properties = {
         "upload.max-file-bytes=1000",
         "upload.quota.total-bytes=3000",
@@ -40,14 +48,17 @@ class UploadQuotaEndpointTest {
     @Autowired private ChannelRepository channelRepository;
     @Autowired private VideoRepository videoRepository;
     @Autowired private CategoryRepository categoryRepository;
+    @MockitoBean private MinioClient minioClient;
 
     private User user;
     private Channel channel;
     private String bearer;
 
     @BeforeEach
-    void setUp()
+    void setUp() throws Exception
     {
+        //İmzalı yükleme formu: gerçek MinIO yerine boş form (adres ve dosya adı yine FileService'te kurulur)
+        when(minioClient.getPresignedPostFormData(any())).thenReturn(new HashMap<>());
         user = new User();
         user.setUsername("kota_testi");
         user.setEmail("kota_testi@test.local");

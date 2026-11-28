@@ -1,6 +1,8 @@
 package com.yutkubeygo.watchit.controller;
 
+import com.yutkubeygo.watchit.dto.ClientErrorResponseDto;
 import com.yutkubeygo.watchit.dto.FeedbackResponseDto;
+import com.yutkubeygo.watchit.service.ClientErrorService;
 import com.yutkubeygo.watchit.dto.PageResponseDto;
 import com.yutkubeygo.watchit.dto.ReportResponseDto;
 import com.yutkubeygo.watchit.enums.ReportStatus;
@@ -20,10 +22,12 @@ import java.util.Map;
 public class AdminController {
 
     private final ReportService reportService;
+    private final ClientErrorService clientErrorService;
 
-    public AdminController(ReportService reportService)
+    public AdminController(ReportService reportService, ClientErrorService clientErrorService)
     {
         this.reportService = reportService;
+        this.clientErrorService = clientErrorService;
     }
 
     //GET /admin/reports?status=OPEN|RESOLVED|DISMISSED&page=0
@@ -48,7 +52,7 @@ public class AdminController {
     @GetMapping("/summary")
     public Map<String, Long> summary()
     {
-        return Map.of("openReports", reportService.countOpen());
+        return Map.of("openReports", reportService.countOpen(), "clientErrors24h", clientErrorService.countLastDay());
     }
 
     //İçerik kalır, şikayet kapanır. 204 / 404 / 409 (zaten kapalı)
@@ -67,6 +71,14 @@ public class AdminController {
         if(!reportService.removeContent(id, adminId))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         return ResponseEntity.noContent().build();
+    }
+
+    //Tarayıcı hataları, en yeni önce (hata takibi)
+    @GetMapping("/client-errors")
+    public PageResponseDto<ClientErrorResponseDto> clientErrors(@RequestParam(required = false) Integer page,
+                                                               @RequestParam(required = false) Integer size)
+    {
+        return clientErrorService.list(Paging.of(page, size));
     }
 
     @GetMapping("/feedback")

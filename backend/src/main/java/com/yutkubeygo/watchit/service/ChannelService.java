@@ -48,9 +48,10 @@ public class ChannelService {
         User owner= userRepository.findById(userId).orElse(null);
         if(owner==null)
             return null;
+        //Locale.ROOT: parametresiz toLowerCase() Türkçe dil ayarlı bilgisayarda "I"yı "ı" yapar ("Isparta" -> "ısparta")
         channel.setHandle(
                 request.getChannelName()
-                        .toLowerCase()
+                        .toLowerCase(java.util.Locale.ROOT)
                         .replace(" ", "-"));
         channel.setOwner(owner);
         //Bilgi aktarımı tamamlanıp nesne oluşturulduktan sonra db'ye kaydediliyor

@@ -79,9 +79,11 @@ export default function LikeButton({ videoId, initialCount, initialLiked }) {
         onClick={handleClick}
         disabled={isBusy}
         aria-pressed={liked}
+        //Okunabilir ad: yalnız sayı ("2") olsaydı ekran okuyucu düğmenin ne yaptığını söyleyemezdi
+        aria-label={`${liked ? 'Beğenmekten vazgeç' : 'Beğen'} (${likeCount} beğeni)`}
         title={liked ? 'Beğenmekten vazgeç' : 'Beğen'}
       >
-        <ThumbsUp size={20} fill={liked ? 'currentColor' : 'none'} />
+        <ThumbsUp size={20} fill={liked ? 'currentColor' : 'none'} aria-hidden="true" />
         <span>{likeCount}</span>
       </button>
       {message && <span className="like-message">{message}</span>}

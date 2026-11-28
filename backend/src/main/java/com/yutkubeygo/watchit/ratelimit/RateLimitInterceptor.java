@@ -31,7 +31,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
             new Rule("/playlists", RateLimit.PLAYLIST),
             new Rule("/playlistvideos", RateLimit.PLAYLIST),
             new Rule("/reports", RateLimit.REPORT),
-            new Rule("/users", RateLimit.REGISTER));
+            new Rule("/users", RateLimit.REGISTER),
+            new Rule("/client-errors", RateLimit.CLIENT_ERROR));
 
     private final AntPathMatcher matcher = new AntPathMatcher();
     private final RateLimiterService limiter;

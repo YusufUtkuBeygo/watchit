@@ -44,6 +44,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/playlists/**", "/playlistvideos/**").permitAll()
                         //Kurs listesi ve tek klip (paylaşılan bağlantı) girişsiz okunur; /clips (kliplerim) giriş ister
                         .requestMatchers(HttpMethod.GET, "/courses", "/clips/*").permitAll()
+                        //Tarayıcı hata bildirimi girişsiz de (hız sınırlı, ClientErrorController)
+                        .requestMatchers(HttpMethod.POST, "/client-errors").permitAll()
+                        //Paylaşım önizlemesi (link botları için küçük HTML, ShareController): girişsiz
+                        .requestMatchers(HttpMethod.GET, "/og/watch/*").permitAll()
                         //Sağlık kontrolü (Docker, yük dengeleyici) girişsiz; yalnız {"status":"UP"} döner
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         //API dokümanı (Swagger) herkese açık; uçların kendisi yine kendi kurallarına tabi

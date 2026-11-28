@@ -55,6 +55,12 @@
   overflow: hidden;
 }
 
+/* Klavyeyle arama kutusuna gelince görünür çerçeve (input'un kendi outline'ı kapalı; çerçeve bütün kutuya çizilir) */
+.search-box:focus-within {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 1px var(--focus);
+}
+
 .search-input-container {
   flex: 1;
   padding: 0 var(--space-4);
